@@ -998,6 +998,7 @@
     <div class="brand">
       <h1>NFS Group</h1>
       <div class="brand-right">
+        <button class="home-btn" id="homeConfigBtn" style="display:none;" aria-label="Configurações">⚙️</button>
         <div class="user-chip" id="homeUserChip"><b id="homeUserChipName">—</b></div>
       </div>
     </div>
@@ -1666,8 +1667,11 @@
 <div class="app" id="adminPanelView" style="display:none;">
   <header>
     <div class="brand">
-      <h1>Painel admin</h1>
+      <h1 id="configHeaderTitle">Configurações</h1>
       <div class="brand-right">
+        <button class="refresh-btn" id="configBackBtn" style="display:none;" aria-label="Voltar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
         <button class="refresh-btn" id="goToStockBtn" aria-label="Ir para a tela inicial">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
         </button>
@@ -1676,135 +1680,311 @@
     </div>
   </header>
 
-  <div class="admin-content">
-
-    <div class="admin-card">
-      <h3>Link do app</h3>
-      <p class="card-sub">Esse link entra automaticamente nas mensagens de convite.</p>
-      <div class="password-row">
-        <input id="configAppLink" type="text" placeholder="https://seu-app.netlify.app">
-        <button class="small-btn primary" id="saveConfigBtn">Salvar</button>
-      </div>
+  <!-- MENU DE CATEGORIAS -->
+  <div id="configMenuView" class="admin-content">
+    <div class="admin-card" data-config-nav="usuarios" style="cursor:pointer;">
+      <h3>👤 Usuários</h3>
+      <p class="card-sub">Cadastrar, editar, ativar/desativar colaboradores e definir acessos.</p>
     </div>
-
-    <div class="admin-card">
-      <h3>Meu valor/hora</h3>
-      <p class="card-sub">Se você também atua como técnico em OS cobradas por hora, defina seu valor aqui.</p>
-      <div class="password-row">
-        <input id="configAdminValorHora" type="number" min="0" step="0.01" placeholder="0,00">
-        <button class="small-btn primary" id="saveAdminValorHoraBtn">Salvar</button>
-      </div>
+    <div class="admin-card" data-config-nav="permissoes" style="cursor:pointer;">
+      <h3>🔐 Permissões</h3>
+      <p class="card-sub">Aplicar perfis prontos de acesso por módulo.</p>
     </div>
-
-    <div class="admin-card">
-      <h3>Cadastrar colaborador</h3>
-      <p class="card-sub">Só você libera novos acessos. Depois de cadastrar, um convite pronto é gerado para enviar por e-mail ou WhatsApp.</p>
-      <div class="field">
-        <label for="newColabNome">Nome do colaborador</label>
-        <input id="newColabNome" type="text" placeholder="Ex: Carlos Silva" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="newColabEmail">E-mail do colaborador</label>
-        <input id="newColabEmail" type="email" placeholder="carlos@empresa.com" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="newColabSenha">Senha de acesso</label>
-        <div class="password-row">
-          <input id="newColabSenha" type="text" placeholder="Toque em gerar ou digite">
-          <button class="small-btn" id="genPasswordBtn">Gerar</button>
-        </div>
-      </div>
-      <div class="field">
-        <label for="newColabValorHora">Valor da hora (R$) — usado quando esse técnico for cobrado por hora numa OS</label>
-        <input id="newColabValorHora" type="number" min="0" step="0.01" placeholder="0,00">
-      </div>
-      <div class="field">
-        <label>Áreas liberadas para esse colaborador</label>
-        <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoEstoque" checked style="width:16px; height:16px;"> 📦 Estoque
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoOs" checked style="width:16px; height:16px;"> 🛠️ Ordens de Serviço
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoFinanceiro" checked style="width:16px; height:16px;"> 💰 Financeiro
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoNfsEnergy" style="width:16px; height:16px;"> ⚡ NFS Energy
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoOrcamento" style="width:16px; height:16px;"> 🧮 Orçamento
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoDimensionamentos" style="width:16px; height:16px;"> 📐 Dimensionamentos
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>Dentro de Orçamento (só faz efeito se Orçamento estiver marcado)</label>
-        <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoOrcamentoSolar" style="width:16px; height:16px;"> ☀️ Orçamento Solar
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>Dentro de NFS Energy (só faz efeito se NFS Energy estiver marcado)</label>
-        <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoOsEnergy" style="width:16px; height:16px;"> 🛠️ OS (NFS Energy)
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>Dentro de Copel (só faz efeito se NFS Energy estiver marcado)</label>
-        <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoCopelProtocolos" style="width:16px; height:16px;"> 📋 Protocolos de Beneficiários
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoCopelOutrosServicos" style="width:16px; height:16px;"> 🔧 Outros Serviços (Copel)
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoCopelFinanceiro" style="width:16px; height:16px;"> 💰 Financeiro (Copel)
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>Permissão especial</label>
-        <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoAgendamento" style="width:16px; height:16px;"> 📅 Pode agendar/direcionar OS para técnicos
-          </label>
-          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoAlerta" style="width:16px; height:16px;"> 🔔 Recebe alerta de OS concluída p/ cobrar
-          </label>
-        </div>
-      </div>
-      <div class="login-err" id="newColabErr">Verifique os dados informados.</div>
-      <button class="login-btn full-btn" id="createColabBtn">Cadastrar e gerar convite</button>
-
-      <div class="invite-box" id="inviteBox" style="display:none;">
-        <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px;">Mensagem do convite</label>
-        <textarea id="inviteText" readonly></textarea>
-        <div class="invite-actions">
-          <button class="small-btn primary" id="inviteEmailBtn">✉️ Abrir e-mail</button>
-          <button class="small-btn" id="inviteWhatsBtn">💬 Abrir WhatsApp</button>
-          <button class="small-btn" id="inviteCopyBtn">Copiar mensagem</button>
-        </div>
-      </div>
+    <div class="admin-card" data-config-nav="empresa" style="cursor:pointer;">
+      <h3>🏢 Dados da Empresa</h3>
+      <p class="card-sub">Usados em propostas, orçamentos e relatórios do sistema.</p>
     </div>
-
-    <div class="admin-card">
-      <h3>Colaboradores cadastrados</h3>
-      <div class="colab-list" id="colabList">
-        <div class="admin-empty">Nenhum colaborador cadastrado ainda.</div>
-      </div>
+    <div class="admin-card" data-config-nav="orcamento-config" style="cursor:pointer;">
+      <h3>🧮 Configurações de Orçamento</h3>
+      <p class="card-sub">HSP padrão e outros parâmetros usados no cálculo.</p>
     </div>
-
-    <p class="admin-note">⚠️ As senhas ficam salvas sem criptografia, apenas para controle simples de acesso. Não reutilize senhas importantes.</p>
+    <div class="admin-card" data-config-nav="dimensionamentos-config" style="cursor:pointer;">
+      <h3>📐 Configurações de Dimensionamentos</h3>
+      <p class="card-sub">Base de componentes elétricos (fabricantes, motores, disjuntores...).</p>
+    </div>
+    <div class="admin-card" data-config-nav="parametros" style="cursor:pointer;">
+      <h3>⚙️ Parâmetros Gerais</h3>
+      <p class="card-sub">Link do app e outros ajustes do sistema.</p>
+    </div>
+    <div class="admin-card" data-config-nav="auditoria" style="cursor:pointer;">
+      <h3>📜 Auditoria</h3>
+      <p class="card-sub">Histórico das alterações importantes feitas no sistema.</p>
+    </div>
   </div>
+
+  <!-- USUÁRIOS -->
+  <div id="configUsuariosView" style="display:none;">
+    <div class="admin-content">
+
+      <div class="admin-card">
+        <h3>Meu valor/hora</h3>
+        <p class="card-sub">Se você também atua como técnico em OS cobradas por hora, defina seu valor aqui.</p>
+        <div class="password-row">
+          <input id="configAdminValorHora" type="number" min="0" step="0.01" placeholder="0,00">
+          <button class="small-btn primary" id="saveAdminValorHoraBtn">Salvar</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Cadastrar colaborador</h3>
+        <p class="card-sub">Só você libera novos acessos. Depois de cadastrar, um convite pronto é gerado para enviar por e-mail ou WhatsApp.</p>
+        <div class="field">
+          <label for="newColabNome">Nome do colaborador</label>
+          <input id="newColabNome" type="text" placeholder="Ex: Carlos Silva" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="newColabEmail">E-mail do colaborador</label>
+          <input id="newColabEmail" type="email" placeholder="carlos@empresa.com" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="newColabSenha">Senha de acesso</label>
+          <div class="password-row">
+            <input id="newColabSenha" type="text" placeholder="Toque em gerar ou digite">
+            <button class="small-btn" id="genPasswordBtn">Gerar</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="newColabValorHora">Valor da hora (R$) — usado quando esse técnico for cobrado por hora numa OS</label>
+          <input id="newColabValorHora" type="number" min="0" step="0.01" placeholder="0,00">
+        </div>
+        <div class="field">
+          <label>Áreas liberadas para esse colaborador</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoEstoque" checked style="width:16px; height:16px;"> 📦 Estoque
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoOs" checked style="width:16px; height:16px;"> 🛠️ Ordens de Serviço
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoFinanceiro" checked style="width:16px; height:16px;"> 💰 Financeiro
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoNfsEnergy" style="width:16px; height:16px;"> ⚡ NFS Energy
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoOrcamento" style="width:16px; height:16px;"> 🧮 Orçamento
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoDimensionamentos" style="width:16px; height:16px;"> 📐 Dimensionamentos
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Dentro de Orçamento (só faz efeito se Orçamento estiver marcado)</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoOrcamentoSolar" style="width:16px; height:16px;"> ☀️ Orçamento Solar
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Dentro de NFS Energy (só faz efeito se NFS Energy estiver marcado)</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoOsEnergy" style="width:16px; height:16px;"> 🛠️ OS (NFS Energy)
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Dentro de Copel (só faz efeito se NFS Energy estiver marcado)</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoCopelProtocolos" style="width:16px; height:16px;"> 📋 Protocolos de Beneficiários
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoCopelOutrosServicos" style="width:16px; height:16px;"> 🔧 Outros Serviços (Copel)
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoCopelFinanceiro" style="width:16px; height:16px;"> 💰 Financeiro (Copel)
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Permissão especial</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoAgendamento" style="width:16px; height:16px;"> 📅 Pode agendar/direcionar OS para técnicos
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoAlerta" style="width:16px; height:16px;"> 🔔 Recebe alerta de OS concluída p/ cobrar
+            </label>
+          </div>
+        </div>
+        <div class="login-err" id="newColabErr">Verifique os dados informados.</div>
+        <button class="login-btn full-btn" id="createColabBtn">Cadastrar e gerar convite</button>
+
+        <div class="invite-box" id="inviteBox" style="display:none;">
+          <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px;">Mensagem do convite</label>
+          <textarea id="inviteText" readonly></textarea>
+          <div class="invite-actions">
+            <button class="small-btn primary" id="inviteEmailBtn">✉️ Abrir e-mail</button>
+            <button class="small-btn" id="inviteWhatsBtn">💬 Abrir WhatsApp</button>
+            <button class="small-btn" id="inviteCopyBtn">Copiar mensagem</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Colaboradores cadastrados</h3>
+        <div class="colab-list" id="colabList">
+          <div class="admin-empty">Nenhum colaborador cadastrado ainda.</div>
+        </div>
+      </div>
+
+      <p class="admin-note">🔒 As senhas agora são protegidas por hash antes de salvar — não ficam mais em texto puro no banco de dados.</p>
+    </div>
+  </div>
+
+  <!-- PERMISSÕES (perfis rápidos) -->
+  <div id="configPermissoesView" style="display:none;">
+    <div class="admin-content">
+      <div class="admin-card">
+        <h3>Perfis rápidos de acesso</h3>
+        <p class="card-sub">Escolha um colaborador e aplique um pacote de permissões pronto. Depois é só ajustar manualmente em Usuários se precisar de algo diferente.</p>
+        <div class="field">
+          <label for="perfilColabSelect">Colaborador</label>
+          <select id="perfilColabSelect"></select>
+        </div>
+        <div class="field">
+          <label for="perfilTipoSelect">Perfil</label>
+          <select id="perfilTipoSelect">
+            <option value="administrador">Administrador (acesso total)</option>
+            <option value="financeiro">Financeiro</option>
+            <option value="tecnico">Técnico</option>
+            <option value="comercial">Comercial</option>
+            <option value="estoque">Estoque</option>
+          </select>
+        </div>
+        <button class="small-btn primary full-btn" id="aplicarPerfilBtn" type="button">Aplicar perfil a esse colaborador</button>
+        <p class="admin-note" id="perfilAplicadoInfo" style="margin-top:10px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DADOS DA EMPRESA -->
+  <div id="configEmpresaView" style="display:none;">
+    <div class="admin-content">
+      <div class="admin-card">
+        <h3>Dados da empresa</h3>
+        <p class="card-sub">Usados automaticamente em propostas, orçamentos e relatórios gerados pelo sistema.</p>
+        <div class="field"><label for="empNomeEmpresa">Nome da empresa (razão social)</label><input id="empNomeEmpresa" type="text"></div>
+        <div class="field"><label for="empNomeFantasia">Nome fantasia</label><input id="empNomeFantasia" type="text"></div>
+        <div class="row2">
+          <div class="field"><label for="empCnpj">CNPJ</label><input id="empCnpj" type="text"></div>
+          <div class="field"><label for="empIe">Inscrição Estadual</label><input id="empIe" type="text"></div>
+        </div>
+        <div class="field"><label for="empEndereco">Endereço</label><input id="empEndereco" type="text"></div>
+        <div class="row2">
+          <div class="field"><label for="empCidade">Cidade</label><input id="empCidade" type="text"></div>
+          <div class="field"><label for="empEstado">Estado (UF)</label><input id="empEstado" type="text" maxlength="2" style="text-transform:uppercase;"></div>
+        </div>
+        <div class="field"><label for="empCep">CEP</label><input id="empCep" type="text"></div>
+        <div class="row2">
+          <div class="field"><label for="empTelefone">Telefone</label><input id="empTelefone" type="tel"></div>
+          <div class="field"><label for="empWhatsapp">WhatsApp</label><input id="empWhatsapp" type="tel"></div>
+        </div>
+        <div class="field"><label for="empEmail">E-mail</label><input id="empEmail" type="email"></div>
+        <div class="field">
+          <label>Logo</label>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap;">
+            <img id="empLogoPreview" src="" style="max-width:160px; max-height:80px; border-radius:6px; background:#0e2f52; display:none;">
+            <label class="photo-btn" id="empLogoLabel" style="margin:0;">📎 Enviar logo</label>
+            <input type="file" id="empLogoInput" accept="image/*" style="display:none;">
+          </div>
+        </div>
+        <button class="small-btn primary full-btn" id="empSalvarBtn" type="button" style="margin-top:14px;">Salvar dados da empresa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURAÇÕES DE ORÇAMENTO -->
+  <div id="configOrcamentoView" style="display:none;">
+    <div class="admin-content">
+      <div class="admin-card">
+        <h3>Parâmetros do Orçamento</h3>
+        <div class="field">
+          <label for="cfgHsp">HSP padrão (horas de sol pico)</label>
+          <input id="cfgHsp" type="number" min="0" step="0.1" placeholder="3.7">
+        </div>
+        <button class="small-btn primary full-btn" id="cfgOrcamentoSalvarBtn" type="button">Salvar</button>
+        <p class="admin-note" style="margin-top:10px;">Alterar aqui muda o HSP usado nos próximos orçamentos abertos (novos ou reeditados).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURAÇÕES DE DIMENSIONAMENTOS -->
+  <div id="configDimensionamentosView" style="display:none;">
+    <div class="admin-content">
+      <p class="card-sub" style="padding:0 4px;">Base inicial de componentes elétricos — estrutura preparada para futuramente recomendar peças compatíveis com cada motor dimensionado.</p>
+      <div class="admin-card">
+        <h3>Novo componente</h3>
+        <div class="field">
+          <label for="compTipo">Tipo</label>
+          <select id="compTipo">
+            <option value="fabricante">Fabricante</option>
+            <option value="motor">Motor (catálogo)</option>
+            <option value="disjuntor">Disjuntor</option>
+            <option value="disjuntor_motor">Disjuntor-motor</option>
+            <option value="contator">Contator</option>
+            <option value="rele_termico">Relé térmico</option>
+            <option value="cabo">Cabo</option>
+            <option value="inversor">Inversor</option>
+            <option value="soft_starter">Soft starter</option>
+            <option value="transformador">Transformador</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="compNome">Nome / modelo</label>
+          <input id="compNome" type="text" placeholder="Ex: WEG CWM18">
+        </div>
+        <div class="field">
+          <label for="compEspecificacoes">Especificações (texto livre por enquanto)</label>
+          <textarea id="compEspecificacoes" rows="3" style="resize:vertical;"></textarea>
+        </div>
+        <button class="small-btn primary full-btn" id="compAddBtn" type="button">+ Adicionar componente</button>
+      </div>
+      <div class="admin-card">
+        <h3>Componentes cadastrados</h3>
+        <div class="colab-list" id="componentesList"><div class="admin-empty">Nenhum componente cadastrado ainda.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARÂMETROS GERAIS -->
+  <div id="configParametrosView" style="display:none;">
+    <div class="admin-content">
+      <div class="admin-card">
+        <h3>Link do app</h3>
+        <p class="card-sub">Esse link entra automaticamente nas mensagens de convite.</p>
+        <div class="password-row">
+          <input id="configAppLink" type="text" placeholder="https://seu-app.netlify.app">
+          <button class="small-btn primary" id="saveConfigBtn">Salvar</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <h3>Outros parâmetros</h3>
+        <p class="card-sub">Adicione parâmetros próprios, organizados por categoria, sem precisar mexer no código.</p>
+        <div class="row2">
+          <input id="paramCategoria" type="text" placeholder="Categoria (ex: Geral)">
+          <input id="paramChave" type="text" placeholder="Nome do parâmetro">
+        </div>
+        <input id="paramValor" type="text" placeholder="Valor" style="margin-top:8px; width:100%; background:var(--graphite); border:1px solid var(--line); border-radius:9px; padding:11px 12px; color:var(--paper); font-size:15px;">
+        <button class="small-btn primary full-btn" id="paramAddBtn" type="button" style="margin-top:8px;">+ Adicionar parâmetro</button>
+        <div class="colab-list" id="parametrosList" style="margin-top:10px;"><div class="admin-empty">Nenhum parâmetro cadastrado ainda.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDITORIA -->
+  <div id="configAuditoriaView" style="display:none;">
+    <div class="admin-content">
+      <p class="card-sub" style="padding:0 4px;">Últimas alterações registradas no sistema (mais recentes primeiro).</p>
+      <div class="list" id="auditoriaList"><div class="loading">Carregando…</div></div>
+    </div>
+  </div>
+
 </div>
 
 <div class="bottom-nav" id="bottomNav" style="display:none;">
@@ -2039,7 +2219,16 @@
 
   <div class="admin-card" id="osSessoesCard" style="display:none; margin-bottom:14px;">
     <h3>⏱️ Sessões de trabalho</h3>
-    <p class="card-sub">Serviço não terminou no mesmo dia? Registre cada período trabalhado — dá pra pausar aqui e retomar depois com outra data/horário.</p>
+
+    <div id="osSessaoAtivaInfo" style="display:none; background:var(--graphite); border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:12px;">
+      <p style="margin:0 0 6px; font-size:13px; color:var(--green); font-weight:700;">🟢 Em andamento</p>
+      <p style="margin:0; font-size:13.5px; line-height:1.6;" id="osSessaoAtivaTexto"></p>
+    </div>
+    <button class="small-btn primary full-btn" id="osIniciarTrabalhoBtn" type="button">▶️ Iniciar trabalho</button>
+    <button class="small-btn danger full-btn" id="osFinalizarTrabalhoBtn" type="button" style="display:none;">⏹ Finalizar trabalho</button>
+    <div id="osSessoesTrabalhoHistorico" style="margin-top:10px;"></div>
+
+    <p class="card-sub" style="margin-top:14px;">Precisa lançar um período manualmente (esqueceu de iniciar, por exemplo)? Use os campos abaixo.</p>
     <div class="row2">
       <div class="field">
         <label for="osSessaoData">Data</label>
@@ -2463,6 +2652,10 @@
     <label for="orcamentoCliente">Nome do cliente</label>
     <input id="orcamentoCliente" type="text" placeholder="Nome do cliente" autocomplete="off">
   </div>
+  <div class="field">
+    <label for="orcamentoDocumento">CPF/CNPJ</label>
+    <input id="orcamentoDocumento" type="text" placeholder="CPF ou CNPJ do cliente" autocomplete="off">
+  </div>
   <div class="row2">
     <div class="field">
       <label for="orcamentoTelefone">Telefone</label>
@@ -2651,6 +2844,10 @@
     <input id="fpNome" type="text" autocomplete="off">
   </div>
   <div class="field">
+    <label for="fpDocumento">CPF/CNPJ</label>
+    <input id="fpDocumento" type="text" autocomplete="off">
+  </div>
+  <div class="field">
     <label for="fpEndereco">Endereço</label>
     <input id="fpEndereco" type="text" autocomplete="off">
   </div>
@@ -2678,6 +2875,7 @@
     <label for="fpMesReferencia">Mês de referência</label>
     <input id="fpMesReferencia" type="text" autocomplete="off">
   </div>
+  <p class="admin-note" id="fpInfoExtra" style="display:none;"></p>
 
   <div class="field">
     <label>Histórico de consumo (kWh)</label>
@@ -3088,7 +3286,18 @@ document.getElementById('adminAuthConfirmBtn').addEventListener('click', async (
     return;
   }
   await loadAdmin();
-  if(!admin || admin.senha !== senha){
+  let senhaOkReauth = false;
+  if(admin && admin.senhaHash){
+    senhaOkReauth = (await hashSenha(senha)) === admin.senhaHash;
+  }else if(admin && admin.senha){
+    senhaOkReauth = admin.senha === senha;
+    if(senhaOkReauth){
+      admin.senhaHash = await hashSenha(senha);
+      delete admin.senha;
+      saveAdmin();
+    }
+  }
+  if(!admin || !senhaOkReauth){
     errEl.textContent = 'Senha incorreta.';
     errEl.classList.add('show');
     return;
@@ -3190,8 +3399,34 @@ async function tryLogin(){
 
   await loadColaboradores();
 
-  if(!colaboradores.hasOwnProperty(chave) || colaboradores[chave].senha !== senha){
+  const colab = colaboradores[chave];
+  if(!colab){
     errEl.textContent = 'Nome ou senha incorretos. Fale com o responsável pelo estoque.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  let senhaOk = false;
+  if(colab.senhaHash){
+    senhaOk = (await hashSenha(senha)) === colab.senhaHash;
+  }else if(colab.senha){
+    // conta antiga, ainda em texto puro — migra silenciosamente para hash se acertar
+    senhaOk = colab.senha === senha;
+    if(senhaOk){
+      colab.senhaHash = await hashSenha(senha);
+      delete colab.senha;
+      saveColaboradores();
+    }
+  }
+
+  if(!senhaOk){
+    errEl.textContent = 'Nome ou senha incorretos. Fale com o responsável pelo estoque.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  if(colab.ativo === false){
+    errEl.textContent = 'Esse acesso está desativado. Fale com o administrador.';
     errEl.classList.add('show');
     return;
   }
@@ -3266,6 +3501,7 @@ const HOME_MODULES = [
 ];
 
 function renderHomeGrid(){
+  document.getElementById('homeConfigBtn').style.display = isAdminSession ? 'flex' : 'none';
   const grid = document.getElementById('homeGrid');
   const disponiveis = HOME_MODULES.filter(m => isAdminSession || (currentUserAccess && currentUserAccess[m.key] === true));
   if(disponiveis.length === 0){
@@ -3468,7 +3704,7 @@ async function trySetupAdmin(){
     return;
   }
 
-  admin = { nome, email, senha };
+  admin = { nome, email, senhaHash: await hashSenha(senha) };
   await saveAdmin();
   showToast('Conta de administrador criada.');
   enterAdminPanel(true);
@@ -3487,7 +3723,18 @@ async function tryAdminLogin(){
   }
 
   await loadAdmin();
-  if(!admin || admin.email.toLowerCase() !== email || admin.senha !== senha){
+  let senhaOkAdmin = false;
+  if(admin && admin.senhaHash){
+    senhaOkAdmin = (await hashSenha(senha)) === admin.senhaHash;
+  }else if(admin && admin.senha){
+    senhaOkAdmin = admin.senha === senha;
+    if(senhaOkAdmin){
+      admin.senhaHash = await hashSenha(senha);
+      delete admin.senha;
+      saveAdmin();
+    }
+  }
+  if(!admin || admin.email.toLowerCase() !== email || !senhaOkAdmin){
     errEl.textContent = 'E-mail ou senha incorretos.';
     errEl.classList.add('show');
     return;
@@ -3531,9 +3778,19 @@ async function enterAdminPanel(irParaInicio){
   document.getElementById('dimensionamentosApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'flex';
   window.scrollTo(0,0);
+  showConfigSubView('menu');
 }
 
 /* ---------- Convites ---------- */
+async function hashSenha(texto){
+  const enc = new TextEncoder().encode(texto);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function pareceHash(v){
+  return typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
+}
+
 function randomPassword(len){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out = '';
@@ -3619,7 +3876,8 @@ async function createColaborador(){
     return;
   }
 
-  colaboradores[chave] = { nome: nomeRaw, email, senha, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
+  const senhaHash = await hashSenha(senha);
+  colaboradores[chave] = { nome: nomeRaw, email, senhaHash, ativo: true, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
   const ok = await saveColaboradores();
   if(!ok){
     errEl.textContent = 'Não foi possível salvar o cadastro agora. Verifique sua internet e tente de novo.';
@@ -3629,7 +3887,7 @@ async function createColaborador(){
 
   // Confere se realmente ficou salvo antes de avisar que deu certo
   await loadColaboradores();
-  if(!colaboradores.hasOwnProperty(chave) || colaboradores[chave].senha !== senha){
+  if(!colaboradores.hasOwnProperty(chave) || colaboradores[chave].senhaHash !== senhaHash){
     errEl.textContent = 'O cadastro não foi confirmado. Tente cadastrar novamente.';
     errEl.classList.add('show');
     return;
@@ -3672,7 +3930,7 @@ function renderColabList(){
     const acessos = c.acessos || { estoque: true, os: true, financeiro: true, nfsEnergy: false, orcamento: false, dimensionamentos: false, osEnergy: false, copelProtocolos: false, copelOutrosServicos: false, copelFinanceiro: false, agendamento: false, alertaCobranca: false };
     return `
       <div class="colab-row" data-chave="${escapeHtmlA(chave)}">
-        <div class="name">${escapeHtmlA(c.nome)}</div>
+        <div class="name">${escapeHtmlA(c.nome)} ${c.ativo === false ? '<span class="badge status-cancelado" style="margin-left:6px;">Desativado</span>' : '<span class="badge status-concluido" style="margin-left:6px;">Ativo</span>'}</div>
         <div class="email">${escapeHtmlA(c.email || 'sem e-mail cadastrado')}</div>
         <div style="display:flex; gap:14px; margin-top:8px; flex-wrap:wrap;">
           <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); cursor:pointer;">
@@ -3721,6 +3979,7 @@ function renderColabList(){
           <button class="small-btn colab-valor-hora-save" data-chave="${escapeHtmlA(chave)}">Salvar</button>
         </div>
         <div class="colab-actions">
+          <button class="small-btn ativo-toggle-btn" data-chave="${escapeHtmlA(chave)}">${c.ativo === false ? 'Ativar' : 'Desativar'}</button>
           <button class="small-btn resend-btn" data-chave="${escapeHtmlA(chave)}">Reenviar convite</button>
           <button class="small-btn reset-btn" data-chave="${escapeHtmlA(chave)}">Redefinir senha</button>
           <button class="small-btn danger remove-btn" data-chave="${escapeHtmlA(chave)}">Remover</button>
@@ -3776,10 +4035,32 @@ function renderColabList(){
     });
   });
 
+  wrap.querySelectorAll('.ativo-toggle-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const c = colaboradores[btn.dataset.chave];
+      if(!c) return;
+      const eraAtivo = c.ativo !== false;
+      c.ativo = !eraAtivo;
+      const ok = await saveColaboradores();
+      if(!ok){
+        showToast('Não foi possível salvar agora. Tente novamente.');
+        c.ativo = eraAtivo;
+        return;
+      }
+      registrarAuditoria('Usuários', c.ativo ? 'Ativação' : 'Desativação', c.nome, eraAtivo ? 'Ativo' : 'Desativado', c.ativo ? 'Ativo' : 'Desativado');
+      showToast(c.nome + (c.ativo ? ' foi ativado.' : ' foi desativado.'));
+      renderColabList();
+    });
+  });
   wrap.querySelectorAll('.resend-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const c = colaboradores[btn.dataset.chave];
-      if(c) showInvite(c.nome, c.email, c.senha);
+      if(!c) return;
+      if(c.senha){
+        showInvite(c.nome, c.email, c.senha);
+      }else{
+        showToast('Por segurança, não guardamos mais essa senha em texto simples. Use "Redefinir senha" para gerar uma nova e reenviar.');
+      }
     });
   });
   wrap.querySelectorAll('.reset-btn').forEach(btn=>{
@@ -3788,7 +4069,9 @@ function renderColabList(){
       if(!c) return;
       if(!confirm(`Gerar uma nova senha para ${c.nome}?`)) return;
       const novaSenha = randomPassword(6);
-      c.senha = novaSenha;
+      const novoHash = await hashSenha(novaSenha);
+      c.senhaHash = novoHash;
+      delete c.senha;
       const ok = await saveColaboradores();
       if(!ok){
         showToast('Não foi possível salvar a nova senha. Tente novamente.');
@@ -3796,12 +4079,13 @@ function renderColabList(){
       }
       await loadColaboradores();
       const confirmado = colaboradores[btn.dataset.chave];
-      if(!confirmado || confirmado.senha !== novaSenha){
+      if(!confirmado || confirmado.senhaHash !== novoHash){
         showToast('A redefinição não foi confirmada. Tente novamente.');
         return;
       }
+      registrarAuditoria('Usuários', 'Redefinição de senha', confirmado.nome, '—', '—');
       showToast('Senha redefinida e confirmada para ' + confirmado.nome + '.');
-      showInvite(confirmado.nome, confirmado.email, confirmado.senha);
+      showInvite(confirmado.nome, confirmado.email, novaSenha);
       renderColabList();
     });
   });
@@ -3829,6 +4113,379 @@ document.getElementById('saveAdminValorHoraBtn').addEventListener('click', async
   showToast('Seu valor/hora foi salvo.');
 });
 
+/* ======================================================
+   AUDITORIA — registro de alterações importantes
+   ====================================================== */
+const AUDITORIA_KEY = 'estoque:auditoria';
+let auditoriaLista = [];
+
+async function registrarAuditoria(modulo, acao, alvo, valorAnterior, valorNovo){
+  try{
+    const res = await window.storage.get(AUDITORIA_KEY, true);
+    const lista = res && res.value ? JSON.parse(res.value) : [];
+    lista.push({
+      usuario: currentUser || 'desconhecido',
+      data: new Date().toISOString(),
+      modulo, acao, alvo: alvo || '',
+      valorAnterior: valorAnterior != null ? String(valorAnterior) : '',
+      valorNovo: valorNovo != null ? String(valorNovo) : ''
+    });
+    // mantém só os últimos 500 registros pra não crescer sem limite
+    while(lista.length > 500) lista.shift();
+    await window.storage.set(AUDITORIA_KEY, JSON.stringify(lista), true);
+  }catch(e){ /* auditoria nunca deve travar a ação principal */ }
+}
+
+async function loadAuditoria(){
+  try{
+    const res = await window.storage.get(AUDITORIA_KEY, true);
+    auditoriaLista = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ auditoriaLista = []; }
+}
+
+function renderAuditoria(){
+  const list = document.getElementById('auditoriaList');
+  const ordenado = auditoriaLista.slice().reverse();
+  if(ordenado.length === 0){
+    list.innerHTML = '<div class="empty"><div class="big">📜</div><p>Nenhum registro de auditoria ainda.</p></div>';
+    return;
+  }
+  list.innerHTML = ordenado.slice(0, 200).map(a => {
+    const dataFmt = new Date(a.data).toLocaleString('pt-BR');
+    return `
+      <div class="item">
+        <div class="thumb placeholder">📜</div>
+        <div style="flex:1; min-width:0;">
+          <div class="code">${escapeHtml(a.modulo)} · ${dataFmt}</div>
+          <div class="name">${escapeHtml(a.acao)}${a.alvo ? ' — ' + escapeHtml(a.alvo) : ''}</div>
+          <div class="meta">
+            <span>Por: ${escapeHtml(a.usuario)}</span>
+            ${a.valorAnterior || a.valorNovo ? `<span>${escapeHtml(a.valorAnterior)} → ${escapeHtml(a.valorNovo)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ======================================================
+   DADOS DA EMPRESA
+   ====================================================== */
+const EMPRESA_KEY = 'estoque:dados_empresa';
+let dadosEmpresa = null;
+
+async function loadDadosEmpresa(){
+  try{
+    const res = await window.storage.get(EMPRESA_KEY, true);
+    dadosEmpresa = res && res.value ? JSON.parse(res.value) : null;
+  }catch(e){ dadosEmpresa = null; }
+  if(!dadosEmpresa){
+    // Ainda não configurado — usa os dados que já existiam fixos no sistema como ponto de partida
+    dadosEmpresa = {
+      nomeEmpresa: DADOS_EMPRESA_VENDEDORA.razaoSocial,
+      nomeFantasia: DADOS_EMPRESA_VENDEDORA.nomeFantasia,
+      cnpj: DADOS_EMPRESA_VENDEDORA.cnpj,
+      ie: DADOS_EMPRESA_VENDEDORA.ie,
+      endereco: '', cidade: '', estado: '', cep: '', telefone: '', whatsapp: '', email: '',
+      logoB64: NFS_ENGENHARIA_LOGO_B64
+    };
+  }
+  // Mantém a constante antiga sincronizada, já que o PDF de orçamento a utiliza
+  DADOS_EMPRESA_VENDEDORA.razaoSocial = dadosEmpresa.nomeEmpresa || DADOS_EMPRESA_VENDEDORA.razaoSocial;
+  DADOS_EMPRESA_VENDEDORA.nomeFantasia = dadosEmpresa.nomeFantasia || DADOS_EMPRESA_VENDEDORA.nomeFantasia;
+  DADOS_EMPRESA_VENDEDORA.cnpj = dadosEmpresa.cnpj || DADOS_EMPRESA_VENDEDORA.cnpj;
+  DADOS_EMPRESA_VENDEDORA.ie = dadosEmpresa.ie || DADOS_EMPRESA_VENDEDORA.ie;
+}
+async function saveDadosEmpresa(){
+  try{
+    await window.storage.set(EMPRESA_KEY, JSON.stringify(dadosEmpresa), true);
+    return true;
+  }catch(e){ return false; }
+}
+
+async function carregarDadosEmpresaNaTela(){
+  await loadDadosEmpresa();
+  document.getElementById('empNomeEmpresa').value = dadosEmpresa.nomeEmpresa || '';
+  document.getElementById('empNomeFantasia').value = dadosEmpresa.nomeFantasia || '';
+  document.getElementById('empCnpj').value = dadosEmpresa.cnpj || '';
+  document.getElementById('empIe').value = dadosEmpresa.ie || '';
+  document.getElementById('empEndereco').value = dadosEmpresa.endereco || '';
+  document.getElementById('empCidade').value = dadosEmpresa.cidade || '';
+  document.getElementById('empEstado').value = dadosEmpresa.estado || '';
+  document.getElementById('empCep').value = dadosEmpresa.cep || '';
+  document.getElementById('empTelefone').value = dadosEmpresa.telefone || '';
+  document.getElementById('empWhatsapp').value = dadosEmpresa.whatsapp || '';
+  document.getElementById('empEmail').value = dadosEmpresa.email || '';
+  const preview = document.getElementById('empLogoPreview');
+  if(dadosEmpresa.logoB64){
+    preview.src = dadosEmpresa.logoB64;
+    preview.style.display = 'block';
+  }else{
+    preview.style.display = 'none';
+  }
+}
+
+document.getElementById('empLogoLabel').addEventListener('click', ()=> document.getElementById('empLogoInput').click());
+document.getElementById('empLogoInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    const dataUrl = await resizeImage(file, 500, 0.85);
+    dadosEmpresa.logoB64 = dataUrl;
+    document.getElementById('empLogoPreview').src = dataUrl;
+    document.getElementById('empLogoPreview').style.display = 'block';
+    showToast('Logo pronta — clique em "Salvar dados da empresa" para confirmar.');
+  }catch(err){
+    showToast('Não foi possível carregar essa imagem.');
+  }
+  e.target.value = '';
+});
+
+document.getElementById('empSalvarBtn').addEventListener('click', async ()=>{
+  const anterior = JSON.stringify(dadosEmpresa);
+  dadosEmpresa.nomeEmpresa = document.getElementById('empNomeEmpresa').value.trim();
+  dadosEmpresa.nomeFantasia = document.getElementById('empNomeFantasia').value.trim();
+  dadosEmpresa.cnpj = document.getElementById('empCnpj').value.trim();
+  dadosEmpresa.ie = document.getElementById('empIe').value.trim();
+  dadosEmpresa.endereco = document.getElementById('empEndereco').value.trim();
+  dadosEmpresa.cidade = document.getElementById('empCidade').value.trim();
+  dadosEmpresa.estado = document.getElementById('empEstado').value.trim().toUpperCase();
+  dadosEmpresa.cep = document.getElementById('empCep').value.trim();
+  dadosEmpresa.telefone = document.getElementById('empTelefone').value.trim();
+  dadosEmpresa.whatsapp = document.getElementById('empWhatsapp').value.trim();
+  dadosEmpresa.email = document.getElementById('empEmail').value.trim();
+
+  const ok = await saveDadosEmpresa();
+  if(!ok){
+    showToast('Não foi possível salvar agora. Tente novamente.');
+    return;
+  }
+  DADOS_EMPRESA_VENDEDORA.razaoSocial = dadosEmpresa.nomeEmpresa;
+  DADOS_EMPRESA_VENDEDORA.nomeFantasia = dadosEmpresa.nomeFantasia;
+  DADOS_EMPRESA_VENDEDORA.cnpj = dadosEmpresa.cnpj;
+  DADOS_EMPRESA_VENDEDORA.ie = dadosEmpresa.ie;
+  if(dadosEmpresa.logoB64) window.NFS_ENGENHARIA_LOGO_B64_ATUAL = dadosEmpresa.logoB64;
+  registrarAuditoria('Configurações', 'Dados da empresa atualizados', dadosEmpresa.nomeFantasia, '', '');
+  showToast('Dados da empresa salvos.');
+});
+
+/* ======================================================
+   CONFIGURAÇÕES DE ORÇAMENTO (HSP e outros parâmetros)
+   ====================================================== */
+const CONFIG_ORCAMENTO_KEY = 'estoque:config_orcamento';
+let configOrcamento = { hsp: 3.7 };
+
+async function loadConfigOrcamento(){
+  try{
+    const res = await window.storage.get(CONFIG_ORCAMENTO_KEY, true);
+    configOrcamento = res && res.value ? JSON.parse(res.value) : { hsp: 3.7 };
+  }catch(e){ configOrcamento = { hsp: 3.7 }; }
+  if(!configOrcamento.hsp) configOrcamento.hsp = 3.7;
+}
+async function saveConfigOrcamento(){
+  try{
+    await window.storage.set(CONFIG_ORCAMENTO_KEY, JSON.stringify(configOrcamento), true);
+    return true;
+  }catch(e){ return false; }
+}
+async function carregarConfigOrcamentoNaTela(){
+  await loadConfigOrcamento();
+  document.getElementById('cfgHsp').value = configOrcamento.hsp;
+}
+document.getElementById('cfgOrcamentoSalvarBtn').addEventListener('click', async ()=>{
+  const hspAnterior = configOrcamento.hsp;
+  const novoHsp = parseFloat(document.getElementById('cfgHsp').value) || 3.7;
+  configOrcamento.hsp = novoHsp;
+  const ok = await saveConfigOrcamento();
+  if(!ok){
+    showToast('Não foi possível salvar agora. Tente novamente.');
+    return;
+  }
+  registrarAuditoria('Configurações', 'HSP padrão alterado', 'Orçamento', hspAnterior, novoHsp);
+  showToast('HSP padrão atualizado para ' + novoHsp + '.');
+});
+
+/* ======================================================
+   CONFIGURAÇÕES DE DIMENSIONAMENTOS (base de componentes)
+   ====================================================== */
+const COMPONENTES_KEY = 'estoque:componentes_eletricos';
+let componentesList = [];
+const COMPONENTE_TIPO_LABEL = {
+  fabricante:'Fabricante', motor:'Motor (catálogo)', disjuntor:'Disjuntor', disjuntor_motor:'Disjuntor-motor',
+  contator:'Contator', rele_termico:'Relé térmico', cabo:'Cabo', inversor:'Inversor',
+  soft_starter:'Soft starter', transformador:'Transformador', outro:'Outro'
+};
+
+async function loadComponentes(){
+  try{
+    const res = await window.storage.get(COMPONENTES_KEY, true);
+    componentesList = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ componentesList = []; }
+}
+async function saveComponentesList(){
+  try{
+    await window.storage.set(COMPONENTES_KEY, JSON.stringify(componentesList), true);
+    return true;
+  }catch(e){ return false; }
+}
+function renderComponentes(){
+  const wrap = document.getElementById('componentesList');
+  if(componentesList.length === 0){
+    wrap.innerHTML = '<div class="admin-empty">Nenhum componente cadastrado ainda.</div>';
+    return;
+  }
+  wrap.innerHTML = componentesList.slice().reverse().map(c => `
+    <div class="colab-row">
+      <div class="name">${escapeHtml(c.nome)}</div>
+      <div class="email">${COMPONENTE_TIPO_LABEL[c.tipo] || c.tipo}${c.especificacoes ? ' · ' + escapeHtml(c.especificacoes) : ''}</div>
+      <div class="colab-actions">
+        <button class="small-btn danger componente-remove-btn" data-id="${c.id}">Remover</button>
+      </div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.componente-remove-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const idx = componentesList.findIndex(c=>c.id === btn.dataset.id);
+      if(idx>=0) componentesList.splice(idx,1);
+      await saveComponentesList();
+      renderComponentes();
+      showToast('Componente removido.');
+    });
+  });
+}
+document.getElementById('compAddBtn').addEventListener('click', async ()=>{
+  const nome = document.getElementById('compNome').value.trim();
+  if(!nome){
+    showToast('Informe o nome/modelo do componente.');
+    return;
+  }
+  componentesList.push({
+    id: 'comp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    tipo: document.getElementById('compTipo').value,
+    nome, especificacoes: document.getElementById('compEspecificacoes').value.trim(),
+    criadoPor: currentUser, criadoEm: new Date().toISOString()
+  });
+  const ok = await saveComponentesList();
+  if(!ok){ showToast('Não foi possível salvar agora.'); return; }
+  document.getElementById('compNome').value = '';
+  document.getElementById('compEspecificacoes').value = '';
+  renderComponentes();
+  showToast('Componente cadastrado.');
+});
+
+/* ======================================================
+   PARÂMETROS GERAIS (chave/valor por categoria)
+   ====================================================== */
+const PARAMETROS_KEY = 'estoque:parametros_gerais';
+let parametrosList = [];
+
+async function loadParametros(){
+  try{
+    const res = await window.storage.get(PARAMETROS_KEY, true);
+    parametrosList = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ parametrosList = []; }
+}
+async function saveParametrosList(){
+  try{
+    await window.storage.set(PARAMETROS_KEY, JSON.stringify(parametrosList), true);
+    return true;
+  }catch(e){ return false; }
+}
+function renderParametros(){
+  const wrap = document.getElementById('parametrosList');
+  if(parametrosList.length === 0){
+    wrap.innerHTML = '<div class="admin-empty">Nenhum parâmetro cadastrado ainda.</div>';
+    return;
+  }
+  const porCategoria = {};
+  parametrosList.forEach(p => {
+    const cat = p.categoria || 'Geral';
+    (porCategoria[cat] = porCategoria[cat] || []).push(p);
+  });
+  wrap.innerHTML = Object.keys(porCategoria).map(cat => `
+    <div style="margin-bottom:10px;">
+      <p style="font-size:12px; color:var(--text-dim); margin:0 0 4px; font-weight:700;">${escapeHtml(cat)}</p>
+      ${porCategoria[cat].map(p => `
+        <div class="colab-row">
+          <div class="name">${escapeHtml(p.chave)}</div>
+          <div class="email">${escapeHtml(p.valor)}</div>
+          <div class="colab-actions">
+            <button class="small-btn danger param-remove-btn" data-id="${p.id}">Remover</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.param-remove-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const idx = parametrosList.findIndex(p=>p.id === btn.dataset.id);
+      if(idx>=0) parametrosList.splice(idx,1);
+      await saveParametrosList();
+      renderParametros();
+      showToast('Parâmetro removido.');
+    });
+  });
+}
+document.getElementById('paramAddBtn').addEventListener('click', async ()=>{
+  const categoria = document.getElementById('paramCategoria').value.trim() || 'Geral';
+  const chave = document.getElementById('paramChave').value.trim();
+  const valor = document.getElementById('paramValor').value.trim();
+  if(!chave || !valor){
+    showToast('Preencha o nome e o valor do parâmetro.');
+    return;
+  }
+  parametrosList.push({ id: 'param_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), categoria, chave, valor });
+  const ok = await saveParametrosList();
+  if(!ok){ showToast('Não foi possível salvar agora.'); return; }
+  document.getElementById('paramCategoria').value = '';
+  document.getElementById('paramChave').value = '';
+  document.getElementById('paramValor').value = '';
+  renderParametros();
+  showToast('Parâmetro cadastrado.');
+});
+// (parâmetros gerais carregados junto com o link do app, ver showConfigSubView)
+
+/* ======================================================
+   PERFIS RÁPIDOS DE PERMISSÃO
+   ====================================================== */
+const PERFIS_PRESET = {
+  administrador: { estoque:true, os:true, financeiro:true, nfsEnergy:true, orcamento:true, dimensionamentos:true, osEnergy:true, orcamentoSolar:true, copelProtocolos:true, copelOutrosServicos:true, copelFinanceiro:true, agendamento:true, alertaCobranca:true },
+  financeiro: { estoque:false, os:false, financeiro:true, nfsEnergy:false, orcamento:false, dimensionamentos:false, osEnergy:false, orcamentoSolar:false, copelProtocolos:false, copelOutrosServicos:false, copelFinanceiro:true, agendamento:false, alertaCobranca:true },
+  tecnico: { estoque:true, os:true, financeiro:false, nfsEnergy:true, orcamento:false, dimensionamentos:true, osEnergy:true, orcamentoSolar:false, copelProtocolos:false, copelOutrosServicos:false, copelFinanceiro:false, agendamento:false, alertaCobranca:false },
+  comercial: { estoque:false, os:false, financeiro:false, nfsEnergy:true, orcamento:true, dimensionamentos:false, osEnergy:true, orcamentoSolar:true, copelProtocolos:true, copelOutrosServicos:true, copelFinanceiro:false, agendamento:false, alertaCobranca:false },
+  estoque: { estoque:true, os:false, financeiro:false, nfsEnergy:false, orcamento:false, dimensionamentos:false, osEnergy:false, orcamentoSolar:false, copelProtocolos:false, copelOutrosServicos:false, copelFinanceiro:false, agendamento:false, alertaCobranca:false }
+};
+
+function popularSelectPerfil(){
+  const sel = document.getElementById('perfilColabSelect');
+  const chaves = Object.keys(colaboradores).sort((a,b)=> colaboradores[a].nome.localeCompare(colaboradores[b].nome, 'pt-BR'));
+  if(chaves.length === 0){
+    sel.innerHTML = '<option value="">Nenhum colaborador cadastrado</option>';
+    return;
+  }
+  sel.innerHTML = chaves.map(chave => `<option value="${escapeHtmlA(chave)}">${escapeHtmlA(colaboradores[chave].nome)}</option>`).join('');
+}
+document.getElementById('aplicarPerfilBtn').addEventListener('click', async ()=>{
+  const chave = document.getElementById('perfilColabSelect').value;
+  const tipo = document.getElementById('perfilTipoSelect').value;
+  const c = colaboradores[chave];
+  if(!c){
+    showToast('Selecione um colaborador.');
+    return;
+  }
+  const preset = PERFIS_PRESET[tipo];
+  const anterior = JSON.stringify(c.acessos || {});
+  c.acessos = { ...preset };
+  const ok = await saveColaboradores();
+  if(!ok){
+    showToast('Não foi possível salvar agora.');
+    return;
+  }
+  registrarAuditoria('Permissões', 'Perfil aplicado', c.nome, anterior, JSON.stringify(c.acessos));
+  document.getElementById('perfilAplicadoInfo').textContent = `Perfil "${tipo}" aplicado a ${c.nome}. Ajustes finos continuam disponíveis em Usuários.`;
+  showToast('Perfil aplicado a ' + c.nome + '.');
+});
+
 /* ---------- Navegação / eventos gerais ---------- */
 document.getElementById('loginBtn').addEventListener('click', tryLogin);
 document.getElementById('toggleLoginSenha').addEventListener('click', ()=>{
@@ -3850,6 +4507,54 @@ document.getElementById('adminChip').addEventListener('click', ()=>{
 });
 document.getElementById('adminPanelBtn').addEventListener('click', enterAdminPanel);
 document.getElementById('goToStockBtn').addEventListener('click', showHomeScreen);
+document.getElementById('homeConfigBtn').addEventListener('click', ()=>{
+  if(!isAdminSession){
+    showToast('Somente administradores podem acessar Configurações.');
+    return;
+  }
+  enterAdminPanel();
+});
+
+let configCurrentSubView = 'menu';
+function showConfigSubView(view){
+  // Segurança: a verificação de permissão acontece aqui, não só no botão escondido.
+  if(!isAdminSession){
+    showToast('Somente administradores podem acessar Configurações.');
+    showHomeScreen();
+    return;
+  }
+  configCurrentSubView = view;
+  const viewIds = {
+    menu: 'configMenuView', usuarios: 'configUsuariosView', permissoes: 'configPermissoesView',
+    empresa: 'configEmpresaView', 'orcamento-config': 'configOrcamentoView',
+    'dimensionamentos-config': 'configDimensionamentosView', parametros: 'configParametrosView',
+    auditoria: 'configAuditoriaView'
+  };
+  Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById(viewIds[view]).style.display = 'block';
+  document.getElementById('configBackBtn').style.display = view === 'menu' ? 'none' : 'flex';
+  document.getElementById('configHeaderTitle').textContent = {
+    menu: 'Configurações', usuarios: 'Usuários', permissoes: 'Permissões',
+    empresa: 'Dados da Empresa', 'orcamento-config': 'Configurações de Orçamento',
+    'dimensionamentos-config': 'Configurações de Dimensionamentos', parametros: 'Parâmetros Gerais',
+    auditoria: 'Auditoria'
+  }[view];
+
+  if(view === 'permissoes') popularSelectPerfil();
+  if(view === 'empresa') carregarDadosEmpresaNaTela();
+  if(view === 'orcamento-config') carregarConfigOrcamentoNaTela();
+  if(view === 'parametros'){
+    document.getElementById('configAppLink').value = appConfig.appLink || '';
+    loadParametros().then(renderParametros);
+  }
+  if(view === 'dimensionamentos-config') loadComponentes().then(renderComponentes);
+  if(view === 'auditoria') loadAuditoria().then(renderAuditoria);
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('[data-config-nav]').forEach(card=>{
+  card.addEventListener('click', ()=> showConfigSubView(card.dataset.configNav));
+});
+document.getElementById('configBackBtn').addEventListener('click', ()=> showConfigSubView('menu'));
 
 /* ======================================================
    ORDENS DE SERVIÇO
@@ -3867,6 +4572,7 @@ let osCobrancaStatus = 'pendente';
 let osCobrarPorHora = false;
 let osGarantia = false;
 let osSessoesAtual = [];
+let osSessoesTrabalhoAtual = []; // sessões com controle de início/fim em tempo real (gravação imediata)
 
 const OS_STATUS_LABEL = { aberto:'Aberto', em_andamento:'Em andamento', concluido:'Concluído', cancelado:'Cancelado' };
 const OS_STATUS_CLASS = { aberto:'status-aberto', em_andamento:'status-andamento', concluido:'status-concluido', cancelado:'status-cancelado' };
@@ -3888,7 +4594,8 @@ async function loadOS(manual){
 async function persistOS(){
   try{
     await window.storage.set(OS_KEY, JSON.stringify(ordens), true);
-  }catch(e){ showToast('Erro ao salvar ordem de serviço.'); }
+    return true;
+  }catch(e){ showToast('Erro ao salvar ordem de serviço.'); return false; }
 }
 
 function startOsAutoRefresh(){
@@ -4744,6 +5451,7 @@ async function showOrcamentoScreen(){
   stopAutoRefresh();
   stopOsAutoRefresh();
   stopFinAutoRefresh();
+  await loadConfigOrcamento();
   showOrcamentoSubView('menu');
 }
 
@@ -5043,6 +5751,7 @@ function openOrcamentoAdd(){
   editingOrcamentoId = null;
   document.getElementById('orcamentoSheetTitle').textContent = 'Novo orçamento';
   document.getElementById('orcamentoCliente').value = '';
+  document.getElementById('orcamentoDocumento').value = '';
   document.getElementById('orcamentoTelefone').value = '';
   document.getElementById('orcamentoEmail').value = '';
   document.getElementById('orcamentoEndereco').value = '';
@@ -5057,7 +5766,7 @@ function openOrcamentoAdd(){
   document.getElementById('orcamentoTarifaTe').value = '';
   document.getElementById('orcamentoTarifaTusd').value = '';
   document.getElementById('orcamentoTarifa').value = '';
-  document.getElementById('orcamentoHsp').value = '3.7';
+  document.getElementById('orcamentoHsp').value = configOrcamento.hsp;
   document.getElementById('orcamentoQtdModulos').value = '';
   document.getElementById('orcamentoPotenciaModulo').value = '';
   document.getElementById('orcamentoInversor').value = '';
@@ -5080,6 +5789,7 @@ function openOrcamentoEdit(id){
   editingOrcamentoId = id;
   document.getElementById('orcamentoSheetTitle').textContent = 'Editar orçamento';
   document.getElementById('orcamentoCliente').value = o.cliente || '';
+  document.getElementById('orcamentoDocumento').value = o.documento || '';
   document.getElementById('orcamentoTelefone').value = o.telefone || '';
   document.getElementById('orcamentoEmail').value = o.email || '';
   document.getElementById('orcamentoEndereco').value = o.endereco || '';
@@ -5105,7 +5815,7 @@ function openOrcamentoEdit(id){
   document.getElementById('orcamentoTarifaTe').value = o.tarifaTe || '';
   document.getElementById('orcamentoTarifaTusd').value = o.tarifaTusd || '';
   document.getElementById('orcamentoTarifa').value = o.tarifa || '';
-  document.getElementById('orcamentoHsp').value = '3.7';
+  document.getElementById('orcamentoHsp').value = configOrcamento.hsp;
   document.getElementById('orcamentoQtdModulos').value = o.qtdModulos || '';
   document.getElementById('orcamentoPotenciaModulo').value = o.potenciaModulo || '';
   document.getElementById('orcamentoInversor').value = o.inversor || '';
@@ -5136,6 +5846,7 @@ async function saveOrcamento(){
   const calc = calcularOrcamentoSolar();
   const dados = {
     cliente,
+    documento: document.getElementById('orcamentoDocumento').value.trim(),
     telefone: document.getElementById('orcamentoTelefone').value.trim(),
     email: document.getElementById('orcamentoEmail').value.trim(),
     endereco: document.getElementById('orcamentoEndereco').value.trim(),
@@ -5228,6 +5939,7 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
   }
   const calc = calcularOrcamentoSolar();
   const telefone = document.getElementById('orcamentoTelefone').value.trim();
+  const documento = document.getElementById('orcamentoDocumento').value.trim();
   const email = document.getElementById('orcamentoEmail').value.trim();
   const endereco = document.getElementById('orcamentoEndereco').value.trim();
   const cep = document.getElementById('orcamentoCep').value.trim();
@@ -5267,6 +5979,7 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
     <p>
       <b>${escapeHtml(cliente)}</b><br>
       ${telefone ? 'Telefone: ' + escapeHtml(telefone) + '<br>' : ''}
+      ${documento ? 'CPF/CNPJ: ' + escapeHtml(documento) + '<br>' : ''}
       ${email ? 'E-mail: ' + escapeHtml(email) + '<br>' : ''}
       ${endereco ? 'Endereço: ' + escapeHtml(endereco) + '<br>' : ''}
       ${cep ? 'CEP: ' + escapeHtml(cep) + '<br>' : ''}
@@ -5314,54 +6027,136 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
 });
 
 /* ---------- Leitura automática da fatura de energia anexada ---------- */
-function extrairEnderecoDoTexto(texto){
-  const linhas = texto.split(/\n/);
-  for(const linha of linhas){
-    const m = linha.match(/(?:endere[cç]o)\s*[:\-]\s*(.+)/i);
-    if(m && m[1].trim().length > 5) return m[1].trim();
-  }
-  return null;
+/* ======================================================
+   Leitura estruturada da fatura Copel — funções específicas por campo,
+   cada uma com seu próprio marcador/âncora. Nunca deixamos o texto de
+   uma seção vazar pra dentro de outra: se um campo capturar qualquer
+   marcador de outra seção, cortamos ali (ver sanitizarCampoFatura).
+   ====================================================== */
+const MARCADORES_PROIBIDOS_FATURA = [
+  'endereço:', 'endereco:', 'cep:', 'cidade:', 'estado:',
+  'cnpj:', 'cpf:', 'i.e.:', 'ie:', 'inscrição estadual', 'inscricao estadual',
+  'nota fiscal', 'chave de acesso', 'protocolo', 'dados da copel'
+];
+function sanitizarCampoFatura(valor){
+  if(!valor) return null;
+  const valorLower = valor.toLowerCase();
+  let corte = valor.length;
+  MARCADORES_PROIBIDOS_FATURA.forEach(marc => {
+    const idx = valorLower.indexOf(marc);
+    if(idx !== -1 && idx < corte) corte = idx;
+  });
+  const resultado = valor.slice(0, corte).replace(/[\s,\-]+$/,'').trim();
+  return resultado.length > 0 ? resultado : null;
 }
-function extrairCepDoTexto(texto){
-  const m = texto.match(/\b(\d{5})-?(\d{3})\b/);
+
+function extrairNome(texto){
+  const m = texto.match(/nome\s*:\s*([^\n\r]*)/i);
+  if(!m) return null;
+  return sanitizarCampoFatura(m[1]);
+}
+
+function extrairEndereco(texto){
+  // Começa depois de "Endereço:" e termina obrigatoriamente antes de "CEP:"
+  const m = texto.match(/endere[cç]o\s*:\s*([\s\S]*?)(?=cep\s*:)/i);
+  if(!m) return null;
+  const juntado = m[1].replace(/\s*\r?\n\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  return sanitizarCampoFatura(juntado);
+}
+
+function extrairCEP(texto){
+  const m = texto.match(/cep\s*:\s*(\d{5})-?(\d{3})/i);
   return m ? `${m[1]}-${m[2]}` : null;
 }
-function extrairCidadeEstadoDoTexto(texto){
-  // procura padrão "Cidade - UF" ou "Cidade/UF" (ex: "Paiçandu - PR" ou "Paiçandu/PR")
-  const m = texto.match(/([A-ZÀ-Úa-zà-ú][A-ZÀ-Úa-zà-ú\s]{2,35})\s*[-\/]\s*(PR|SP|RJ|MG|BA|RS|SC|PE|CE|GO|MA|PA|ES|PB|AM|MT|MS|RN|PI|AL|SE|RO|TO|AC|AP|RR|DF)\b/);
-  if(m) return { cidade: m[1].trim(), estado: m[2].toUpperCase() };
-  return { cidade: null, estado: null };
+
+function extrairCidadeEstado(texto){
+  const mCidade = texto.match(/cidade\s*:\s*([^\n\r\-]*?)(?=\s*-?\s*estado\s*:|[\n\r]|$)/i);
+  const mEstado = texto.match(/estado\s*:\s*([A-Za-z]{2})\b/i);
+  return {
+    cidade: mCidade ? sanitizarCampoFatura(mCidade[1]) : null,
+    estado: mEstado ? mEstado[1].toUpperCase() : null
+  };
 }
-function extrairUcDoTexto(texto){
+
+function extrairDocumento(texto){
+  // Restringe a busca a uma janela logo após "Nome:" (bloco cadastral do cliente),
+  // pra nunca pegar o CNPJ da própria Copel, que aparece em outro lugar da fatura.
+  const posNome = texto.search(/nome\s*:/i);
+  const inicio = posNome === -1 ? 0 : posNome;
+  const janela = texto.slice(inicio, inicio + 1000);
+  const mCnpj = janela.match(/cnpj\s*:?\s*(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})/i);
+  if(mCnpj) return mCnpj[1];
+  const mCpf = janela.match(/cpf\s*:?\s*(\d{3}\.?\d{3}\.?\d{3}-?\d{2})/i);
+  if(mCpf) return mCpf[1];
+  return null;
+}
+
+function extrairUC(texto){
   const m = texto.match(/unidade\s*consumidora[^\d]{0,20}(\d{5,15})/i) || texto.match(/\bUC[:\s\-]{1,5}(\d{5,15})\b/i);
   return m ? m[1] : null;
 }
-const MESES_ABREV = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-function extrairMesReferenciaDoTexto(texto){
-  const m = texto.match(/(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/i);
+
+function extrairReferencia(texto){
+  const m = texto.match(/refer[eê]ncia[^\n]{0,25}?(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/i)
+    || texto.match(/(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/i);
   return m ? (m[1].toUpperCase() + '/' + m[2].slice(-2)) : null;
 }
-function extrairHistoricoConsumoDoTexto(texto){
-  // procura padrões tipo "AGO/26 2.254" ou "AGO/26  2254 kWh" repetidos ao longo da fatura
-  const regex = /(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})\D{0,12}?([\d\.]{3,7})/gi;
-  const resultados = [];
-  const vistos = new Set();
+
+function extrairVencimento(texto){
+  const m = texto.match(/vencimento[^\d]{0,10}(\d{2}\/\d{2}\/\d{2,4})/i);
+  return m ? m[1] : null;
+}
+function extrairValorTotalFatura(texto){
+  const m = texto.match(/valor\s*total[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i);
+  return m ? m[1] : null;
+}
+
+function extrairHistoricoConsumo(texto){
+  // Localiza a seção "HISTÓRICO DE CONSUMO / kWh" primeiro — não vasculha a fatura inteira.
+  const idxSecao = texto.search(/hist[oó]rico\s+de\s+consumo/i);
+  if(idxSecao === -1) return [];
+  const janela = texto.slice(idxSecao, idxSecao + 3500);
+
+  // Localiza todos os meses/ano dentro dessa janela, na ordem em que aparecem no texto,
+  // guardando onde cada um começa e termina.
+  const mesRegex = /(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/gi;
+  const meses = [];
   let m;
-  while((m = regex.exec(texto)) !== null){
-    const mes = m[1].toUpperCase() + '/' + m[2].slice(-2);
-    const consumo = parseInt(m[3].replace(/\./g,''), 10);
-    if(!isNaN(consumo) && consumo > 0 && consumo < 100000 && !vistos.has(mes)){
-      vistos.add(mes);
-      resultados.push({ mes, consumo });
+  while((m = mesRegex.exec(janela)) !== null){
+    meses.push({ mes: m[1].toUpperCase() + '/' + m[2].slice(-2), inicio: m.index, fim: m.index + m[0].length });
+  }
+  if(meses.length === 0) return [];
+
+  // Pra cada mês, olha os números que aparecem entre o fim dele e o começo do próximo mês
+  // (ou um pedaço à frente, se for o último) e escolhe como CONSUMO o número "grande" —
+  // nunca o de dias faturados, que é sempre um número pequeno (tipicamente 26-33). Isso
+  // funciona mesmo se a ordem em que o PDF entrega o texto for diferente da ordem visual
+  // (consumo antes ou depois dos dias faturados).
+  const resultado = [];
+  const vistos = new Set();
+  for(let i=0; i<meses.length; i++){
+    const inicio = meses[i].fim;
+    const fim = (i+1 < meses.length) ? meses[i+1].inicio : Math.min(janela.length, inicio + 100);
+    const trecho = janela.slice(inicio, fim);
+    const numeros = (trecho.match(/\d{1,3}(?:\.\d{3})+|\d+/g) || [])
+      .map(n => parseInt(n.replace(/\./g,''), 10))
+      .filter(n => !isNaN(n) && n > 0);
+    // "dias faturados" é sempre um número pequeno (tipicamente 26-33) — ignora esses.
+    const candidatosConsumo = numeros.filter(n => n > 40 && n < 100000);
+    const consumo = candidatosConsumo.length ? candidatosConsumo[0] : null;
+    if(consumo && !vistos.has(meses[i].mes)){
+      vistos.add(meses[i].mes);
+      resultado.push({ mes: meses[i].mes, consumo });
     }
   }
-  return resultados;
+  return resultado;
 }
-function extrairTarifaTeTusdDoTexto(texto){
+
+function extrairTarifas(texto){
   let te = null, tusd = null;
-  const teMatch = texto.match(/(?:energia\s*el[eé]t(?:rica)?\s*consumo|^|\s)te\b[\s\S]{0,100}?(\d{1,3},\d{4,6})/i);
+  const teMatch = texto.match(/energia\s*el[eé]t(?:rica)?\s*consumo[\s\S]{0,150}?(\d{1,3},\d{4,6})/i);
   if(teMatch) te = parseFloat(teMatch[1].replace(',', '.'));
-  const tusdMatch = texto.match(/(?:energia\s*el[eé]t(?:rica)?\s*uso\s*sistema|tusd)\b[\s\S]{0,100}?(\d{1,3},\d{4,6})/i);
+  const tusdMatch = texto.match(/energia\s*el[eé]t(?:rica)?\s*uso\s*sistema[\s\S]{0,150}?(\d{1,3},\d{4,6})/i);
   if(tusdMatch) tusd = parseFloat(tusdMatch[1].replace(',', '.'));
   return { te, tusd };
 }
@@ -5384,17 +6179,21 @@ document.getElementById('orcamentoDocInput').addEventListener('change', async (e
       return;
     }
 
-    const nome = extrairNomeDoTexto(texto);
-    const endereco = extrairEnderecoDoTexto(texto);
-    const cep = extrairCepDoTexto(texto);
-    const uc = extrairUcDoTexto(texto);
-    const { cidade, estado } = extrairCidadeEstadoDoTexto(texto);
-    const mesReferencia = extrairMesReferenciaDoTexto(texto);
-    const historico = extrairHistoricoConsumoDoTexto(texto);
-    const { te, tusd } = extrairTarifaTeTusdDoTexto(texto);
+    const nome = extrairNome(texto);
+    const documento = extrairDocumento(texto);
+    const endereco = extrairEndereco(texto);
+    const cep = extrairCEP(texto);
+    const uc = extrairUC(texto);
+    const { cidade, estado } = extrairCidadeEstado(texto);
+    const mesReferencia = extrairReferencia(texto);
+    const vencimento = extrairVencimento(texto);
+    const valorTotalFatura = extrairValorTotalFatura(texto);
+    const historico = extrairHistoricoConsumo(texto);
+    const { te, tusd } = extrairTarifas(texto);
 
-    abrirFaturaPreview({ nome, endereco, cep, uc, cidade, estado, mesReferencia, historico, te, tusd });
+    abrirFaturaPreview({ nome, documento, endereco, cep, uc, cidade, estado, mesReferencia, vencimento, valorTotalFatura, historico, te, tusd });
   }catch(err){
+    console.error(err);
     showToast('Não foi possível ler esse arquivo. Preencha manualmente.');
   }
   e.target.value = '';
@@ -5463,6 +6262,7 @@ document.getElementById('fpTarifaTusd').addEventListener('input', atualizarFpCal
 
 function abrirFaturaPreview(dados){
   document.getElementById('fpNome').value = dados.nome || '';
+  document.getElementById('fpDocumento').value = dados.documento || '';
   document.getElementById('fpEndereco').value = dados.endereco || '';
   document.getElementById('fpCep').value = dados.cep || '';
   document.getElementById('fpUc').value = dados.uc || '';
@@ -5474,6 +6274,30 @@ function abrirFaturaPreview(dados){
   fpHistoricoAtual = Array.isArray(dados.historico) ? [...dados.historico] : [];
   renderFpHistorico();
   atualizarFpCalculos();
+
+  // Sinaliza claramente o que não foi identificado, e mostra vencimento/valor (informativo)
+  const naoIdentificados = [];
+  if(!dados.nome) naoIdentificados.push('nome');
+  if(!dados.documento) naoIdentificados.push('CPF/CNPJ');
+  if(!dados.endereco) naoIdentificados.push('endereço');
+  if(!dados.cep) naoIdentificados.push('CEP');
+  if(!dados.cidade || !dados.estado) naoIdentificados.push('cidade/estado');
+  if(!dados.historico || dados.historico.length === 0) naoIdentificados.push('histórico de consumo');
+  if(dados.te == null || dados.tusd == null) naoIdentificados.push('tarifa TE/TUSD');
+
+  const infoExtra = document.getElementById('fpInfoExtra');
+  let textoInfo = '';
+  if(dados.vencimento) textoInfo += `Vencimento identificado: ${dados.vencimento}. `;
+  if(dados.valorTotalFatura) textoInfo += `Valor total da fatura: R$ ${dados.valorTotalFatura}. `;
+  if(naoIdentificados.length){
+    textoInfo += `⚠️ Não identificado automaticamente: ${naoIdentificados.join(', ')}. Preencha manualmente.`;
+  }
+  if(textoInfo){
+    infoExtra.textContent = textoInfo;
+    infoExtra.style.display = 'block';
+  }else{
+    infoExtra.style.display = 'none';
+  }
 
   document.getElementById('faturaPreviewBackdrop').classList.add('open');
   document.getElementById('faturaPreviewSheet').classList.add('open');
@@ -5487,6 +6311,7 @@ document.getElementById('faturaPreviewBackdrop').addEventListener('click', fecha
 
 document.getElementById('fpConfirmarBtn').addEventListener('click', ()=>{
   const nome = document.getElementById('fpNome').value.trim();
+  const documento = document.getElementById('fpDocumento').value.trim();
   const endereco = document.getElementById('fpEndereco').value.trim();
   const cep = document.getElementById('fpCep').value.trim();
   const uc = document.getElementById('fpUc').value.trim();
@@ -5500,6 +6325,7 @@ document.getElementById('fpConfirmarBtn').addEventListener('click', ()=>{
   if(nome && !document.getElementById('orcamentoCliente').value.trim()){
     document.getElementById('orcamentoCliente').value = nome;
   }
+  if(documento) document.getElementById('orcamentoDocumento').value = documento;
   if(endereco) document.getElementById('orcamentoEndereco').value = endereco;
   if(cep) document.getElementById('orcamentoCep').value = cep;
   if(uc) document.getElementById('orcamentoUc').value = uc;
@@ -7778,8 +8604,138 @@ document.getElementById('osAddSessaoBtn').addEventListener('click', ()=>{
 });
 
 function calcularTotalHorasSessoes(){
-  return osSessoesAtual.reduce((s, sessao) => s + calcularHorasTrabalhadas(sessao.inicio, sessao.fim), 0);
+  const horasManual = osSessoesAtual.reduce((s, sessao) => s + calcularHorasTrabalhadas(sessao.inicio, sessao.fim), 0);
+  const horasLive = osSessoesTrabalhoAtual
+    .filter(s => s.status === 'FINALIZADA' && s.tempoTotalMinutos != null)
+    .reduce((s, sessao) => s + (sessao.tempoTotalMinutos / 60), 0);
+  return horasManual + horasLive;
 }
+
+/* ---------- Iniciar/Finalizar trabalho (gravação imediata, sobrevive a refresh) ---------- */
+function gerarIdSessaoTrabalho(){
+  return 'sesstrab_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+}
+function obterSessaoEmAndamento(){
+  return osSessoesTrabalhoAtual.find(s => s.status === 'EM_ANDAMENTO') || null;
+}
+
+function renderSessaoTrabalhoUI(){
+  const ativa = obterSessaoEmAndamento();
+  const info = document.getElementById('osSessaoAtivaInfo');
+  const textoEl = document.getElementById('osSessaoAtivaTexto');
+  const btnIniciar = document.getElementById('osIniciarTrabalhoBtn');
+  const btnFinalizar = document.getElementById('osFinalizarTrabalhoBtn');
+
+  if(ativa){
+    const dataFmt = new Date(ativa.dataInicio + 'T00:00:00').toLocaleDateString('pt-BR');
+    textoEl.innerHTML = `Iniciado em: <b>${dataFmt} ${ativa.horaInicio}</b><br>Técnico responsável: <b>${escapeHtml(ativa.tecnico)}</b><br>Status: <b>Em andamento</b>`;
+    info.style.display = 'block';
+    btnIniciar.style.display = 'none';
+    btnFinalizar.style.display = 'block';
+  }else{
+    info.style.display = 'none';
+    btnIniciar.style.display = 'block';
+    btnFinalizar.style.display = 'none';
+  }
+  renderHistoricoSessoesTrabalho();
+}
+
+function renderHistoricoSessoesTrabalho(){
+  const wrap = document.getElementById('osSessoesTrabalhoHistorico');
+  const finalizadas = osSessoesTrabalhoAtual.filter(s => s.status === 'FINALIZADA');
+  if(finalizadas.length === 0){
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = '<p style="font-size:12px; color:var(--text-dim); margin:8px 0 4px;">Sessões finalizadas (registradas com Iniciar/Finalizar trabalho):</p>' +
+    finalizadas.map(s => {
+      const dIni = new Date(s.dataInicio + 'T00:00:00').toLocaleDateString('pt-BR');
+      const mins = s.tempoTotalMinutos || 0;
+      const h = Math.floor(mins/60), m = mins % 60;
+      return `<div style="font-size:12.5px; color:var(--paper); margin-bottom:4px;">${dIni} ${s.horaInicio} às ${s.horaFim || '—'} — ${h}h${m>0 ? ' '+m+'min' : ''} (${escapeHtml(s.tecnico)})</div>`;
+    }).join('');
+}
+
+async function iniciarTrabalho(){
+  if(!editingOsId){
+    showToast('Salve a OS primeiro (botão Salvar) para poder iniciar uma sessão de trabalho.');
+    return;
+  }
+  if(obterSessaoEmAndamento()){
+    showToast('Já existe uma sessão em andamento para esta OS. Finalize-a antes de iniciar outra.');
+    return;
+  }
+
+  const o = ordens.find(x => x.id === editingOsId);
+  if(!o){
+    showToast('Não encontrei essa OS. Recarregue a tela e tente de novo.');
+    return;
+  }
+
+  const agora = new Date();
+  const novaSessao = {
+    id: gerarIdSessaoTrabalho(),
+    osId: editingOsId,
+    tecnico: currentUser,
+    status: 'EM_ANDAMENTO',
+    dataInicio: hojeStr(),
+    horaInicio: nowTimeStr(),
+    timestampInicio: agora.toISOString(),
+    dataFim: null, horaFim: null, timestampFim: null, tempoTotalMinutos: null
+  };
+
+  osSessoesTrabalhoAtual.push(novaSessao);
+  o.sessoesTrabalho = JSON.parse(JSON.stringify(osSessoesTrabalhoAtual));
+
+  const ok = await persistOS();
+  if(!ok){
+    osSessoesTrabalhoAtual.pop();
+    o.sessoesTrabalho = JSON.parse(JSON.stringify(osSessoesTrabalhoAtual));
+    showToast('Não foi possível gravar o início da sessão. Tente novamente.');
+    return;
+  }
+
+  renderSessaoTrabalhoUI();
+  showToast('Trabalho iniciado às ' + novaSessao.horaInicio + '.');
+}
+
+async function finalizarTrabalho(){
+  const ativa = obterSessaoEmAndamento();
+  if(!ativa){
+    showToast('Não há sessão em andamento para finalizar.');
+    return;
+  }
+  const o = ordens.find(x => x.id === editingOsId);
+  if(!o){
+    showToast('Não encontrei essa OS. Recarregue a tela e tente de novo.');
+    return;
+  }
+
+  const estadoAnterior = JSON.parse(JSON.stringify(ativa));
+  const agora = new Date();
+  ativa.dataFim = hojeStr();
+  ativa.horaFim = nowTimeStr();
+  ativa.timestampFim = agora.toISOString();
+  ativa.status = 'FINALIZADA';
+  const inicioMs = new Date(ativa.timestampInicio).getTime();
+  ativa.tempoTotalMinutos = Math.max(0, Math.round((agora.getTime() - inicioMs) / 60000));
+
+  o.sessoesTrabalho = JSON.parse(JSON.stringify(osSessoesTrabalhoAtual));
+  const ok = await persistOS();
+  if(!ok){
+    Object.assign(ativa, estadoAnterior);
+    o.sessoesTrabalho = JSON.parse(JSON.stringify(osSessoesTrabalhoAtual));
+    showToast('Não foi possível gravar o fim da sessão. Tente novamente.');
+    return;
+  }
+
+  renderSessaoTrabalhoUI();
+  atualizarValorTotalOS();
+  showToast('Trabalho finalizado. Total: ' + Math.floor(ativa.tempoTotalMinutos/60) + 'h ' + (ativa.tempoTotalMinutos%60) + 'min.');
+}
+
+document.getElementById('osIniciarTrabalhoBtn').addEventListener('click', iniciarTrabalho);
+document.getElementById('osFinalizarTrabalhoBtn').addEventListener('click', finalizarTrabalho);
 
 /* ---------- Fotos do serviço (múltiplas, dentro da OS) ---------- */
 function renderOsFotos(){
@@ -8398,10 +9354,12 @@ async function openOsAdd(){
   document.getElementById('osAgendamentoAviso').style.display = podeAgendar ? 'none' : 'block';
   document.getElementById('osSolucao').value = '';
   osSessoesAtual = [];
+  osSessoesTrabalhoAtual = [];
   document.getElementById('osSessaoData').value = '';
   document.getElementById('osSessaoInicio').value = '';
   document.getElementById('osSessaoFim').value = '';
   renderOsSessoes();
+  renderSessaoTrabalhoUI();
   document.getElementById('osValorServico').value = '';
   document.getElementById('osDesconto').value = '';
   osHorasPorTecnicoSalvos = {};
@@ -8456,10 +9414,12 @@ async function openOsEdit(id){
   }else{
     osSessoesAtual = [];
   }
+  osSessoesTrabalhoAtual = Array.isArray(o.sessoesTrabalho) ? JSON.parse(JSON.stringify(o.sessoesTrabalho)) : [];
   document.getElementById('osSessaoData').value = '';
   document.getElementById('osSessaoInicio').value = '';
   document.getElementById('osSessaoFim').value = '';
   renderOsSessoes();
+  renderSessaoTrabalhoUI();
   document.getElementById('osValorServico').value = o.cobrarPorHora ? '' : (o.valorServico || '');
   document.getElementById('osDesconto').value = o.desconto || '';
   osHorasPorTecnicoSalvos = {};
