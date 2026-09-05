@@ -1381,9 +1381,11 @@
         <div class="lbl">atrasados</div>
       </div>
     </div>
-    <div style="padding:0 18px;">
-      <button class="small-btn primary full-btn" id="acompanhamentoCompartilharBtn" type="button" style="margin-top:12px;">📤 Gerar lista para compartilhar</button>
+    <div style="padding:0 18px; display:flex; gap:8px;">
+      <button class="small-btn primary" id="acompanhamentoVerificarBtn" type="button" style="margin-top:12px; flex:1;">🔍 Verificar status na Copel</button>
+      <button class="small-btn" id="acompanhamentoCompartilharBtn" type="button" style="margin-top:12px; flex:1;">📤 Compartilhar lista</button>
     </div>
+    <p class="admin-note" id="acompanhamentoVerificarInfo" style="padding:0 18px; margin-top:8px; display:none;"></p>
     <div class="list" id="acompanhamentoList" style="margin-top:8px;">
       <div class="loading">Carregando…</div>
     </div>
@@ -1604,6 +1606,63 @@
   </div>
 </div>
 
+<div class="app" id="dimensionamentosApp" style="display:none;">
+  <header>
+    <div class="brand">
+      <h1 id="dimensionamentosHeaderTitle">Dimensionamentos</h1>
+      <div class="brand-right">
+        <button class="home-btn" id="homeBtnDimensionamentos" aria-label="Início">🏠</button>
+        <button class="refresh-btn" id="importMotoresBtn" style="display:none;" aria-label="Importar lista de motores">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <input type="file" id="importMotoresInput" accept=".xlsx,.xls,.csv" style="display:none;">
+        <button class="refresh-btn" id="dimensionamentosBackBtn" style="display:none;" aria-label="Voltar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="user-chip" id="dimensionamentosUserChip"><b id="dimensionamentosUserChipName">—</b></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MENU -->
+  <div id="dimensionamentosMenuView" class="admin-content">
+    <div class="admin-card" data-dim-nav="motores" style="cursor:pointer;">
+      <h3>⚙️ Dimensionamento de Motores</h3>
+      <p class="card-sub">Corrente nominal por motor — individual ou por lista importada.</p>
+    </div>
+  </div>
+
+  <!-- MOTORES: lista principal -->
+  <div id="dimensionamentosMotoresView" style="display:none;">
+    <div class="summary" style="padding:0 18px; margin-top:14px;">
+      <div class="stat">
+        <div class="num" id="motoresStatTotal">0</div>
+        <div class="lbl">motores</div>
+      </div>
+      <div class="stat value">
+        <div class="num" id="motoresStatPotencia">0 kW</div>
+        <div class="lbl">potência instalada</div>
+      </div>
+    </div>
+    <div id="motoresTotaisPorGrupo" style="padding:0 18px; margin-top:10px;"></div>
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="motoresSearchInput" type="text" placeholder="Buscar por tag ou descrição">
+      </div>
+    </div>
+    <div class="list" id="motoresList" style="margin-top:8px;">
+      <div class="loading">Carregando…</div>
+    </div>
+  </div>
+
+  <div class="fab" id="dimensionamentosFab" style="display:none;">
+    <div class="fab-inner">
+      <button class="fab-btn" id="motorFabBtn" aria-label="Novo motor">+</button>
+    </div>
+  </div>
+</div>
+
 <div class="app" id="adminPanelView" style="display:none;">
   <header>
     <div class="brand">
@@ -1675,7 +1734,10 @@
             <input type="checkbox" id="newColabAcessoNfsEnergy" style="width:16px; height:16px;"> ⚡ NFS Energy
           </label>
           <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
-            <input type="checkbox" id="newColabAcessoOrcamento" style="width:16px; height:16px;"> ☀️ Orçamento
+            <input type="checkbox" id="newColabAcessoOrcamento" style="width:16px; height:16px;"> 🧮 Orçamento
+          </label>
+          <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+            <input type="checkbox" id="newColabAcessoDimensionamentos" style="width:16px; height:16px;"> 📐 Dimensionamentos
           </label>
         </div>
       </div>
@@ -1764,8 +1826,12 @@
     <span>NFS Energy</span>
   </button>
   <button class="nav-btn" id="navOrcamentoBtn" data-target="orcamento">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/></svg>
     <span>Orçamento</span>
+  </button>
+  <button class="nav-btn" id="navDimensionamentosBtn" data-target="dimensionamentos">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17 17 3"/><path d="M6 20 20 6"/><path d="M6.5 10.5 8 9"/><path d="M9.5 13.5 11 12"/><path d="M12.5 16.5 14 15"/></svg>
+    <span>Dimension.</span>
   </button>
 </div>
 
@@ -2411,6 +2477,26 @@
     <label for="orcamentoEndereco">Endereço da instalação</label>
     <input id="orcamentoEndereco" type="text" placeholder="Endereço completo" autocomplete="off">
   </div>
+  <div class="row2">
+    <div class="field">
+      <label for="orcamentoCep">CEP</label>
+      <input id="orcamentoCep" type="text" placeholder="00000-000" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="orcamentoUc">Unidade Consumidora (UC)</label>
+      <input id="orcamentoUc" type="text" placeholder="Número da UC" autocomplete="off">
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="orcamentoCidade">Cidade</label>
+      <input id="orcamentoCidade" type="text" placeholder="Cidade" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="orcamentoEstado">Estado (UF)</label>
+      <input id="orcamentoEstado" type="text" placeholder="PR" maxlength="2" style="text-transform:uppercase;" autocomplete="off">
+    </div>
+  </div>
 
   <div class="admin-card" style="margin-bottom:14px;">
     <h3>📄 Fatura de energia (opcional)</h3>
@@ -2422,21 +2508,17 @@
   <div class="admin-card" style="margin-bottom:14px;">
     <h3>☀️ Consumo e sistema</h3>
     <div class="field">
-      <label>Histórico de consumo — últimos 12 meses (kWh)</label>
-      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px;">
-        <input id="orcamentoMes1" type="number" min="0" step="1" placeholder="Mês 1" class="orcamento-mes-input">
-        <input id="orcamentoMes2" type="number" min="0" step="1" placeholder="Mês 2" class="orcamento-mes-input">
-        <input id="orcamentoMes3" type="number" min="0" step="1" placeholder="Mês 3" class="orcamento-mes-input">
-        <input id="orcamentoMes4" type="number" min="0" step="1" placeholder="Mês 4" class="orcamento-mes-input">
-        <input id="orcamentoMes5" type="number" min="0" step="1" placeholder="Mês 5" class="orcamento-mes-input">
-        <input id="orcamentoMes6" type="number" min="0" step="1" placeholder="Mês 6" class="orcamento-mes-input">
-        <input id="orcamentoMes7" type="number" min="0" step="1" placeholder="Mês 7" class="orcamento-mes-input">
-        <input id="orcamentoMes8" type="number" min="0" step="1" placeholder="Mês 8" class="orcamento-mes-input">
-        <input id="orcamentoMes9" type="number" min="0" step="1" placeholder="Mês 9" class="orcamento-mes-input">
-        <input id="orcamentoMes10" type="number" min="0" step="1" placeholder="Mês 10" class="orcamento-mes-input">
-        <input id="orcamentoMes11" type="number" min="0" step="1" placeholder="Mês 11" class="orcamento-mes-input">
-        <input id="orcamentoMes12" type="number" min="0" step="1" placeholder="Mês 12" class="orcamento-mes-input">
+      <label for="orcamentoMesReferencia">Mês de referência da fatura</label>
+      <input id="orcamentoMesReferencia" type="text" placeholder="Ex: AGO/26" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Histórico de consumo (kWh) — importado da fatura ou preenchido manualmente</label>
+      <div id="orcamentoHistoricoList" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;"></div>
+      <div class="row2">
+        <input id="orcamentoNovoMes" type="text" placeholder="Mês/Ano (ex: SET/26)">
+        <input id="orcamentoNovoConsumo" type="number" min="0" step="1" placeholder="kWh">
       </div>
+      <button class="small-btn full-btn" id="orcamentoAddMesBtn" type="button" style="margin-top:8px;">+ Adicionar mês</button>
     </div>
     <div class="row2">
       <div class="field">
@@ -2444,28 +2526,42 @@
         <input id="orcamentoConsumoMensal" type="number" min="0" step="1" placeholder="0" readonly style="opacity:0.8;">
       </div>
       <div class="field">
-        <label for="orcamentoTarifa">Tarifa de energia (R$/kWh)</label>
-        <input id="orcamentoTarifa" type="number" min="0" step="0.01" placeholder="0,00">
-      </div>
-    </div>
-    <div class="row2">
-      <div class="field">
-        <label for="orcamentoPotencia">Potência do sistema (kWp)</label>
-        <input id="orcamentoPotencia" type="number" min="0" step="0.01" placeholder="0,00">
-      </div>
-      <div class="field">
-        <label for="orcamentoHsp">Horas de sol pico/dia (HSP) — fixo p/ região</label>
+        <label for="orcamentoHsp">HSP fixo p/ região</label>
         <input id="orcamentoHsp" type="number" min="0" step="0.1" value="3.7" disabled style="opacity:0.75;">
       </div>
     </div>
     <div class="row2">
       <div class="field">
-        <label for="orcamentoQtdModulos">Qtd. de módulos</label>
-        <input id="orcamentoQtdModulos" type="number" min="0" step="1" placeholder="0">
+        <label for="orcamentoTarifaTe">Tarifa TE (R$/kWh)</label>
+        <input id="orcamentoTarifaTe" type="number" min="0" step="0.000001" placeholder="0,000000">
       </div>
       <div class="field">
-        <label for="orcamentoPotenciaModulo">Potência do módulo (Wp)</label>
-        <input id="orcamentoPotenciaModulo" type="number" min="0" step="1" placeholder="Ex: 550">
+        <label for="orcamentoTarifaTusd">Tarifa TUSD (R$/kWh)</label>
+        <input id="orcamentoTarifaTusd" type="number" min="0" step="0.000001" placeholder="0,000000">
+      </div>
+    </div>
+    <div class="field">
+      <label for="orcamentoTarifa">Tarifa total usada no orçamento (R$/kWh) — TE + TUSD</label>
+      <input id="orcamentoTarifa" type="number" min="0" step="0.000001" placeholder="0,000000">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="orcamentoPotenciaNecessaria">Potência necessária (kWp) — calculada</label>
+        <input id="orcamentoPotenciaNecessaria" type="number" step="0.01" readonly style="opacity:0.8;">
+      </div>
+      <div class="field">
+        <label for="orcamentoPotenciaModulo">Potência do módulo (W)</label>
+        <input id="orcamentoPotenciaModulo" type="number" min="0" step="1" placeholder="Ex: 620">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="orcamentoQtdModulos">Quantidade de módulos — calculada</label>
+        <input id="orcamentoQtdModulos" type="number" readonly style="opacity:0.8;">
+      </div>
+      <div class="field">
+        <label for="orcamentoPotenciaInstalada">Potência instalada (kWp) — calculada</label>
+        <input id="orcamentoPotenciaInstalada" type="number" step="0.01" readonly style="opacity:0.8;">
       </div>
     </div>
     <div class="field">
@@ -2541,6 +2637,197 @@
   <button class="small-btn primary full-btn" id="orcamentoPdfBtn" type="button" style="margin-top:10px;">📄 Gerar PDF da proposta</button>
   <div class="sheet-actions" id="orcamentoDeleteRow" style="display:none; margin-top:10px;">
     <button class="btn btn-danger" id="orcamentoDeleteBtn">Excluir orçamento</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="faturaPreviewBackdrop"></div>
+<div class="sheet" id="faturaPreviewSheet">
+  <div class="sheet-handle"></div>
+  <h2>📄 Dados identificados na fatura</h2>
+  <p class="card-sub">Confira e corrija se precisar — nada é aplicado até você confirmar.</p>
+
+  <div class="field">
+    <label for="fpNome">Nome</label>
+    <input id="fpNome" type="text" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="fpEndereco">Endereço</label>
+    <input id="fpEndereco" type="text" autocomplete="off">
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="fpCep">CEP</label>
+      <input id="fpCep" type="text" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fpUc">Unidade Consumidora</label>
+      <input id="fpUc" type="text" autocomplete="off">
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="fpCidade">Cidade</label>
+      <input id="fpCidade" type="text" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fpEstado">UF</label>
+      <input id="fpEstado" type="text" maxlength="2" style="text-transform:uppercase;" autocomplete="off">
+    </div>
+  </div>
+  <div class="field">
+    <label for="fpMesReferencia">Mês de referência</label>
+    <input id="fpMesReferencia" type="text" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label>Histórico de consumo (kWh)</label>
+    <div id="fpHistoricoList" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;"></div>
+    <div class="row2">
+      <input id="fpNovoMes" type="text" placeholder="Mês/Ano">
+      <input id="fpNovoConsumo" type="number" min="0" step="1" placeholder="kWh">
+    </div>
+    <button class="small-btn full-btn" id="fpAddMesBtn" type="button" style="margin-top:8px;">+ Adicionar mês</button>
+  </div>
+  <p class="admin-note" id="fpMediaInfo" style="margin-top:6px;"></p>
+
+  <div class="row2">
+    <div class="field">
+      <label for="fpTarifaTe">Tarifa TE (R$/kWh)</label>
+      <input id="fpTarifaTe" type="number" min="0" step="0.000001">
+    </div>
+    <div class="field">
+      <label for="fpTarifaTusd">Tarifa TUSD (R$/kWh)</label>
+      <input id="fpTarifaTusd" type="number" min="0" step="0.000001">
+    </div>
+  </div>
+  <div class="field">
+    <label for="fpTarifaTotal">Tarifa total (R$/kWh)</label>
+    <input id="fpTarifaTotal" type="number" min="0" step="0.000001" readonly style="opacity:0.8;">
+  </div>
+  <div class="field">
+    <label>HSP padrão</label>
+    <input type="number" value="3.7" disabled style="opacity:0.75;">
+  </div>
+  <p class="admin-note" id="fpPotenciaInfo" style="margin-bottom:14px;"></p>
+
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="fpCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="fpConfirmarBtn">✅ Usar estes dados</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="motorBackdrop"></div>
+<div class="sheet" id="motorSheet">
+  <div class="sheet-handle"></div>
+  <h2 id="motorSheetTitle">Novo motor</h2>
+
+  <div class="field">
+    <label for="motorTag">Identificação/Tag do motor</label>
+    <input id="motorTag" type="text" placeholder="Ex: M-101" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="motorDescricao">Descrição do equipamento</label>
+    <input id="motorDescricao" type="text" placeholder="Ex: Bomba de água, Ventilador..." autocomplete="off">
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="motorPotencia">Potência do motor</label>
+      <input id="motorPotencia" type="number" min="0" step="0.01" placeholder="0,00">
+    </div>
+    <div class="field">
+      <label for="motorUnidadePotencia">Unidade</label>
+      <select id="motorUnidadePotencia">
+        <option value="cv">CV</option>
+        <option value="hp">HP</option>
+        <option value="kw">kW</option>
+      </select>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="motorTensao">Tensão de alimentação (V)</label>
+      <input id="motorTensao" type="number" min="0" step="1" placeholder="Ex: 380">
+    </div>
+    <div class="field">
+      <label>Frequência</label>
+      <div class="segmented" id="motorFrequenciaSegmented">
+        <button type="button" data-freq="60" class="active">60 Hz</button>
+        <button type="button" data-freq="50">50 Hz</button>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Sistema</label>
+    <div class="segmented" id="motorFasesSegmented">
+      <button type="button" data-fases="trifasico" class="active">Trifásico</button>
+      <button type="button" data-fases="monofasico">Monofásico</button>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="motorFatorPotencia">Fator de potência (opcional)</label>
+      <input id="motorFatorPotencia" type="number" min="0" max="1" step="0.01" placeholder="Ex: 0,86">
+    </div>
+    <div class="field">
+      <label for="motorRendimento">Rendimento (opcional)</label>
+      <input id="motorRendimento" type="number" min="0" max="1" step="0.01" placeholder="Ex: 0,90">
+    </div>
+  </div>
+  <div class="field">
+    <label for="motorFatorServico">Fator de serviço (opcional)</label>
+    <input id="motorFatorServico" type="number" min="0" step="0.01" placeholder="Ex: 1,15">
+  </div>
+
+  <div class="admin-card" style="margin-bottom:14px;">
+    <h3>⚡ Corrente nominal calculada</h3>
+    <p class="admin-note" id="motorCalculoInfo">Preencha potência, tensão e unidade para calcular.</p>
+    <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:700; margin-top:8px;">
+      <span>Corrente nominal</span>
+      <span id="motorCorrenteDisplay" style="color:var(--amber);">— A</span>
+    </div>
+  </div>
+
+  <div class="err" id="motorFormErr">Preencha tag, potência e tensão.</div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="motorCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="motorSaveBtn">Salvar</button>
+  </div>
+  <div class="sheet-actions" id="motorDeleteRow" style="display:none;">
+    <button class="btn btn-danger" id="motorDeleteBtn">Excluir motor</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="motoresImportBackdrop"></div>
+<div class="sheet" id="motoresImportSheet">
+  <div class="sheet-handle"></div>
+  <h2>Conferência dos motores importados</h2>
+  <p class="card-sub">Confira e corrija os dados antes de dimensionar. Linhas com "pad." ficam sem fator de potência/rendimento e usarão um valor padrão estimado.</p>
+
+  <div style="overflow-x:auto; margin-bottom:12px; -webkit-overflow-scrolling:touch;">
+    <table style="width:100%; min-width:760px; border-collapse:collapse; font-size:12.5px;">
+      <thead>
+        <tr style="text-align:left; color:var(--text-dim);">
+          <th style="padding:6px 4px;">Tag</th>
+          <th style="padding:6px 4px;">Descrição</th>
+          <th style="padding:6px 4px;">Potência</th>
+          <th style="padding:6px 4px;">Un.</th>
+          <th style="padding:6px 4px;">Tensão</th>
+          <th style="padding:6px 4px;">Fases</th>
+          <th style="padding:6px 4px;">Freq.</th>
+          <th style="padding:6px 4px;">FP</th>
+          <th style="padding:6px 4px;">Rend.</th>
+          <th style="padding:6px 4px;">FS</th>
+          <th style="padding:6px 4px;"></th>
+        </tr>
+      </thead>
+      <tbody id="motoresImportTableBody"></tbody>
+    </table>
+  </div>
+  <button class="small-btn full-btn" id="motoresImportAddRowBtn" type="button" style="margin-bottom:14px;">+ Adicionar motor manualmente</button>
+
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="motoresImportCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="motoresImportDimensionarBtn">⚙️ Dimensionar todos</button>
   </div>
 </div>
 
@@ -2811,7 +3098,7 @@ document.getElementById('adminAuthConfirmBtn').addEventListener('click', async (
   if(cb) await cb();
 });
 
-let currentUserAccess = { estoque: true, os: true, financeiro: true, nfsEnergy: true, orcamento: true, agendamento: true }; // áreas liberadas para o colaborador logado
+let currentUserAccess = { estoque: true, os: true, financeiro: true, nfsEnergy: true, orcamento: true, dimensionamentos: true, agendamento: true }; // áreas liberadas para o colaborador logado
 let isAdminSession = false;
 let editingId = null;
 let storageReady = false;
@@ -2922,8 +3209,9 @@ async function tryLogin(){
   document.getElementById('navFinBtn').style.display = currentUserAccess.financeiro ? 'flex' : 'none';
   document.getElementById('navNfsEnergyBtn').style.display = currentUserAccess.nfsEnergy ? 'flex' : 'none';
   document.getElementById('navOrcamentoBtn').style.display = currentUserAccess.orcamento ? 'flex' : 'none';
+  document.getElementById('navDimensionamentosBtn').style.display = currentUserAccess.dimensionamentos ? 'flex' : 'none';
 
-  if(!currentUserAccess.estoque && !currentUserAccess.os && !currentUserAccess.financeiro && !currentUserAccess.nfsEnergy && !currentUserAccess.orcamento){
+  if(!currentUserAccess.estoque && !currentUserAccess.os && !currentUserAccess.financeiro && !currentUserAccess.nfsEnergy && !currentUserAccess.orcamento && !currentUserAccess.dimensionamentos){
     showToast('Você não tem acesso liberado a nenhuma área. Fale com o administrador.');
     logout();
     return;
@@ -2947,6 +3235,7 @@ function logout(){
   document.getElementById('finApp').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
   document.getElementById('homeApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('bottomNav').style.display = 'none';
@@ -2955,6 +3244,7 @@ function logout(){
   document.getElementById('navFinBtn').style.display = 'flex';
   document.getElementById('navNfsEnergyBtn').style.display = 'flex';
   document.getElementById('navOrcamentoBtn').style.display = 'flex';
+  document.getElementById('navDimensionamentosBtn').style.display = 'flex';
   document.getElementById('loginScreen').style.display = 'flex';
   showLoginView();
   document.getElementById('loginNome').value = '';
@@ -2971,7 +3261,8 @@ const HOME_MODULES = [
   { key:'os', icon:'🛠️', label:'Ordens de Serviço', show: ()=> showOsScreen() },
   { key:'financeiro', icon:'💰', label:'Financeiro', show: ()=> showFinanceiroScreen() },
   { key:'nfsEnergy', icon:'⚡', label:'NFS Energy', show: ()=> showNfsEnergyScreen() },
-  { key:'orcamento', icon:'☀️', label:'Orçamento', show: ()=> showOrcamentoScreen() }
+  { key:'orcamento', icon:'🧮', label:'Orçamento', show: ()=> showOrcamentoScreen() },
+  { key:'dimensionamentos', icon:'📐', label:'Dimensionamentos', show: ()=> showDimensionamentosScreen() }
 ];
 
 function renderHomeGrid(){
@@ -3001,10 +3292,12 @@ function showHomeScreen(){
   document.getElementById('finApp').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('homeApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'none';
   document.getElementById('homeUserChipName').textContent = currentUser;
+  window.scrollTo(0,0);
   stopAutoRefresh();
   stopOsAutoRefresh();
   stopFinAutoRefresh();
@@ -3023,11 +3316,14 @@ function showEstoqueScreen(){
   document.getElementById('finApp').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('mainApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('userChipNum').textContent = currentUser;
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'estoque'));
+  window.scrollTo(0,0);
   stopOsAutoRefresh();
   stopFinAutoRefresh();
   loadItems();
@@ -3042,11 +3338,14 @@ function showOsScreen(){
   document.getElementById('finApp').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('osApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('osUserChipName').textContent = currentUser;
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'os'));
+  window.scrollTo(0,0);
   stopAutoRefresh();
   stopFinAutoRefresh();
   loadOS();
@@ -3061,11 +3360,14 @@ async function showFinanceiroScreen(){
   document.getElementById('osApp').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('finApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('finUserChipName').textContent = currentUser;
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'financeiro'));
+  window.scrollTo(0,0);
   stopAutoRefresh();
   stopOsAutoRefresh();
   showFinSubView('menu');
@@ -3079,11 +3381,14 @@ function showNfsEnergyScreen(){
   document.getElementById('osApp').style.display = 'none';
   document.getElementById('finApp').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('nfsEnergyUserChipName').textContent = currentUser;
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'nfsenergy'));
+  window.scrollTo(0,0);
   stopAutoRefresh();
   stopOsAutoRefresh();
   stopFinAutoRefresh();
@@ -3196,12 +3501,13 @@ async function tryAdminLogin(){
 async function enterAdminPanel(irParaInicio){
   currentUser = admin.nome;
   isAdminSession = true;
-  currentUserAccess = { estoque: true, os: true, financeiro: true, nfsEnergy: true, orcamento: true, agendamento: true };
+  currentUserAccess = { estoque: true, os: true, financeiro: true, nfsEnergy: true, orcamento: true, dimensionamentos: true, agendamento: true };
   document.getElementById('navEstoqueBtn').style.display = 'flex';
   document.getElementById('navOsBtn').style.display = 'flex';
   document.getElementById('navFinBtn').style.display = 'flex';
   document.getElementById('navNfsEnergyBtn').style.display = 'flex';
   document.getElementById('navOrcamentoBtn').style.display = 'flex';
+  document.getElementById('navDimensionamentosBtn').style.display = 'flex';
   await loadConfig();
   document.getElementById('adminChipName').textContent = admin.nome;
   document.getElementById('configAppLink').value = appConfig.appLink || '';
@@ -3217,7 +3523,14 @@ async function enterAdminPanel(irParaInicio){
     showHomeScreen();
     return;
   }
+  document.getElementById('homeApp').style.display = 'none';
+  document.getElementById('osApp').style.display = 'none';
+  document.getElementById('finApp').style.display = 'none';
+  document.getElementById('nfsEnergyApp').style.display = 'none';
+  document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'flex';
+  window.scrollTo(0,0);
 }
 
 /* ---------- Convites ---------- */
@@ -3276,6 +3589,7 @@ async function createColaborador(){
   const acessoFinanceiro = document.getElementById('newColabAcessoFinanceiro').checked;
   const acessoNfsEnergy = document.getElementById('newColabAcessoNfsEnergy').checked;
   const acessoOrcamento = document.getElementById('newColabAcessoOrcamento').checked;
+  const acessoDimensionamentos = document.getElementById('newColabAcessoDimensionamentos').checked;
   const acessoOsEnergy = document.getElementById('newColabAcessoOsEnergy').checked;
   const acessoOrcamentoSolar = document.getElementById('newColabAcessoOrcamentoSolar').checked;
   const acessoCopelProtocolos = document.getElementById('newColabAcessoCopelProtocolos').checked;
@@ -3305,7 +3619,7 @@ async function createColaborador(){
     return;
   }
 
-  colaboradores[chave] = { nome: nomeRaw, email, senha, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
+  colaboradores[chave] = { nome: nomeRaw, email, senha, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
   const ok = await saveColaboradores();
   if(!ok){
     errEl.textContent = 'Não foi possível salvar o cadastro agora. Verifique sua internet e tente de novo.';
@@ -3333,6 +3647,7 @@ async function createColaborador(){
   document.getElementById('newColabAcessoFinanceiro').checked = true;
   document.getElementById('newColabAcessoNfsEnergy').checked = false;
   document.getElementById('newColabAcessoOrcamento').checked = false;
+  document.getElementById('newColabAcessoDimensionamentos').checked = false;
   document.getElementById('newColabAcessoOsEnergy').checked = false;
   document.getElementById('newColabAcessoOrcamentoSolar').checked = false;
   document.getElementById('newColabAcessoCopelProtocolos').checked = false;
@@ -3354,7 +3669,7 @@ function renderColabList(){
 
   wrap.innerHTML = chaves.map(chave => {
     const c = colaboradores[chave];
-    const acessos = c.acessos || { estoque: true, os: true, financeiro: true, nfsEnergy: false, orcamento: false, osEnergy: false, copelProtocolos: false, copelOutrosServicos: false, copelFinanceiro: false, agendamento: false, alertaCobranca: false };
+    const acessos = c.acessos || { estoque: true, os: true, financeiro: true, nfsEnergy: false, orcamento: false, dimensionamentos: false, osEnergy: false, copelProtocolos: false, copelOutrosServicos: false, copelFinanceiro: false, agendamento: false, alertaCobranca: false };
     return `
       <div class="colab-row" data-chave="${escapeHtmlA(chave)}">
         <div class="name">${escapeHtmlA(c.nome)}</div>
@@ -3373,7 +3688,10 @@ function renderColabList(){
             <input type="checkbox" class="access-toggle" data-chave="${escapeHtmlA(chave)}" data-modulo="nfsEnergy" ${acessos.nfsEnergy ? 'checked' : ''} style="width:15px; height:15px;"> ⚡ NFS Energy
           </label>
           <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); cursor:pointer;">
-            <input type="checkbox" class="access-toggle" data-chave="${escapeHtmlA(chave)}" data-modulo="orcamento" ${acessos.orcamento ? 'checked' : ''} style="width:15px; height:15px;"> ☀️ Orçamento
+            <input type="checkbox" class="access-toggle" data-chave="${escapeHtmlA(chave)}" data-modulo="orcamento" ${acessos.orcamento ? 'checked' : ''} style="width:15px; height:15px;"> 🧮 Orçamento
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); cursor:pointer;">
+            <input type="checkbox" class="access-toggle" data-chave="${escapeHtmlA(chave)}" data-modulo="dimensionamentos" ${acessos.dimensionamentos ? 'checked' : ''} style="width:15px; height:15px;"> 📐 Dimensionamentos
           </label>
           <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); cursor:pointer;">
             <input type="checkbox" class="access-toggle" data-chave="${escapeHtmlA(chave)}" data-modulo="osEnergy" ${acessos.osEnergy ? 'checked' : ''} style="width:15px; height:15px;"> 🛠️ OS Energy
@@ -3434,7 +3752,7 @@ function renderColabList(){
       const modulo = cb.dataset.modulo;
       const c = colaboradores[chave];
       if(!c) return;
-      if(!c.acessos) c.acessos = { estoque: true, os: true, financeiro: true, nfsEnergy: false, orcamento: false, osEnergy: false, copelProtocolos: false, copelOutrosServicos: false, copelFinanceiro: false, agendamento: false, alertaCobranca: false };
+      if(!c.acessos) c.acessos = { estoque: true, os: true, financeiro: true, nfsEnergy: false, orcamento: false, dimensionamentos: false, osEnergy: false, copelProtocolos: false, copelOutrosServicos: false, copelFinanceiro: false, agendamento: false, alertaCobranca: false };
 
       const wasChecked = cb.checked;
       const modulosPrincipais = ['estoque', 'os', 'financeiro'];
@@ -4415,16 +4733,72 @@ async function showOrcamentoScreen(){
   document.getElementById('osApp').style.display = 'none';
   document.getElementById('finApp').style.display = 'none';
   document.getElementById('nfsEnergyApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
   document.getElementById('adminPanelView').style.display = 'none';
   document.getElementById('orcamentoApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('orcamentoUserChipName').textContent = currentUser;
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'orcamento'));
+  window.scrollTo(0,0);
   stopAutoRefresh();
   stopOsAutoRefresh();
   stopFinAutoRefresh();
   showOrcamentoSubView('menu');
 }
+
+function temAcessoDimensionamentos(){
+  return isAdminSession || (currentUserAccess && currentUserAccess.dimensionamentos === true);
+}
+
+let dimensionamentosCurrentSubView = 'menu';
+
+function showDimensionamentosScreen(){
+  if(!isAdminSession && currentUserAccess && currentUserAccess.dimensionamentos === false){
+    showToast('Você não tem acesso liberado a Dimensionamentos.');
+    return;
+  }
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('osApp').style.display = 'none';
+  document.getElementById('finApp').style.display = 'none';
+  document.getElementById('nfsEnergyApp').style.display = 'none';
+  document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
+  document.getElementById('adminPanelView').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById('dimensionamentosUserChipName').textContent = currentUser;
+  document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'dimensionamentos'));
+  window.scrollTo(0,0);
+  stopAutoRefresh();
+  stopOsAutoRefresh();
+  stopFinAutoRefresh();
+  showDimensionamentosSubView('menu');
+}
+
+function showDimensionamentosSubView(view){
+  dimensionamentosCurrentSubView = view;
+  const viewIds = { 'menu': 'dimensionamentosMenuView', 'motores': 'dimensionamentosMotoresView' };
+  Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById(viewIds[view]).style.display = 'block';
+
+  document.getElementById('dimensionamentosBackBtn').style.display = view === 'menu' ? 'none' : 'flex';
+  document.getElementById('dimensionamentosHeaderTitle').textContent = { menu: 'Dimensionamentos', motores: 'Dimensionamento de Motores' }[view];
+  document.getElementById('dimensionamentosFab').style.display = (view === 'motores') ? 'flex' : 'none';
+  document.getElementById('importMotoresBtn').style.display = (view === 'motores') ? 'flex' : 'none';
+
+  if(view === 'motores'){
+    loadMotoresList().then(renderMotoresList);
+  }
+}
+document.querySelectorAll('[data-dim-nav]').forEach(card=>{
+  card.addEventListener('click', ()=> showDimensionamentosSubView(card.dataset.dimNav));
+});
+document.getElementById('dimensionamentosBackBtn').addEventListener('click', ()=> showDimensionamentosSubView('menu'));
+document.getElementById('homeBtnDimensionamentos').addEventListener('click', showHomeScreen);
+document.getElementById('dimensionamentosUserChip').addEventListener('click', ()=>{
+  if(confirm('Sair e trocar de colaborador?')) logout();
+});
 
 function showOrcamentoSubView(view){
   orcamentoCurrentSubView = view;
@@ -4481,41 +4855,99 @@ async function saveOrcamentosSolares(){
   }catch(e){ return false; }
 }
 
-function atualizarMediaConsumo(){
-  const valores = [];
-  for(let i=1; i<=12; i++){
-    const v = parseFloat(document.getElementById('orcamentoMes' + i).value);
-    if(!isNaN(v) && v > 0) valores.push(v);
+let orcamentoHistoricoAtual = []; // [{mes, consumo}]
+
+function renderHistoricoConsumo(){
+  const wrap = document.getElementById('orcamentoHistoricoList');
+  if(orcamentoHistoricoAtual.length === 0){
+    wrap.innerHTML = '<p style="font-size:12.5px; color:var(--text-dim); margin:0;">Nenhum mês adicionado ainda.</p>';
+  }else{
+    wrap.innerHTML = orcamentoHistoricoAtual.map((h, idx) => `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="flex:1.3; font-size:13px; color:var(--paper);">${escapeHtml(h.mes)}</div>
+        <div style="flex:1; font-size:13px; color:var(--paper);">${fmtInt(h.consumo)} kWh</div>
+        <button class="small-btn danger historico-mes-remove" data-idx="${idx}" type="button">Remover</button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.historico-mes-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        orcamentoHistoricoAtual.splice(parseInt(btn.dataset.idx, 10), 1);
+        renderHistoricoConsumo();
+        atualizarMediaConsumo();
+      });
+    });
   }
+}
+
+function atualizarMediaConsumo(){
+  const valores = orcamentoHistoricoAtual.map(h => h.consumo).filter(v => v > 0);
   const media = valores.length ? (valores.reduce((s,v)=>s+v,0) / valores.length) : 0;
   document.getElementById('orcamentoConsumoMensal').value = valores.length ? Math.round(media) : '';
   calcularOrcamentoSolar();
 }
-for(let i=1; i<=12; i++){
-  document.getElementById('orcamentoMes' + i).addEventListener('input', atualizarMediaConsumo);
+
+document.getElementById('orcamentoAddMesBtn').addEventListener('click', ()=>{
+  const mes = document.getElementById('orcamentoNovoMes').value.trim();
+  const consumo = parseFloat(document.getElementById('orcamentoNovoConsumo').value) || 0;
+  if(!mes || consumo <= 0){
+    showToast('Preencha o mês/ano e o consumo em kWh.');
+    return;
+  }
+  orcamentoHistoricoAtual.push({ mes, consumo });
+  document.getElementById('orcamentoNovoMes').value = '';
+  document.getElementById('orcamentoNovoConsumo').value = '';
+  renderHistoricoConsumo();
+  atualizarMediaConsumo();
+});
+
+function atualizarTarifaTotal(){
+  const te = parseFloat(document.getElementById('orcamentoTarifaTe').value) || 0;
+  const tusd = parseFloat(document.getElementById('orcamentoTarifaTusd').value) || 0;
+  if(te || tusd){
+    document.getElementById('orcamentoTarifa').value = (te + tusd).toFixed(6);
+  }
+  calcularOrcamentoSolar();
 }
+document.getElementById('orcamentoTarifaTe').addEventListener('input', atualizarTarifaTotal);
+document.getElementById('orcamentoTarifaTusd').addEventListener('input', atualizarTarifaTotal);
 
 function calcularOrcamentoSolar(){
   const consumo = parseFloat(document.getElementById('orcamentoConsumoMensal').value) || 0;
   const tarifa = parseFloat(document.getElementById('orcamentoTarifa').value) || 0;
-  const potencia = parseFloat(document.getElementById('orcamentoPotencia').value) || 0;
-  const hsp = parseFloat(document.getElementById('orcamentoHsp').value) || 0;
+  const hsp = parseFloat(document.getElementById('orcamentoHsp').value) || 3.7;
+  const potenciaModulo = parseFloat(document.getElementById('orcamentoPotenciaModulo').value) || 0;
   const valorEquip = parseFloat(document.getElementById('orcamentoValorEquipamentos').value) || 0;
   const valorMao = parseFloat(document.getElementById('orcamentoValorMaoDeObra').value) || 0;
   const outros = parseFloat(document.getElementById('orcamentoOutrosCustos').value) || 0;
   const desconto = parseFloat(document.getElementById('orcamentoDesconto').value) || 0;
 
-  const geracaoMensal = potencia * hsp * 30; // kWh/mês estimado
-  const economiaMensal = Math.min(geracaoMensal, consumo > 0 ? Infinity : geracaoMensal) * tarifa; // simplificado: toda geração vira economia
+  // Potência necessária = consumo médio mensal / (30 × HSP)
+  const potenciaNecessaria = (consumo > 0 && hsp > 0) ? (consumo / (30 * hsp)) : 0;
+  document.getElementById('orcamentoPotenciaNecessaria').value = potenciaNecessaria ? potenciaNecessaria.toFixed(2) : '';
+
+  // Quantidade de módulos = arredondado pra cima (Math.ceil) — nunca pra baixo
+  let qtdModulos = 0;
+  let potenciaInstalada = 0;
+  if(potenciaNecessaria > 0 && potenciaModulo > 0){
+    qtdModulos = Math.ceil((potenciaNecessaria * 1000) / potenciaModulo);
+    potenciaInstalada = (qtdModulos * potenciaModulo) / 1000;
+  }
+  document.getElementById('orcamentoQtdModulos').value = qtdModulos || '';
+  document.getElementById('orcamentoPotenciaInstalada').value = potenciaInstalada ? potenciaInstalada.toFixed(2) : '';
+
+  // Geração estimada usa a potência REALMENTE instalada (não a necessária)
+  const geracaoMensal = potenciaInstalada * hsp * 30;
+  const economiaMensal = geracaoMensal * tarifa;
   const valorTotal = Math.max(0, valorEquip + valorMao + outros - desconto);
   const paybackMeses = economiaMensal > 0 ? (valorTotal / economiaMensal) : 0;
 
-  // Geração info
   const geracaoInfo = document.getElementById('orcamentoGeracaoInfo');
-  if(potencia > 0 && hsp > 0){
-    geracaoInfo.textContent = `Geração estimada: ${geracaoMensal.toFixed(0)} kWh/mês (${potencia}kWp × ${hsp}h × 30 dias)`;
+  if(potenciaInstalada > 0){
+    geracaoInfo.textContent = `Potência necessária: ${potenciaNecessaria.toFixed(2)} kWp · Módulo: ${potenciaModulo}W · Quantidade: ${qtdModulos} · Potência instalada: ${potenciaInstalada.toFixed(2)} kWp · Geração estimada: ${geracaoMensal.toFixed(0)} kWh/mês`;
+  }else if(potenciaNecessaria > 0){
+    geracaoInfo.textContent = `Potência necessária: ${potenciaNecessaria.toFixed(2)} kWp. Informe a potência do módulo para calcular a quantidade e a geração.`;
   }else{
-    geracaoInfo.textContent = 'Preencha potência e HSP para estimar a geração.';
+    geracaoInfo.textContent = 'Preencha o histórico de consumo para calcular a potência necessária.';
   }
 
   document.getElementById('orcamentoValorTotalDisplay').textContent = fmtMoney(valorTotal);
@@ -4528,9 +4960,9 @@ function calcularOrcamentoSolar(){
     retornoInfo.textContent = 'Preencha consumo, sistema e custos acima para calcular.';
   }
 
-  return { geracaoMensal, economiaMensal, valorTotal, paybackMeses };
+  return { geracaoMensal, economiaMensal, valorTotal, paybackMeses, potenciaNecessaria, potenciaInstalada, qtdModulos };
 }
-['orcamentoTarifa','orcamentoPotencia','orcamentoValorEquipamentos','orcamentoValorMaoDeObra','orcamentoOutrosCustos','orcamentoDesconto'].forEach(id=>{
+['orcamentoTarifa','orcamentoPotenciaModulo','orcamentoValorEquipamentos','orcamentoValorMaoDeObra','orcamentoOutrosCustos','orcamentoDesconto'].forEach(id=>{
   document.getElementById(id).addEventListener('input', calcularOrcamentoSolar);
 });
 
@@ -4559,7 +4991,7 @@ function renderOrcamentosSolares(){
       <div class="item" data-id="${o.id}">
         <div class="thumb placeholder">☀️</div>
         <div style="flex:1; min-width:0;">
-          <div class="code">${o.potencia ? o.potencia + ' kWp' : ''}</div>
+          <div class="code">${o.potenciaInstalada ? o.potenciaInstalada.toFixed(2) + ' kWp instalados' : ''}</div>
           <div class="name">${escapeHtml(o.cliente)}</div>
           <div class="meta"><span style="font-weight:700; color:var(--amber); font-size:15px;">${fmtMoney(o.valorTotal || 0)}</span></div>
           <div class="badges">
@@ -4614,10 +5046,17 @@ function openOrcamentoAdd(){
   document.getElementById('orcamentoTelefone').value = '';
   document.getElementById('orcamentoEmail').value = '';
   document.getElementById('orcamentoEndereco').value = '';
-  for(let i=1; i<=12; i++){ document.getElementById('orcamentoMes' + i).value = ''; }
+  document.getElementById('orcamentoCep').value = '';
+  document.getElementById('orcamentoUc').value = '';
+  document.getElementById('orcamentoCidade').value = '';
+  document.getElementById('orcamentoEstado').value = '';
+  document.getElementById('orcamentoMesReferencia').value = '';
+  orcamentoHistoricoAtual = [];
+  renderHistoricoConsumo();
   document.getElementById('orcamentoConsumoMensal').value = '';
+  document.getElementById('orcamentoTarifaTe').value = '';
+  document.getElementById('orcamentoTarifaTusd').value = '';
   document.getElementById('orcamentoTarifa').value = '';
-  document.getElementById('orcamentoPotencia').value = '';
   document.getElementById('orcamentoHsp').value = '3.7';
   document.getElementById('orcamentoQtdModulos').value = '';
   document.getElementById('orcamentoPotenciaModulo').value = '';
@@ -4644,11 +5083,28 @@ function openOrcamentoEdit(id){
   document.getElementById('orcamentoTelefone').value = o.telefone || '';
   document.getElementById('orcamentoEmail').value = o.email || '';
   document.getElementById('orcamentoEndereco').value = o.endereco || '';
-  const meses = Array.isArray(o.mesesConsumo) ? o.mesesConsumo : [];
-  for(let i=1; i<=12; i++){ document.getElementById('orcamentoMes' + i).value = meses[i-1] || ''; }
+  document.getElementById('orcamentoCep').value = o.cep || '';
+  document.getElementById('orcamentoUc').value = o.uc || '';
+  document.getElementById('orcamentoCidade').value = o.cidade || '';
+  document.getElementById('orcamentoEstado').value = o.estado || '';
+  document.getElementById('orcamentoMesReferencia').value = o.mesReferencia || '';
+
+  if(Array.isArray(o.historicoConsumo) && o.historicoConsumo.length){
+    orcamentoHistoricoAtual = JSON.parse(JSON.stringify(o.historicoConsumo));
+  }else if(Array.isArray(o.mesesConsumo) && o.mesesConsumo.length){
+    // compatibilidade com orçamentos antigos (formato de 12 campos fixos)
+    orcamentoHistoricoAtual = o.mesesConsumo
+      .map((v, i) => ({ mes: 'Mês ' + (i+1), consumo: v }))
+      .filter(h => h.consumo > 0);
+  }else{
+    orcamentoHistoricoAtual = [];
+  }
+  renderHistoricoConsumo();
+
   document.getElementById('orcamentoConsumoMensal').value = o.consumoMensal || '';
+  document.getElementById('orcamentoTarifaTe').value = o.tarifaTe || '';
+  document.getElementById('orcamentoTarifaTusd').value = o.tarifaTusd || '';
   document.getElementById('orcamentoTarifa').value = o.tarifa || '';
-  document.getElementById('orcamentoPotencia').value = o.potencia || '';
   document.getElementById('orcamentoHsp').value = '3.7';
   document.getElementById('orcamentoQtdModulos').value = o.qtdModulos || '';
   document.getElementById('orcamentoPotenciaModulo').value = o.potenciaModulo || '';
@@ -4683,15 +5139,23 @@ async function saveOrcamento(){
     telefone: document.getElementById('orcamentoTelefone').value.trim(),
     email: document.getElementById('orcamentoEmail').value.trim(),
     endereco: document.getElementById('orcamentoEndereco').value.trim(),
+    cep: document.getElementById('orcamentoCep').value.trim(),
+    uc: document.getElementById('orcamentoUc').value.trim(),
+    cidade: document.getElementById('orcamentoCidade').value.trim(),
+    estado: document.getElementById('orcamentoEstado').value.trim().toUpperCase(),
+    mesReferencia: document.getElementById('orcamentoMesReferencia').value.trim(),
+    historicoConsumo: JSON.parse(JSON.stringify(orcamentoHistoricoAtual)),
     consumoMensal: parseFloat(document.getElementById('orcamentoConsumoMensal').value) || 0,
+    tarifaTe: parseFloat(document.getElementById('orcamentoTarifaTe').value) || 0,
+    tarifaTusd: parseFloat(document.getElementById('orcamentoTarifaTusd').value) || 0,
     tarifa: parseFloat(document.getElementById('orcamentoTarifa').value) || 0,
-    potencia: parseFloat(document.getElementById('orcamentoPotencia').value) || 0,
-    hsp: parseFloat(document.getElementById('orcamentoHsp').value) || 0,
-    qtdModulos: parseFloat(document.getElementById('orcamentoQtdModulos').value) || 0,
+    hsp: parseFloat(document.getElementById('orcamentoHsp').value) || 3.7,
+    potenciaNecessaria: calc.potenciaNecessaria,
+    qtdModulos: calc.qtdModulos,
     potenciaModulo: parseFloat(document.getElementById('orcamentoPotenciaModulo').value) || 0,
+    potenciaInstalada: calc.potenciaInstalada,
     inversor: document.getElementById('orcamentoInversor').value.trim(),
     tipoTelhado: document.getElementById('orcamentoTipoTelhado').value,
-    mesesConsumo: Array.from({length:12}, (_,i)=> parseFloat(document.getElementById('orcamentoMes' + (i+1)).value) || 0),
     valorEquipamentos: parseFloat(document.getElementById('orcamentoValorEquipamentos').value) || 0,
     valorMaoDeObra: parseFloat(document.getElementById('orcamentoValorMaoDeObra').value) || 0,
     outrosCustos: parseFloat(document.getElementById('orcamentoOutrosCustos').value) || 0,
@@ -4766,9 +5230,16 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
   const telefone = document.getElementById('orcamentoTelefone').value.trim();
   const email = document.getElementById('orcamentoEmail').value.trim();
   const endereco = document.getElementById('orcamentoEndereco').value.trim();
+  const cep = document.getElementById('orcamentoCep').value.trim();
+  const uc = document.getElementById('orcamentoUc').value.trim();
+  const cidade = document.getElementById('orcamentoCidade').value.trim();
+  const estado = document.getElementById('orcamentoEstado').value.trim();
   const consumo = document.getElementById('orcamentoConsumoMensal').value;
+  const tarifaTe = document.getElementById('orcamentoTarifaTe').value;
+  const tarifaTusd = document.getElementById('orcamentoTarifaTusd').value;
   const tarifa = document.getElementById('orcamentoTarifa').value;
-  const potencia = document.getElementById('orcamentoPotencia').value;
+  const potenciaNecessaria = document.getElementById('orcamentoPotenciaNecessaria').value;
+  const potenciaInstalada = document.getElementById('orcamentoPotenciaInstalada').value;
   const qtdModulos = document.getElementById('orcamentoQtdModulos').value;
   const potenciaModulo = document.getElementById('orcamentoPotenciaModulo').value;
   const inversor = document.getElementById('orcamentoInversor').value.trim();
@@ -4797,13 +5268,18 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
       <b>${escapeHtml(cliente)}</b><br>
       ${telefone ? 'Telefone: ' + escapeHtml(telefone) + '<br>' : ''}
       ${email ? 'E-mail: ' + escapeHtml(email) + '<br>' : ''}
-      ${endereco ? 'Endereço: ' + escapeHtml(endereco) : ''}
+      ${endereco ? 'Endereço: ' + escapeHtml(endereco) + '<br>' : ''}
+      ${cep ? 'CEP: ' + escapeHtml(cep) + '<br>' : ''}
+      ${(cidade || estado) ? 'Cidade/UF: ' + escapeHtml(cidade) + (estado ? '/' + escapeHtml(estado) : '') + '<br>' : ''}
+      ${uc ? 'Unidade Consumidora: ' + escapeHtml(uc) : ''}
     </p>
 
     <h2>Sistema proposto</h2>
     <p>
-      <b>Potência do sistema:</b> ${potencia || '—'} kWp<br>
-      ${qtdModulos ? `<b>Módulos:</b> ${qtdModulos} × ${potenciaModulo || '—'}Wp<br>` : ''}
+      <b>Potência necessária:</b> ${potenciaNecessaria || '—'} kWp<br>
+      <b>Potência do módulo:</b> ${potenciaModulo || '—'} W<br>
+      <b>Quantidade de módulos:</b> ${qtdModulos || '—'}<br>
+      <b>Potência instalada:</b> ${potenciaInstalada || '—'} kWp<br>
       ${inversor ? `<b>Inversor:</b> ${escapeHtml(inversor)}<br>` : ''}
       ${telhadoLabel ? `<b>Tipo de telhado:</b> ${telhadoLabel}<br>` : ''}
       <b>Geração estimada:</b> ${calc.geracaoMensal.toFixed(0)} kWh/mês
@@ -4812,7 +5288,8 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
     <h2>Consumo atual</h2>
     <p>
       <b>Consumo médio:</b> ${consumo || '—'} kWh/mês<br>
-      <b>Tarifa de energia:</b> ${fmtMoney(parseFloat(tarifa)||0)}/kWh
+      <b>Tarifa TE:</b> ${fmtMoney(parseFloat(tarifaTe)||0)}/kWh &nbsp;·&nbsp; <b>Tarifa TUSD:</b> ${fmtMoney(parseFloat(tarifaTusd)||0)}/kWh<br>
+      <b>Tarifa total:</b> ${fmtMoney(parseFloat(tarifa)||0)}/kWh
     </p>
 
     <h2>Investimento</h2>
@@ -4837,22 +5314,6 @@ document.getElementById('orcamentoPdfBtn').addEventListener('click', ()=>{
 });
 
 /* ---------- Leitura automática da fatura de energia anexada ---------- */
-function extrairTarifaEnergiaDoTexto(texto){
-  const padroes = [
-    /tarifa[^\d]{0,25}(\d{1,3},\d{2,6})/i,
-    /valor\s*unit[aá]rio[^\d]{0,25}(\d{1,3},\d{2,6})/i,
-    /(\d{1,3},\d{2,6})\s*\/?\s*kwh/i
-  ];
-  for(const p of padroes){
-    const m = texto.match(p);
-    if(m) return parseFloat(m[1].replace(',', '.'));
-  }
-  return null;
-}
-function extrairConsumoFaturaDoTexto(texto){
-  const m = texto.match(/consumo[^\d]{0,25}(\d{1,5})\s*kwh/i) || texto.match(/(\d{1,5})\s*kwh/i);
-  return m ? parseInt(m[1], 10) : null;
-}
 function extrairEnderecoDoTexto(texto){
   const linhas = texto.split(/\n/);
   for(const linha of linhas){
@@ -4860,6 +5321,49 @@ function extrairEnderecoDoTexto(texto){
     if(m && m[1].trim().length > 5) return m[1].trim();
   }
   return null;
+}
+function extrairCepDoTexto(texto){
+  const m = texto.match(/\b(\d{5})-?(\d{3})\b/);
+  return m ? `${m[1]}-${m[2]}` : null;
+}
+function extrairCidadeEstadoDoTexto(texto){
+  // procura padrão "Cidade - UF" ou "Cidade/UF" (ex: "Paiçandu - PR" ou "Paiçandu/PR")
+  const m = texto.match(/([A-ZÀ-Úa-zà-ú][A-ZÀ-Úa-zà-ú\s]{2,35})\s*[-\/]\s*(PR|SP|RJ|MG|BA|RS|SC|PE|CE|GO|MA|PA|ES|PB|AM|MT|MS|RN|PI|AL|SE|RO|TO|AC|AP|RR|DF)\b/);
+  if(m) return { cidade: m[1].trim(), estado: m[2].toUpperCase() };
+  return { cidade: null, estado: null };
+}
+function extrairUcDoTexto(texto){
+  const m = texto.match(/unidade\s*consumidora[^\d]{0,20}(\d{5,15})/i) || texto.match(/\bUC[:\s\-]{1,5}(\d{5,15})\b/i);
+  return m ? m[1] : null;
+}
+const MESES_ABREV = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+function extrairMesReferenciaDoTexto(texto){
+  const m = texto.match(/(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/i);
+  return m ? (m[1].toUpperCase() + '/' + m[2].slice(-2)) : null;
+}
+function extrairHistoricoConsumoDoTexto(texto){
+  // procura padrões tipo "AGO/26 2.254" ou "AGO/26  2254 kWh" repetidos ao longo da fatura
+  const regex = /(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})\D{0,12}?([\d\.]{3,7})/gi;
+  const resultados = [];
+  const vistos = new Set();
+  let m;
+  while((m = regex.exec(texto)) !== null){
+    const mes = m[1].toUpperCase() + '/' + m[2].slice(-2);
+    const consumo = parseInt(m[3].replace(/\./g,''), 10);
+    if(!isNaN(consumo) && consumo > 0 && consumo < 100000 && !vistos.has(mes)){
+      vistos.add(mes);
+      resultados.push({ mes, consumo });
+    }
+  }
+  return resultados;
+}
+function extrairTarifaTeTusdDoTexto(texto){
+  let te = null, tusd = null;
+  const teMatch = texto.match(/(?:energia\s*el[eé]t(?:rica)?\s*consumo|^|\s)te\b[\s\S]{0,100}?(\d{1,3},\d{4,6})/i);
+  if(teMatch) te = parseFloat(teMatch[1].replace(',', '.'));
+  const tusdMatch = texto.match(/(?:energia\s*el[eé]t(?:rica)?\s*uso\s*sistema|tusd)\b[\s\S]{0,100}?(\d{1,3},\d{4,6})/i);
+  if(tusdMatch) tusd = parseFloat(tusdMatch[1].replace(',', '.'));
+  return { te, tusd };
 }
 
 document.getElementById('orcamentoDocLabel').addEventListener('click', ()=> document.getElementById('orcamentoDocInput').click());
@@ -4882,38 +5386,601 @@ document.getElementById('orcamentoDocInput').addEventListener('change', async (e
 
     const nome = extrairNomeDoTexto(texto);
     const endereco = extrairEnderecoDoTexto(texto);
-    const tarifa = extrairTarifaEnergiaDoTexto(texto);
-    const consumo = extrairConsumoFaturaDoTexto(texto);
+    const cep = extrairCepDoTexto(texto);
+    const uc = extrairUcDoTexto(texto);
+    const { cidade, estado } = extrairCidadeEstadoDoTexto(texto);
+    const mesReferencia = extrairMesReferenciaDoTexto(texto);
+    const historico = extrairHistoricoConsumoDoTexto(texto);
+    const { te, tusd } = extrairTarifaTeTusdDoTexto(texto);
 
-    const preenchido = [];
-    if(nome && !document.getElementById('orcamentoCliente').value.trim()){
-      document.getElementById('orcamentoCliente').value = nome;
-      preenchido.push('nome');
-    }
-    if(endereco){
-      document.getElementById('orcamentoEndereco').value = endereco;
-      preenchido.push('endereço');
-    }
-    if(tarifa){
-      document.getElementById('orcamentoTarifa').value = tarifa;
-      preenchido.push('tarifa');
-    }
-    if(consumo){
-      document.getElementById('orcamentoMes1').value = consumo;
-      atualizarMediaConsumo();
-      preenchido.push('consumo');
-    }
-    calcularOrcamentoSolar();
-
-    if(preenchido.length){
-      showToast('Preenchido automaticamente: ' + preenchido.join(', ') + '. Confira os dados antes de salvar.');
-    }else{
-      showToast('Não consegui identificar os dados nessa fatura. Preencha manualmente.');
-    }
+    abrirFaturaPreview({ nome, endereco, cep, uc, cidade, estado, mesReferencia, historico, te, tusd });
   }catch(err){
     showToast('Não foi possível ler esse arquivo. Preencha manualmente.');
   }
   e.target.value = '';
+});
+
+/* ---------- Tela intermediária "Dados identificados na fatura" ---------- */
+let fpHistoricoAtual = [];
+
+function renderFpHistorico(){
+  const wrap = document.getElementById('fpHistoricoList');
+  if(fpHistoricoAtual.length === 0){
+    wrap.innerHTML = '<p style="font-size:12.5px; color:var(--text-dim); margin:0;">Nenhum mês identificado — adicione manualmente se precisar.</p>';
+  }else{
+    wrap.innerHTML = fpHistoricoAtual.map((h, idx) => `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="flex:1.3; font-size:13px; color:var(--paper);">${escapeHtml(h.mes)}</div>
+        <div style="flex:1; font-size:13px; color:var(--paper);">${fmtInt(h.consumo)} kWh</div>
+        <button class="small-btn danger fp-mes-remove" data-idx="${idx}" type="button">Remover</button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.fp-mes-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        fpHistoricoAtual.splice(parseInt(btn.dataset.idx, 10), 1);
+        renderFpHistorico();
+        atualizarFpCalculos();
+      });
+    });
+  }
+}
+document.getElementById('fpAddMesBtn').addEventListener('click', ()=>{
+  const mes = document.getElementById('fpNovoMes').value.trim();
+  const consumo = parseFloat(document.getElementById('fpNovoConsumo').value) || 0;
+  if(!mes || consumo <= 0){
+    showToast('Preencha o mês/ano e o consumo em kWh.');
+    return;
+  }
+  fpHistoricoAtual.push({ mes, consumo });
+  document.getElementById('fpNovoMes').value = '';
+  document.getElementById('fpNovoConsumo').value = '';
+  renderFpHistorico();
+  atualizarFpCalculos();
+});
+
+function atualizarFpCalculos(){
+  const valores = fpHistoricoAtual.map(h=>h.consumo).filter(v=>v>0);
+  const media = valores.length ? valores.reduce((s,v)=>s+v,0)/valores.length : 0;
+  document.getElementById('fpMediaInfo').textContent = valores.length
+    ? `Média calculada: ${Math.round(media)} kWh/mês (${valores.length} mês(es) considerado(s))`
+    : 'Adicione ao menos um mês para calcular a média.';
+
+  const te = parseFloat(document.getElementById('fpTarifaTe').value) || 0;
+  const tusd = parseFloat(document.getElementById('fpTarifaTusd').value) || 0;
+  const total = te + tusd;
+  document.getElementById('fpTarifaTotal').value = total ? total.toFixed(6) : '';
+
+  const hsp = 3.7;
+  const potenciaNecessaria = media > 0 ? (media / (30 * hsp)) : 0;
+  document.getElementById('fpPotenciaInfo').textContent = potenciaNecessaria
+    ? `Potência necessária calculada: ${potenciaNecessaria.toFixed(2)} kWp (consumo médio ÷ (30 × 3,7))`
+    : '';
+
+  return { media, potenciaNecessaria };
+}
+document.getElementById('fpTarifaTe').addEventListener('input', atualizarFpCalculos);
+document.getElementById('fpTarifaTusd').addEventListener('input', atualizarFpCalculos);
+
+function abrirFaturaPreview(dados){
+  document.getElementById('fpNome').value = dados.nome || '';
+  document.getElementById('fpEndereco').value = dados.endereco || '';
+  document.getElementById('fpCep').value = dados.cep || '';
+  document.getElementById('fpUc').value = dados.uc || '';
+  document.getElementById('fpCidade').value = dados.cidade || '';
+  document.getElementById('fpEstado').value = dados.estado || '';
+  document.getElementById('fpMesReferencia').value = dados.mesReferencia || '';
+  document.getElementById('fpTarifaTe').value = dados.te || '';
+  document.getElementById('fpTarifaTusd').value = dados.tusd || '';
+  fpHistoricoAtual = Array.isArray(dados.historico) ? [...dados.historico] : [];
+  renderFpHistorico();
+  atualizarFpCalculos();
+
+  document.getElementById('faturaPreviewBackdrop').classList.add('open');
+  document.getElementById('faturaPreviewSheet').classList.add('open');
+}
+function fecharFaturaPreview(){
+  document.getElementById('faturaPreviewBackdrop').classList.remove('open');
+  document.getElementById('faturaPreviewSheet').classList.remove('open');
+}
+document.getElementById('fpCancelBtn').addEventListener('click', fecharFaturaPreview);
+document.getElementById('faturaPreviewBackdrop').addEventListener('click', fecharFaturaPreview);
+
+document.getElementById('fpConfirmarBtn').addEventListener('click', ()=>{
+  const nome = document.getElementById('fpNome').value.trim();
+  const endereco = document.getElementById('fpEndereco').value.trim();
+  const cep = document.getElementById('fpCep').value.trim();
+  const uc = document.getElementById('fpUc').value.trim();
+  const cidade = document.getElementById('fpCidade').value.trim();
+  const estado = document.getElementById('fpEstado').value.trim().toUpperCase();
+  const mesReferencia = document.getElementById('fpMesReferencia').value.trim();
+  const te = document.getElementById('fpTarifaTe').value;
+  const tusd = document.getElementById('fpTarifaTusd').value;
+  const total = document.getElementById('fpTarifaTotal').value;
+
+  if(nome && !document.getElementById('orcamentoCliente').value.trim()){
+    document.getElementById('orcamentoCliente').value = nome;
+  }
+  if(endereco) document.getElementById('orcamentoEndereco').value = endereco;
+  if(cep) document.getElementById('orcamentoCep').value = cep;
+  if(uc) document.getElementById('orcamentoUc').value = uc;
+  if(cidade) document.getElementById('orcamentoCidade').value = cidade;
+  if(estado) document.getElementById('orcamentoEstado').value = estado;
+  if(mesReferencia) document.getElementById('orcamentoMesReferencia').value = mesReferencia;
+  if(te) document.getElementById('orcamentoTarifaTe').value = te;
+  if(tusd) document.getElementById('orcamentoTarifaTusd').value = tusd;
+  if(total) document.getElementById('orcamentoTarifa').value = total;
+
+  if(fpHistoricoAtual.length){
+    orcamentoHistoricoAtual = [...fpHistoricoAtual];
+    renderHistoricoConsumo();
+    atualizarMediaConsumo();
+  }
+
+  calcularOrcamentoSolar();
+  fecharFaturaPreview();
+  showToast('Dados da fatura aplicados. Confira antes de salvar.');
+});
+
+/* ======================================================
+   DIMENSIONAMENTOS > DIMENSIONAMENTO DE MOTORES
+   ====================================================== */
+const MOTOR_KEY = 'estoque:dimensionamento_motores';
+let motoresList = [];
+let editingMotorId = null;
+let motorFasesAtual = 'trifasico';
+let motorFrequenciaAtual = '60';
+
+// Conversão de potência para watts. Ponto de extensão: se um dia quisermos
+// usar tabelas técnicas de fabricante em vez da fórmula básica, é só adicionar
+// um "metodoCalculo" diferente aqui dentro de calcularCorrenteMotor().
+const POTENCIA_CONVERSAO_MOTOR = { cv: 735.5, hp: 745.7, kw: 1000 };
+const FP_PADRAO_MOTOR = 0.85;
+const RENDIMENTO_PADRAO_MOTOR = 0.90;
+const FASES_LABEL_MOTOR = { trifasico: 'Trifásico', monofasico: 'Monofásico' };
+
+function calcularCorrenteMotor(dados){
+  const potenciaNum = parseFloat(dados.potencia) || 0;
+  const tensaoNum = parseFloat(dados.tensao) || 0;
+
+  if(!potenciaNum || !tensaoNum){
+    return { valido: false, motivo: 'Potência e tensão são obrigatórias.', corrente: null };
+  }
+
+  const fatorConversao = POTENCIA_CONVERSAO_MOTOR[dados.unidadePotencia] || POTENCIA_CONVERSAO_MOTOR.cv;
+  const potenciaWatts = potenciaNum * fatorConversao;
+
+  let fp = parseFloat(dados.fatorPotencia);
+  let fpEhPadrao = false;
+  if(isNaN(fp) || fp <= 0){
+    fp = FP_PADRAO_MOTOR;
+    fpEhPadrao = true;
+  }else if(fp > 1){
+    fp = fp / 100;
+  }
+
+  let rend = parseFloat(dados.rendimento);
+  let rendEhPadrao = false;
+  if(isNaN(rend) || rend <= 0){
+    rend = RENDIMENTO_PADRAO_MOTOR;
+    rendEhPadrao = true;
+  }else if(rend > 1){
+    rend = rend / 100;
+  }
+
+  let corrente;
+  if((dados.fases || 'trifasico') === 'monofasico'){
+    corrente = potenciaWatts / (tensaoNum * fp * rend);
+  }else{
+    corrente = potenciaWatts / (Math.sqrt(3) * tensaoNum * fp * rend);
+  }
+
+  return {
+    valido: true, corrente, potenciaWatts,
+    fpUsado: fp, rendUsado: rend, fpEhPadrao, rendEhPadrao
+  };
+}
+
+async function loadMotoresList(){
+  try{
+    const res = await window.storage.get(MOTOR_KEY, true);
+    motoresList = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ motoresList = []; }
+}
+async function saveMotoresList(){
+  try{
+    await window.storage.set(MOTOR_KEY, JSON.stringify(motoresList), true);
+    return true;
+  }catch(e){ return false; }
+}
+
+function renderMotoresList(){
+  const list = document.getElementById('motoresList');
+  const q = document.getElementById('motoresSearchInput').value.trim().toLowerCase();
+  let filtered = motoresList.filter(m => !q || (m.tag||'').toLowerCase().includes(q) || (m.descricao||'').toLowerCase().includes(q));
+  filtered = filtered.slice().sort((a,b)=> (a.tag||'').localeCompare(b.tag||'', 'pt-BR'));
+
+  document.getElementById('motoresStatTotal').textContent = fmtInt(motoresList.length);
+  const potenciaTotalKw = motoresList.reduce((s,m)=>{
+    const fator = POTENCIA_CONVERSAO_MOTOR[m.unidadePotencia] || POTENCIA_CONVERSAO_MOTOR.cv;
+    return s + ((parseFloat(m.potencia)||0) * fator / 1000);
+  }, 0);
+  document.getElementById('motoresStatPotencia').textContent = potenciaTotalKw.toFixed(2) + ' kW';
+
+  // Totais de corrente agrupados por tensão + fases — nunca somar sistemas diferentes
+  const grupos = {};
+  motoresList.forEach(m=>{
+    if(!m.valido || !m.correnteNominal) return;
+    const chave = `${m.tensao}V · ${FASES_LABEL_MOTOR[m.fases] || m.fases}`;
+    grupos[chave] = (grupos[chave] || 0) + m.correnteNominal;
+  });
+  const gruposWrap = document.getElementById('motoresTotaisPorGrupo');
+  const chaves = Object.keys(grupos);
+  if(chaves.length === 0){
+    gruposWrap.innerHTML = '';
+  }else{
+    gruposWrap.innerHTML = `<div class="admin-card" style="padding:12px 14px; margin-bottom:0;"><p style="font-size:12px; color:var(--text-dim); margin:0 0 6px;">Corrente total por grupo (tensão + fases — nunca somados entre si):</p>` +
+      chaves.map(k => `<div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:3px;"><span>${escapeHtml(k)}</span><span style="font-weight:700; color:var(--amber);">${grupos[k].toFixed(2)} A</span></div>`).join('') +
+      `</div>`;
+  }
+
+  if(filtered.length === 0){
+    list.innerHTML = motoresList.length === 0
+      ? '<div class="empty"><div class="big">⚙️</div><p>Nenhum motor cadastrado ainda.<br>Toque em + ou importe uma planilha.</p></div>'
+      : '<div class="empty"><div class="big">🔍</div><p>Nenhum motor encontrado.</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(m => `
+    <div class="item ${!m.valido ? 'low' : ''}" data-id="${m.id}">
+      <div class="thumb placeholder">⚙️</div>
+      <div style="flex:1; min-width:0;">
+        <div class="code">${escapeHtml(m.tag || 'Sem tag')}${m.usouPadrao ? ' · ⚠️ valores padrão' : ''}</div>
+        <div class="name">${escapeHtml(m.descricao || 'Sem descrição')}</div>
+        <div class="meta">
+          <span>${m.potencia} ${(m.unidadePotencia||'cv').toUpperCase()}</span>
+          <span>${m.tensao}V · ${FASES_LABEL_MOTOR[m.fases] || m.fases}</span>
+        </div>
+        <div class="badges">
+          ${m.valido
+            ? `<span class="badge status-concluido">${m.correnteNominal.toFixed(2)} A</span>`
+            : `<span class="badge status-cancelado">Dados insuficientes</span>`}
+        </div>
+        <div class="actions">
+          <button class="icon-btn motor-edit-btn" data-id="${m.id}" title="Editar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.motor-edit-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openMotorEdit(btn.dataset.id));
+  });
+}
+document.getElementById('motoresSearchInput').addEventListener('input', renderMotoresList);
+
+function setMotorFasesUI(v){
+  motorFasesAtual = v;
+  document.querySelectorAll('#motorFasesSegmented button').forEach(b=> b.classList.toggle('active', b.dataset.fases === v));
+  atualizarCalculoMotorForm();
+}
+document.querySelectorAll('#motorFasesSegmented button').forEach(btn=>{
+  btn.addEventListener('click', ()=> setMotorFasesUI(btn.dataset.fases));
+});
+function setMotorFrequenciaUI(v){
+  motorFrequenciaAtual = v;
+  document.querySelectorAll('#motorFrequenciaSegmented button').forEach(b=> b.classList.toggle('active', b.dataset.freq === v));
+}
+document.querySelectorAll('#motorFrequenciaSegmented button').forEach(btn=>{
+  btn.addEventListener('click', ()=> setMotorFrequenciaUI(btn.dataset.freq));
+});
+
+function atualizarCalculoMotorForm(){
+  const dados = {
+    potencia: document.getElementById('motorPotencia').value,
+    unidadePotencia: document.getElementById('motorUnidadePotencia').value,
+    tensao: document.getElementById('motorTensao').value,
+    fases: motorFasesAtual,
+    fatorPotencia: document.getElementById('motorFatorPotencia').value,
+    rendimento: document.getElementById('motorRendimento').value
+  };
+  const resultado = calcularCorrenteMotor(dados);
+  const info = document.getElementById('motorCalculoInfo');
+  const display = document.getElementById('motorCorrenteDisplay');
+
+  if(!resultado.valido){
+    display.textContent = '— A';
+    info.textContent = resultado.motivo;
+    return resultado;
+  }
+
+  display.textContent = resultado.corrente.toFixed(2) + ' A';
+  const formula = dados.fases === 'monofasico' ? 'I = P / (V × FP × η)' : 'I = P / (√3 × V × FP × η)';
+  let texto = `${formula} — P = ${resultado.potenciaWatts.toFixed(0)} W · V = ${dados.tensao} V · FP = ${resultado.fpUsado.toFixed(2)}${resultado.fpEhPadrao ? ' (padrão)' : ''} · η = ${resultado.rendUsado.toFixed(2)}${resultado.rendEhPadrao ? ' (padrão)' : ''}`;
+  if(resultado.fpEhPadrao || resultado.rendEhPadrao){
+    texto += '. ⚠️ Valor(es) padrão usados por falta de informação — resultado é uma estimativa.';
+  }
+  info.textContent = texto;
+  return resultado;
+}
+['motorPotencia','motorTensao','motorFatorPotencia','motorRendimento'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', atualizarCalculoMotorForm);
+});
+document.getElementById('motorUnidadePotencia').addEventListener('change', atualizarCalculoMotorForm);
+
+function openMotorSheet(){
+  document.getElementById('motorBackdrop').classList.add('open');
+  document.getElementById('motorSheet').classList.add('open');
+}
+function closeMotorSheet(){
+  document.getElementById('motorBackdrop').classList.remove('open');
+  document.getElementById('motorSheet').classList.remove('open');
+  document.getElementById('motorFormErr').classList.remove('show');
+}
+function openMotorAdd(){
+  editingMotorId = null;
+  document.getElementById('motorSheetTitle').textContent = 'Novo motor';
+  document.getElementById('motorTag').value = '';
+  document.getElementById('motorDescricao').value = '';
+  document.getElementById('motorPotencia').value = '';
+  document.getElementById('motorUnidadePotencia').value = 'cv';
+  document.getElementById('motorTensao').value = '';
+  document.getElementById('motorFatorPotencia').value = '';
+  document.getElementById('motorRendimento').value = '';
+  document.getElementById('motorFatorServico').value = '';
+  setMotorFasesUI('trifasico');
+  setMotorFrequenciaUI('60');
+  atualizarCalculoMotorForm();
+  document.getElementById('motorDeleteRow').style.display = 'none';
+  openMotorSheet();
+}
+function openMotorEdit(id){
+  const m = motoresList.find(x=>x.id === id);
+  if(!m) return;
+  editingMotorId = id;
+  document.getElementById('motorSheetTitle').textContent = 'Editar motor';
+  document.getElementById('motorTag').value = m.tag || '';
+  document.getElementById('motorDescricao').value = m.descricao || '';
+  document.getElementById('motorPotencia').value = m.potencia || '';
+  document.getElementById('motorUnidadePotencia').value = m.unidadePotencia || 'cv';
+  document.getElementById('motorTensao').value = m.tensao || '';
+  document.getElementById('motorFatorPotencia').value = m.fatorPotencia || '';
+  document.getElementById('motorRendimento').value = m.rendimento || '';
+  document.getElementById('motorFatorServico').value = m.fatorServico || '';
+  setMotorFasesUI(m.fases || 'trifasico');
+  setMotorFrequenciaUI(m.frequencia || '60');
+  atualizarCalculoMotorForm();
+  document.getElementById('motorDeleteRow').style.display = 'flex';
+  openMotorSheet();
+}
+
+async function saveMotor(){
+  const tag = document.getElementById('motorTag').value.trim();
+  const potencia = parseFloat(document.getElementById('motorPotencia').value) || 0;
+  const tensao = parseFloat(document.getElementById('motorTensao').value) || 0;
+  const errEl = document.getElementById('motorFormErr');
+  errEl.classList.remove('show');
+
+  if(!tag || !potencia || !tensao){
+    errEl.textContent = 'Preencha tag, potência e tensão.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const resultado = atualizarCalculoMotorForm();
+  const dados = {
+    tag, descricao: document.getElementById('motorDescricao').value.trim(),
+    potencia, unidadePotencia: document.getElementById('motorUnidadePotencia').value,
+    tensao, fases: motorFasesAtual, frequencia: motorFrequenciaAtual,
+    fatorPotencia: parseFloat(document.getElementById('motorFatorPotencia').value) || null,
+    rendimento: parseFloat(document.getElementById('motorRendimento').value) || null,
+    fatorServico: parseFloat(document.getElementById('motorFatorServico').value) || null,
+    correnteNominal: resultado.valido ? resultado.corrente : null,
+    valido: resultado.valido,
+    usouPadrao: !!(resultado.fpEhPadrao || resultado.rendEhPadrao),
+    metodoCalculo: 'formula_basica'
+  };
+
+  if(editingMotorId){
+    const m = motoresList.find(x=>x.id === editingMotorId);
+    Object.assign(m, dados);
+    m.editadoPor = currentUser;
+  }else{
+    motoresList.push({
+      id: 'mot_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      ...dados,
+      criadoPor: currentUser, criadoEm: new Date().toISOString()
+    });
+  }
+
+  const ok = await saveMotoresList();
+  if(!ok){
+    errEl.textContent = 'Não foi possível salvar agora. Tente novamente.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  closeMotorSheet();
+  renderMotoresList();
+  showToast(editingMotorId ? 'Motor atualizado.' : 'Motor cadastrado.');
+}
+
+async function deleteMotor(){
+  if(!editingMotorId) return;
+  const idx = motoresList.findIndex(x=>x.id === editingMotorId);
+  if(idx >= 0) motoresList.splice(idx, 1);
+  const ok = await saveMotoresList();
+  if(!ok){ showToast('Não foi possível excluir agora.'); return; }
+  closeMotorSheet();
+  renderMotoresList();
+  showToast('Motor excluído.');
+}
+
+document.getElementById('motorCancelBtn').addEventListener('click', closeMotorSheet);
+document.getElementById('motorBackdrop').addEventListener('click', closeMotorSheet);
+document.getElementById('motorSaveBtn').addEventListener('click', saveMotor);
+document.getElementById('motorDeleteBtn').addEventListener('click', ()=> requestAdminAuth(deleteMotor));
+document.getElementById('motorFabBtn').addEventListener('click', openMotorAdd);
+
+/* ---------- Importar lista de motores (Excel/CSV) ---------- */
+document.getElementById('importMotoresBtn').addEventListener('click', ()=> document.getElementById('importMotoresInput').click());
+document.getElementById('importMotoresInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+
+  showToast('Lendo planilha...');
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    const buf = await file.arrayBuffer();
+    const wb = window.XLSX.read(buf, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = window.XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+    const parsed = rows.map(row => {
+      const tag = String(getFieldValue(row, ['tag','identificacao','identificação','id']) || '').trim();
+      const descricao = String(getFieldValue(row, ['descricao','descrição','equipamento']) || '').trim();
+      const potencia = parseFloat(getFieldValue(row, ['potencia','potência'])) || 0;
+      let unidadePotencia = String(getFieldValue(row, ['unidade','unidade cv/hp/kw','un']) || 'cv').trim().toLowerCase();
+      if(!['cv','hp','kw'].includes(unidadePotencia)) unidadePotencia = 'cv';
+      const tensao = parseFloat(getFieldValue(row, ['tensao','tensão'])) || 0;
+      const fasesRaw = String(getFieldValue(row, ['fases','sistema']) || '').trim().toLowerCase();
+      const fases = fasesRaw.includes('mono') ? 'monofasico' : 'trifasico';
+      let frequencia = String(getFieldValue(row, ['frequencia','frequência']) || '60').trim().replace(/[^\d]/g,'');
+      if(!['50','60'].includes(frequencia)) frequencia = '60';
+      const fpVal = parseFloat(getFieldValue(row, ['fator de potencia','fator de potência','fp']));
+      const rendVal = parseFloat(getFieldValue(row, ['rendimento']));
+      const fsVal = parseFloat(getFieldValue(row, ['fator de servico','fator de serviço','fs']));
+      return {
+        tag, descricao, potencia, unidadePotencia, tensao, fases, frequencia,
+        fatorPotencia: isNaN(fpVal) ? null : fpVal,
+        rendimento: isNaN(rendVal) ? null : rendVal,
+        fatorServico: isNaN(fsVal) ? null : fsVal
+      };
+    }).filter(m => m.tag || m.descricao);
+
+    if(parsed.length === 0){
+      showToast('Não encontrei motores válidos nessa planilha. Confira se tem colunas de tag/descrição.');
+      return;
+    }
+    abrirConferenciaMotores(parsed);
+  }catch(err){
+    console.error(err);
+    showToast('Não foi possível ler esse arquivo. Confira se é um .xlsx, .xls ou .csv válido.');
+  }
+});
+
+let motoresConferenciaAtual = [];
+
+function abrirConferenciaMotores(motores){
+  motoresConferenciaAtual = motores.map(m => ({ ...m }));
+  renderTabelaConferenciaMotores();
+  document.getElementById('motoresImportBackdrop').classList.add('open');
+  document.getElementById('motoresImportSheet').classList.add('open');
+}
+function fecharConferenciaMotores(){
+  document.getElementById('motoresImportBackdrop').classList.remove('open');
+  document.getElementById('motoresImportSheet').classList.remove('open');
+}
+document.getElementById('motoresImportCancelBtn').addEventListener('click', fecharConferenciaMotores);
+document.getElementById('motoresImportBackdrop').addEventListener('click', fecharConferenciaMotores);
+
+function renderTabelaConferenciaMotores(){
+  const tbody = document.getElementById('motoresImportTableBody');
+  const inputStyle = 'background:var(--graphite); border:1px solid var(--line); border-radius:5px; color:var(--paper); padding:4px; font-size:12px;';
+  tbody.innerHTML = motoresConferenciaAtual.map((m, idx) => {
+    const check = calcularCorrenteMotor(m);
+    const linhaInvalida = !check.valido;
+    return `
+      <tr data-idx="${idx}" style="border-bottom:1px solid var(--line); ${linhaInvalida ? 'background:rgba(193,85,63,0.12);' : ''}">
+        <td style="padding:4px;"><input class="conf-input" data-field="tag" data-idx="${idx}" value="${escapeHtmlA(m.tag||'')}" style="width:70px; ${inputStyle}"></td>
+        <td style="padding:4px;"><input class="conf-input" data-field="descricao" data-idx="${idx}" value="${escapeHtmlA(m.descricao||'')}" style="width:110px; ${inputStyle}"></td>
+        <td style="padding:4px;"><input class="conf-input" type="number" data-field="potencia" data-idx="${idx}" value="${m.potencia||''}" style="width:60px; ${inputStyle}"></td>
+        <td style="padding:4px;">
+          <select class="conf-input" data-field="unidadePotencia" data-idx="${idx}" style="${inputStyle}">
+            <option value="cv" ${m.unidadePotencia==='cv'?'selected':''}>CV</option>
+            <option value="hp" ${m.unidadePotencia==='hp'?'selected':''}>HP</option>
+            <option value="kw" ${m.unidadePotencia==='kw'?'selected':''}>kW</option>
+          </select>
+        </td>
+        <td style="padding:4px;"><input class="conf-input" type="number" data-field="tensao" data-idx="${idx}" value="${m.tensao||''}" style="width:60px; ${inputStyle}"></td>
+        <td style="padding:4px;">
+          <select class="conf-input" data-field="fases" data-idx="${idx}" style="${inputStyle}">
+            <option value="trifasico" ${m.fases==='trifasico'?'selected':''}>Tri</option>
+            <option value="monofasico" ${m.fases==='monofasico'?'selected':''}>Mono</option>
+          </select>
+        </td>
+        <td style="padding:4px;">
+          <select class="conf-input" data-field="frequencia" data-idx="${idx}" style="${inputStyle}">
+            <option value="60" ${m.frequencia==='60'?'selected':''}>60Hz</option>
+            <option value="50" ${m.frequencia==='50'?'selected':''}>50Hz</option>
+          </select>
+        </td>
+        <td style="padding:4px;"><input class="conf-input" type="number" data-field="fatorPotencia" data-idx="${idx}" value="${m.fatorPotencia||''}" style="width:55px; ${inputStyle}" placeholder="pad."></td>
+        <td style="padding:4px;"><input class="conf-input" type="number" data-field="rendimento" data-idx="${idx}" value="${m.rendimento||''}" style="width:55px; ${inputStyle}" placeholder="pad."></td>
+        <td style="padding:4px;"><input class="conf-input" type="number" data-field="fatorServico" data-idx="${idx}" value="${m.fatorServico||''}" style="width:50px; ${inputStyle}"></td>
+        <td style="padding:4px;"><button class="small-btn danger conf-remove-btn" data-idx="${idx}" type="button">X</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.conf-input').forEach(inp=>{
+    inp.addEventListener('input', (e)=>{
+      const idx = parseInt(e.target.dataset.idx, 10);
+      const field = e.target.dataset.field;
+      let val = e.target.value;
+      if(['potencia','tensao','fatorPotencia','rendimento','fatorServico'].includes(field)){
+        val = val === '' ? null : parseFloat(val);
+      }
+      motoresConferenciaAtual[idx][field] = val;
+    });
+    inp.addEventListener('change', renderTabelaConferenciaMotores);
+  });
+  tbody.querySelectorAll('.conf-remove-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      motoresConferenciaAtual.splice(parseInt(btn.dataset.idx, 10), 1);
+      renderTabelaConferenciaMotores();
+    });
+  });
+}
+
+document.getElementById('motoresImportAddRowBtn').addEventListener('click', ()=>{
+  motoresConferenciaAtual.push({ tag:'', descricao:'', potencia:0, unidadePotencia:'cv', tensao:0, fases:'trifasico', frequencia:'60', fatorPotencia:null, rendimento:null, fatorServico:null });
+  renderTabelaConferenciaMotores();
+});
+
+document.getElementById('motoresImportDimensionarBtn').addEventListener('click', async ()=>{
+  if(motoresConferenciaAtual.length === 0){
+    showToast('Nenhum motor na lista.');
+    return;
+  }
+  let criados = 0, invalidos = 0;
+  motoresConferenciaAtual.forEach(m=>{
+    const resultado = calcularCorrenteMotor(m);
+    motoresList.push({
+      id: 'mot_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      tag: m.tag, descricao: m.descricao, potencia: m.potencia, unidadePotencia: m.unidadePotencia,
+      tensao: m.tensao, fases: m.fases, frequencia: m.frequencia,
+      fatorPotencia: m.fatorPotencia, rendimento: m.rendimento, fatorServico: m.fatorServico,
+      correnteNominal: resultado.valido ? resultado.corrente : null,
+      valido: resultado.valido,
+      usouPadrao: !!(resultado.fpEhPadrao || resultado.rendEhPadrao),
+      metodoCalculo: 'formula_basica',
+      criadoPor: currentUser, criadoEm: new Date().toISOString()
+    });
+    if(resultado.valido) criados++; else invalidos++;
+  });
+
+  const ok = await saveMotoresList();
+  if(!ok){
+    showToast('Não foi possível salvar os motores agora. Tente novamente.');
+    return;
+  }
+
+  fecharConferenciaMotores();
+  renderMotoresList();
+  showToast(`Dimensionamento concluído: ${criados} motor(es) calculado(s)${invalidos ? `, ${invalidos} com dados insuficientes` : ''}.`);
 });
 
 /* ======================================================
@@ -6056,12 +7123,15 @@ function dataPrevistaAtrasada(dataPrevista){
   return new Date(dataPrevista + 'T00:00:00') < hoje;
 }
 
+let copelStatusCache = {}; // número do protocolo -> { status, erro, consultadoEm }
+
 function renderAcompanhamento(){
   const list = document.getElementById('acompanhamentoList');
   const itens = [];
 
   if(temAcessoCopelProtocolos()){
     protocolos.filter(p => (p.status || 'protocolado') !== 'aprovado' && (p.status || '') !== 'negado').forEach(p=>{
+      const cache = p.numero ? copelStatusCache[p.numero] : null;
       itens.push({
         tipo: 'Beneficiário', icone: '📋',
         titulo: p.unidadeGeradora || 'Sem nome',
@@ -6069,12 +7139,15 @@ function renderAcompanhamento(){
         data: p.data, dataPrevista: p.dataPrevista,
         status: PROTOCOLO_STATUS_LABEL[p.status || 'protocolado'],
         statusClass: PROTOCOLO_STATUS_CLASS[p.status || 'protocolado'],
+        statusCopel: cache ? cache.status : null,
+        statusCopelErro: cache ? cache.erro : null,
         onClick: ()=> openProtocoloEdit(p.id)
       });
     });
   }
   if(temAcessoCopelOutrosServicos()){
     outrosServicos.filter(o => (o.status || 'protocolado') !== 'concluido' && (o.status || '') !== 'negado').forEach(o=>{
+      const cache = o.numero ? copelStatusCache[o.numero] : null;
       itens.push({
         tipo: 'Outro serviço', icone: '🔧',
         titulo: o.cliente, sub: o.tipo,
@@ -6082,6 +7155,8 @@ function renderAcompanhamento(){
         data: o.data, dataPrevista: o.dataPrevista,
         status: OUTRO_SERVICO_STATUS_LABEL[o.status || 'protocolado'],
         statusClass: OUTRO_SERVICO_STATUS_CLASS[o.status || 'protocolado'],
+        statusCopel: cache ? cache.status : null,
+        statusCopelErro: cache ? cache.erro : null,
         onClick: ()=> openOutroServicoEdit(o.id)
       });
     });
@@ -6109,6 +7184,12 @@ function renderAcompanhamento(){
     const dias = diasEmAberto(it.data);
     const atrasado = dataPrevistaAtrasada(it.dataPrevista);
     const dataPrevistaFmt = it.dataPrevista ? new Date(it.dataPrevista + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+    let statusCopelHtml = '';
+    if(it.statusCopel){
+      statusCopelHtml = `<div class="os-desc" style="color:var(--green);">🔍 Copel: ${escapeHtml(it.statusCopel)}</div>`;
+    }else if(it.statusCopelErro){
+      statusCopelHtml = `<div class="os-desc" style="color:var(--text-dim);">🔍 Copel: ${escapeHtml(it.statusCopelErro)}</div>`;
+    }
     return `
       <div class="item ${atrasado ? 'low' : ''}" data-idx="${idx}">
         <div class="thumb placeholder">${it.icone}</div>
@@ -6123,6 +7204,7 @@ function renderAcompanhamento(){
             <span class="badge ${it.statusClass}">${it.status}</span>
             ${dataPrevistaFmt ? `<span class="badge" style="${atrasado ? 'color:var(--red); border-color:#5c3a2f;' : 'color:#7FB4E0; border-color:#274257;'}">📅 ${atrasado ? 'Atrasado desde' : 'Previsto'}: ${dataPrevistaFmt}</span>` : ''}
           </div>
+          ${statusCopelHtml}
           <div class="actions">
             <button class="icon-btn acompanhamento-abrir-btn" data-idx="${idx}" title="Abrir">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -6139,6 +7221,52 @@ function renderAcompanhamento(){
 
   window._acompanhamentoItensAtual = itens;
 }
+
+document.getElementById('acompanhamentoVerificarBtn').addEventListener('click', async ()=>{
+  const itens = window._acompanhamentoItensAtual || [];
+  const comNumero = itens.filter(it => it.numero);
+  if(comNumero.length === 0){
+    showToast('Nenhum protocolo com número cadastrado pra verificar.');
+    return;
+  }
+
+  const btn = document.getElementById('acompanhamentoVerificarBtn');
+  const info = document.getElementById('acompanhamentoVerificarInfo');
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  info.style.display = 'block';
+
+  let ok = 0, falhas = 0;
+  for(let i=0; i<comNumero.length; i++){
+    const it = comNumero[i];
+    btn.textContent = `🔍 Verificando ${i+1}/${comNumero.length}...`;
+    info.textContent = `Consultando protocolo ${it.numero} na Copel...`;
+    try{
+      const resp = await fetch('/.netlify/functions/copel-protocolo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ protocolo: it.numero })
+      });
+      const data = await resp.json();
+      if(data.status){
+        copelStatusCache[it.numero] = { status: data.status, erro: null, consultadoEm: new Date().toISOString() };
+        ok++;
+      }else{
+        copelStatusCache[it.numero] = { status: null, erro: data.erro || 'Sem retorno.', consultadoEm: new Date().toISOString() };
+        falhas++;
+      }
+    }catch(e){
+      copelStatusCache[it.numero] = { status: null, erro: 'Não consegui falar com o servidor de consulta.', consultadoEm: new Date().toISOString() };
+      falhas++;
+    }
+    if(i < comNumero.length - 1) await new Promise(r=> setTimeout(r, 1500));
+  }
+
+  btn.disabled = false;
+  btn.textContent = textoOriginal;
+  info.textContent = `Verificação concluída: ${ok} respondido(s), ${falhas} sem retorno.`;
+  renderAcompanhamento();
+});
 
 document.getElementById('acompanhamentoCompartilharBtn').addEventListener('click', ()=>{
   const itens = window._acompanhamentoItensAtual || [];
