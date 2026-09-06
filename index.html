@@ -1631,6 +1631,10 @@
       <h3>⚙️ Dimensionamento de Motores</h3>
       <p class="card-sub">Corrente nominal por motor — individual ou por lista importada.</p>
     </div>
+    <div class="admin-card" data-dim-nav="painel" style="cursor:pointer;">
+      <h3>🔌 Dimensionamento de Painel Elétrico</h3>
+      <p class="card-sub">Lista de motores → correntes, seleção de componentes e lista de materiais do painel.</p>
+    </div>
   </div>
 
   <!-- MOTORES: lista principal -->
@@ -1657,9 +1661,29 @@
     </div>
   </div>
 
+  <!-- PAINEL ELÉTRICO: lista principal -->
+  <div id="dimensionamentosPainelView" style="display:none;">
+    <div class="summary" style="padding:0 18px; margin-top:14px;">
+      <div class="stat">
+        <div class="num" id="paineisStatTotal">0</div>
+        <div class="lbl">painéis</div>
+      </div>
+    </div>
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="paineisSearchInput" type="text" placeholder="Buscar por nome do painel">
+      </div>
+    </div>
+    <div class="list" id="paineisList" style="margin-top:8px;">
+      <div class="loading">Carregando…</div>
+    </div>
+  </div>
+
   <div class="fab" id="dimensionamentosFab" style="display:none;">
     <div class="fab-inner">
       <button class="fab-btn" id="motorFabBtn" aria-label="Novo motor">+</button>
+      <button class="fab-btn" id="painelFabBtn" aria-label="Novo painel" style="display:none;">+</button>
     </div>
   </div>
 </div>
@@ -1916,6 +1940,26 @@
   <!-- CONFIGURAÇÕES DE DIMENSIONAMENTOS -->
   <div id="configDimensionamentosView" style="display:none;">
     <div class="admin-content">
+      <div class="admin-card">
+        <h3>Padrão de TAG dos motores (Painel Elétrico)</h3>
+        <p class="card-sub">Usado para gerar automaticamente as TAGs ao criar um novo projeto de painel.</p>
+        <div class="row2">
+          <div class="field">
+            <label for="cfgTagPrefixo">Prefixo</label>
+            <input id="cfgTagPrefixo" type="text" placeholder="M" maxlength="5">
+          </div>
+          <div class="field">
+            <label for="cfgTagNumeroInicial">Número inicial</label>
+            <input id="cfgTagNumeroInicial" type="number" min="0" placeholder="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="cfgTagDigitos">Quantidade de dígitos (ex: 2 → 01, 3 → 001)</label>
+          <input id="cfgTagDigitos" type="number" min="1" max="5" placeholder="2">
+        </div>
+        <p class="admin-note" id="cfgTagPreview" style="margin-bottom:10px;"></p>
+        <button class="small-btn primary full-btn" id="cfgTagSalvarBtn" type="button">Salvar padrão de TAG</button>
+      </div>
       <p class="card-sub" style="padding:0 4px;">Base inicial de componentes elétricos — estrutura preparada para futuramente recomendar peças compatíveis com cada motor dimensionado.</p>
       <div class="admin-card">
         <h3>Novo componente</h3>
@@ -3026,6 +3070,148 @@
   <div class="sheet-actions">
     <button class="btn btn-secondary" id="motoresImportCancelBtn">Cancelar</button>
     <button class="btn btn-primary" id="motoresImportDimensionarBtn">⚙️ Dimensionar todos</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="painelBackdrop"></div>
+<div class="sheet" id="painelSheet">
+  <div class="sheet-handle"></div>
+  <h2 id="painelSheetTitle">Novo painel elétrico</h2>
+  <p class="admin-note" style="margin-bottom:14px;">⚠️ Os componentes abaixo são uma seleção técnica inicial, por faixa de corrente comercial — sempre editável. Não substitui a validação de um responsável técnico antes da montagem.</p>
+
+  <div class="field">
+    <label for="painelNome">Nome do projeto</label>
+    <input id="painelNome" type="text" placeholder="Ex: Painel bombas - Estação 1" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="painelCliente">Cliente</label>
+    <input id="painelCliente" type="text" placeholder="Nome do cliente" autocomplete="off">
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="painelTensaoPrincipal">Tensão principal (V)</label>
+      <input id="painelTensaoPrincipal" type="number" min="0" step="1" placeholder="Ex: 380">
+    </div>
+    <div class="field">
+      <label for="painelFrequenciaPrincipal">Frequência (Hz)</label>
+      <select id="painelFrequenciaPrincipal">
+        <option value="60">60 Hz</option>
+        <option value="50">50 Hz</option>
+      </select>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label for="painelTensaoComando">Tensão de comando (V)</label>
+      <input id="painelTensaoComando" type="number" min="0" step="1" placeholder="Ex: 24">
+    </div>
+    <div class="field">
+      <label for="painelNumEstimadoMotores">Nº estimado de motores</label>
+      <div class="password-row">
+        <input id="painelNumEstimadoMotores" type="number" min="0" step="1" placeholder="Opcional">
+        <button class="small-btn" id="painelGerarLinhasBtn" type="button">Gerar linhas</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-card" style="margin-bottom:14px;">
+    <h3>Motores do painel</h3>
+    <p class="admin-note" id="painelTagDuplicadaAviso" style="display:none; color:var(--red); margin-bottom:8px;"></p>
+    <div style="overflow-x:auto; margin-bottom:10px; -webkit-overflow-scrolling:touch;">
+      <table style="width:100%; min-width:880px; border-collapse:collapse; font-size:12.5px;">
+        <thead>
+          <tr style="text-align:left; color:var(--text-dim);">
+            <th style="padding:6px 4px;">Tag</th>
+            <th style="padding:6px 4px;">Descrição</th>
+            <th style="padding:6px 4px;">Potência</th>
+            <th style="padding:6px 4px;">Un.</th>
+            <th style="padding:6px 4px;">Tensão</th>
+            <th style="padding:6px 4px;">Fases</th>
+            <th style="padding:6px 4px;">FP</th>
+            <th style="padding:6px 4px;">Rend.</th>
+            <th style="padding:6px 4px;">Partida</th>
+            <th style="padding:6px 4px;"></th>
+          </tr>
+        </thead>
+        <tbody id="painelMotoresTableBody"></tbody>
+      </table>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="small-btn" id="painelAddMotorBtn" type="button">+ Adicionar motor</button>
+      <button class="small-btn" id="painelImportarBtn" type="button">📥 Importar planilha</button>
+      <input type="file" id="painelImportarInput" accept=".xlsx,.xls,.csv" style="display:none;">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="painelFatorDemanda">Fator de demanda/simultaneidade (%)</label>
+    <input id="painelFatorDemanda" type="number" min="1" max="100" step="1" value="100">
+  </div>
+
+  <button class="small-btn primary full-btn" id="painelCalcularBtn" type="button" style="margin-bottom:16px;">⚡ Calcular painel</button>
+
+  <div id="painelResultados" style="display:none;">
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3>1. Resumo dos motores</h3>
+      <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table style="width:100%; min-width:960px; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr style="text-align:left; color:var(--text-dim);">
+              <th style="padding:5px 4px;">Tag</th><th style="padding:5px 4px;">Motor</th><th style="padding:5px 4px;">Potência</th>
+              <th style="padding:5px 4px;">Tensão</th><th style="padding:5px 4px;">Corrente</th><th style="padding:5px 4px;">Partida</th>
+              <th style="padding:5px 4px;">Proteção</th><th style="padding:5px 4px;">Contator</th><th style="padding:5px 4px;">Térmico/Acionamento</th>
+              <th style="padding:5px 4px;">Cabo</th><th style="padding:5px 4px;">Bornes</th>
+            </tr>
+          </thead>
+          <tbody id="painelResumoTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3>Corrente geral do painel</h3>
+      <div id="painelCorrenteGeral"></div>
+    </div>
+
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3>Dimensionamento físico do painel (estimativa inicial)</h3>
+      <p class="admin-note" style="margin-bottom:8px;">⚠️ Pré-dimensionamento — sempre revisar e ajustar conforme o layout real definido pelo projetista.</p>
+      <div id="painelDimensaoFisica"></div>
+    </div>
+
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3>Pré-layout do painel</h3>
+      <div id="painelPreLayout"></div>
+    </div>
+
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3>2. Lista consolidada de materiais (BOM)</h3>
+      <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table style="width:100%; min-width:700px; border-collapse:collapse; font-size:12.5px;">
+          <thead>
+            <tr style="text-align:left; color:var(--text-dim);">
+              <th style="padding:5px 4px;">Item</th><th style="padding:5px 4px;">Componente</th><th style="padding:5px 4px;">Especificação</th><th style="padding:5px 4px;">Quantidade</th><th style="padding:5px 4px;">Aplicação (motores)</th>
+            </tr>
+          </thead>
+          <tbody id="painelBomTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3>3. Componentes gerais do painel</h3>
+      <p class="card-sub">Itens padrão sugeridos — ajuste as quantidades como precisar.</p>
+      <div id="painelComponentesGeraisList"></div>
+    </div>
+  </div>
+
+  <div class="err" id="painelFormErr">Preencha o nome do painel e adicione ao menos um motor.</div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="painelCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="painelSaveBtn">Salvar</button>
+  </div>
+  <div class="sheet-actions" id="painelDeleteRow" style="display:none; margin-top:10px;">
+    <button class="btn btn-danger" id="painelDeleteBtn">Excluir painel</button>
   </div>
 </div>
 
@@ -4308,6 +4494,51 @@ document.getElementById('cfgOrcamentoSalvarBtn').addEventListener('click', async
 /* ======================================================
    CONFIGURAÇÕES DE DIMENSIONAMENTOS (base de componentes)
    ====================================================== */
+/* ---------- Padrão de TAG dos motores do Painel Elétrico ---------- */
+const CONFIG_TAG_PAINEL_KEY = 'estoque:config_tag_painel';
+let configTagPainel = { prefixo: 'M', numeroInicial: 1, digitos: 2 };
+
+async function loadConfigTagPainel(){
+  try{
+    const res = await window.storage.get(CONFIG_TAG_PAINEL_KEY, true);
+    configTagPainel = res && res.value ? JSON.parse(res.value) : { prefixo:'M', numeroInicial:1, digitos:2 };
+  }catch(e){ configTagPainel = { prefixo:'M', numeroInicial:1, digitos:2 }; }
+}
+async function saveConfigTagPainel(){
+  try{
+    await window.storage.set(CONFIG_TAG_PAINEL_KEY, JSON.stringify(configTagPainel), true);
+    return true;
+  }catch(e){ return false; }
+}
+function atualizarPreviewTag(){
+  const prefixo = document.getElementById('cfgTagPrefixo').value.trim() || 'M';
+  const inicial = parseInt(document.getElementById('cfgTagNumeroInicial').value, 10) || 1;
+  const digitos = parseInt(document.getElementById('cfgTagDigitos').value, 10) || 2;
+  document.getElementById('cfgTagPreview').textContent =
+    `Exemplo: ${prefixo}${String(inicial).padStart(digitos,'0')}, ${prefixo}${String(inicial+1).padStart(digitos,'0')}, ${prefixo}${String(inicial+2).padStart(digitos,'0')}...`;
+}
+['cfgTagPrefixo','cfgTagNumeroInicial','cfgTagDigitos'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', atualizarPreviewTag);
+});
+async function carregarConfigTagPainelNaTela(){
+  await loadConfigTagPainel();
+  document.getElementById('cfgTagPrefixo').value = configTagPainel.prefixo;
+  document.getElementById('cfgTagNumeroInicial').value = configTagPainel.numeroInicial;
+  document.getElementById('cfgTagDigitos').value = configTagPainel.digitos;
+  atualizarPreviewTag();
+}
+document.getElementById('cfgTagSalvarBtn').addEventListener('click', async ()=>{
+  configTagPainel = {
+    prefixo: document.getElementById('cfgTagPrefixo').value.trim() || 'M',
+    numeroInicial: parseInt(document.getElementById('cfgTagNumeroInicial').value, 10) || 1,
+    digitos: parseInt(document.getElementById('cfgTagDigitos').value, 10) || 2
+  };
+  const ok = await saveConfigTagPainel();
+  if(!ok){ showToast('Não foi possível salvar agora.'); return; }
+  registrarAuditoria('Configurações', 'Padrão de TAG do painel alterado', 'Dimensionamentos', '', JSON.stringify(configTagPainel));
+  showToast('Padrão de TAG salvo.');
+});
+
 const COMPONENTES_KEY = 'estoque:componentes_eletricos';
 let componentesList = [];
 const COMPONENTE_TIPO_LABEL = {
@@ -4547,7 +4778,10 @@ function showConfigSubView(view){
     document.getElementById('configAppLink').value = appConfig.appLink || '';
     loadParametros().then(renderParametros);
   }
-  if(view === 'dimensionamentos-config') loadComponentes().then(renderComponentes);
+  if(view === 'dimensionamentos-config'){
+    carregarConfigTagPainelNaTela();
+    loadComponentes().then(renderComponentes);
+  }
   if(view === 'auditoria') loadAuditoria().then(renderAuditoria);
   window.scrollTo(0,0);
 }
@@ -5484,19 +5718,25 @@ function showDimensionamentosScreen(){
   showDimensionamentosSubView('menu');
 }
 
-function showDimensionamentosSubView(view){
+async function showDimensionamentosSubView(view){
   dimensionamentosCurrentSubView = view;
-  const viewIds = { 'menu': 'dimensionamentosMenuView', 'motores': 'dimensionamentosMotoresView' };
+  const viewIds = { 'menu': 'dimensionamentosMenuView', 'motores': 'dimensionamentosMotoresView', 'painel': 'dimensionamentosPainelView' };
   Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById(viewIds[view]).style.display = 'block';
 
   document.getElementById('dimensionamentosBackBtn').style.display = view === 'menu' ? 'none' : 'flex';
-  document.getElementById('dimensionamentosHeaderTitle').textContent = { menu: 'Dimensionamentos', motores: 'Dimensionamento de Motores' }[view];
-  document.getElementById('dimensionamentosFab').style.display = (view === 'motores') ? 'flex' : 'none';
+  document.getElementById('dimensionamentosHeaderTitle').textContent = { menu: 'Dimensionamentos', motores: 'Dimensionamento de Motores', painel: 'Dimensionamento de Painel Elétrico' }[view];
+  document.getElementById('dimensionamentosFab').style.display = (view === 'motores' || view === 'painel') ? 'flex' : 'none';
+  document.getElementById('motorFabBtn').style.display = (view === 'motores') ? 'flex' : 'none';
+  document.getElementById('painelFabBtn').style.display = (view === 'painel') ? 'flex' : 'none';
   document.getElementById('importMotoresBtn').style.display = (view === 'motores') ? 'flex' : 'none';
 
   if(view === 'motores'){
     loadMotoresList().then(renderMotoresList);
+  }
+  if(view === 'painel'){
+    await loadConfigTagPainel();
+    loadPaineisList().then(renderPaineisList);
   }
 }
 document.querySelectorAll('[data-dim-nav]').forEach(card=>{
@@ -6808,6 +7048,671 @@ document.getElementById('motoresImportDimensionarBtn').addEventListener('click',
   renderMotoresList();
   showToast(`Dimensionamento concluído: ${criados} motor(es) calculado(s)${invalidos ? `, ${invalidos} com dados insuficientes` : ''}.`);
 });
+
+/* ======================================================
+   DIMENSIONAMENTOS > DIMENSIONAMENTO DE PAINEL ELÉTRICO
+   ====================================================== */
+const PAINEL_KEY = 'estoque:paineis_eletricos';
+let paineisList = [];
+let editingPainelId = null;
+let painelMotoresAtual = [];
+
+function gerarProximaTagPainel(){
+  const prefixo = (configTagPainel.prefixo || 'M').toUpperCase();
+  const digitos = configTagPainel.digitos || 2;
+  const regex = new RegExp('^' + prefixo + '(\\d+)$', 'i');
+  const usados = painelMotoresAtual
+    .map(m => (m.tag || '').match(regex))
+    .filter(Boolean)
+    .map(m => parseInt(m[1], 10));
+  const proximo = usados.length ? (Math.max(...usados) + 1) : (configTagPainel.numeroInicial || 1);
+  return prefixo + String(proximo).padStart(digitos, '0');
+}
+function validarTagsDuplicadasPainel(){
+  const contagem = {};
+  painelMotoresAtual.forEach(m=>{
+    const tag = (m.tag || '').trim().toUpperCase();
+    if(!tag) return;
+    contagem[tag] = (contagem[tag] || 0) + 1;
+  });
+  return Object.keys(contagem).filter(tag => contagem[tag] > 1);
+}
+
+const TIPO_PARTIDA_LABEL = {
+  direta: 'Partida direta', reversora: 'Reversora', estrela_triangulo: 'Estrela-triângulo',
+  soft_starter: 'Soft starter', inversor: 'Inversor de frequência'
+};
+
+/* Faixas comerciais padronizadas (referência inicial, sem marca/fabricante — ver nota na tela).
+   Ponto de extensão futuro: quando cadastrarmos fabricantes em Configurações, essas funções de
+   seleção podem passar a consultar aquela tabela em vez dessas faixas genéricas, sem precisar
+   refazer o restante do módulo. */
+const FAIXAS_DISJUNTOR = [6,10,16,20,25,32,40,50,63,80,100,125,150,175,200,225,250];
+const FAIXAS_DISJUNTOR_MOTOR = [
+  {min:0.1,max:0.16},{min:0.16,max:0.25},{min:0.25,max:0.4},{min:0.4,max:0.63},
+  {min:0.63,max:1},{min:1,max:1.6},{min:1.6,max:2.5},{min:2.5,max:4},
+  {min:4,max:6.3},{min:6,max:10},{min:9,max:14},{min:12,max:18},
+  {min:17,max:23},{min:20,max:25},{min:23,max:32}
+];
+const FAIXAS_CONTATOR_AC3 = [9,12,18,25,32,38,40,50,65,80,95,115,150,170,205,250];
+const FAIXAS_RELE_TERMICO = [
+  {min:0.1,max:0.16},{min:0.16,max:0.25},{min:0.25,max:0.4},{min:0.4,max:0.63},
+  {min:0.63,max:1},{min:1,max:1.6},{min:1.6,max:2.5},{min:2.5,max:4},
+  {min:4,max:6},{min:5.5,max:8},{min:7,max:10},{min:9,max:13},
+  {min:12,max:18},{min:16,max:24},{min:23,max:32},{min:30,max:40},
+  {min:37,max:50},{min:48,max:65},{min:55,max:70},{min:63,max:80},{min:70,max:90},{min:80,max:100}
+];
+const TABELA_CABOS_PAINEL = [
+  {secao:'1,5', ampacidade:17.5},{secao:'2,5', ampacidade:24},{secao:'4', ampacidade:32},
+  {secao:'6', ampacidade:41},{secao:'10', ampacidade:57},{secao:'16', ampacidade:76},
+  {secao:'25', ampacidade:101},{secao:'35', ampacidade:125},{secao:'50', ampacidade:151},
+  {secao:'70', ampacidade:192},{secao:'95', ampacidade:232},{secao:'120', ampacidade:269},
+  {secao:'150', ampacidade:300},{secao:'185', ampacidade:341},{secao:'240', ampacidade:400}
+];
+const COMPONENTES_GERAIS_PADRAO = [
+  { item:'Disjuntor geral', quantidade:1 }, { item:'Barramento', quantidade:1 }, { item:'DPS', quantidade:1 },
+  { item:'Fonte 24Vcc', quantidade:1 }, { item:'Disjuntores de comando', quantidade:2 },
+  { item:'Botão de emergência', quantidade:1 }, { item:'Botões liga/desliga', quantidade:2 },
+  { item:'Sinaleiros', quantidade:3 }, { item:'Relés auxiliares', quantidade:2 },
+  { item:'Bornes (reserva geral)', quantidade:10 }, { item:'Trilho DIN (m)', quantidade:1 },
+  { item:'Canaleta (m)', quantidade:1 }, { item:'Ventilação/ventilador', quantidade:1 }, { item:'Gabinete', quantidade:1 }
+];
+
+// Sempre escolhe o valor comercial IGUAL OU ACIMA do necessário — nunca abaixo.
+function selecionarPorFaixaSimples(corrente, faixas){
+  return faixas.find(f => f >= corrente) || faixas[faixas.length-1];
+}
+function selecionarPorFaixaAjustavel(corrente, faixas){
+  return faixas.find(f => corrente >= f.min && corrente <= f.max) || faixas[faixas.length-1];
+}
+function selecionarCaboPainelPorCorrente(corrente){
+  return TABELA_CABOS_PAINEL.find(c => c.ampacidade >= corrente) || TABELA_CABOS_PAINEL[TABELA_CABOS_PAINEL.length-1];
+}
+
+function gerarComponentesMotorPainel(motor, corrente){
+  const itens = [];
+  const cabo = selecionarCaboPainelPorCorrente(corrente);
+  let protecaoTexto = '', contatorTexto = '', releAcionamentoTexto = '';
+
+  if(motor.tipoPartida === 'reversora'){
+    const disj = selecionarPorFaixaAjustavel(corrente, FAIXAS_DISJUNTOR_MOTOR);
+    const cont = selecionarPorFaixaSimples(corrente, FAIXAS_CONTATOR_AC3);
+    const rele = selecionarPorFaixaAjustavel(corrente, FAIXAS_RELE_TERMICO);
+    itens.push({ tipo:'Disjuntor-motor', especificacao:`${disj.min}–${disj.max}A`, quantidade:1 });
+    itens.push({ tipo:'Contator', especificacao:`${cont}A AC-3`, quantidade:2 });
+    itens.push({ tipo:'Relé térmico', especificacao:`${rele.min}–${rele.max}A`, quantidade:1 });
+    protecaoTexto = `Disjuntor-motor ${disj.min}–${disj.max}A`;
+    contatorTexto = `2× ${cont}A AC-3 (reversão)`;
+    releAcionamentoTexto = `Térmico ${rele.min}–${rele.max}A`;
+  }else if(motor.tipoPartida === 'estrela_triangulo'){
+    const disj = selecionarPorFaixaAjustavel(corrente, FAIXAS_DISJUNTOR_MOTOR);
+    const contLinha = selecionarPorFaixaSimples(corrente, FAIXAS_CONTATOR_AC3);
+    const contEstTri = selecionarPorFaixaSimples(corrente*0.58, FAIXAS_CONTATOR_AC3);
+    const rele = selecionarPorFaixaAjustavel(corrente*0.58, FAIXAS_RELE_TERMICO);
+    itens.push({ tipo:'Disjuntor-motor', especificacao:`${disj.min}–${disj.max}A`, quantidade:1 });
+    itens.push({ tipo:'Contator', especificacao:`${contLinha}A AC-3 (linha)`, quantidade:1 });
+    itens.push({ tipo:'Contator', especificacao:`${contEstTri}A AC-3 (estrela/triângulo)`, quantidade:2 });
+    itens.push({ tipo:'Relé térmico', especificacao:`${rele.min}–${rele.max}A (ajustado a 58% de In)`, quantidade:1 });
+    itens.push({ tipo:'Temporizador estrela-triângulo', especificacao:'Ajustável', quantidade:1 });
+    protecaoTexto = `Disjuntor-motor ${disj.min}–${disj.max}A`;
+    contatorTexto = `1× ${contLinha}A + 2× ${contEstTri}A`;
+    releAcionamentoTexto = `Térmico ${rele.min}–${rele.max}A + temporizador`;
+  }else if(motor.tipoPartida === 'soft_starter'){
+    const disj = selecionarPorFaixaSimples(corrente*1.25, FAIXAS_DISJUNTOR);
+    itens.push({ tipo:'Disjuntor de proteção', especificacao:`${disj}A`, quantidade:1 });
+    itens.push({ tipo:'Soft starter', especificacao:`${corrente.toFixed(1)}A nominal`, quantidade:1 });
+    protecaoTexto = `Disjuntor ${disj}A`;
+    contatorTexto = '—';
+    releAcionamentoTexto = `Soft starter ${corrente.toFixed(1)}A`;
+  }else if(motor.tipoPartida === 'inversor'){
+    const disj = selecionarPorFaixaSimples(corrente*1.25, FAIXAS_DISJUNTOR);
+    itens.push({ tipo:'Disjuntor de proteção', especificacao:`${disj}A`, quantidade:1 });
+    itens.push({ tipo:'Inversor de frequência', especificacao:`${corrente.toFixed(1)}A nominal`, quantidade:1 });
+    protecaoTexto = `Disjuntor ${disj}A`;
+    contatorTexto = '—';
+    releAcionamentoTexto = `Inversor ${corrente.toFixed(1)}A`;
+  }else{ // direta (padrão)
+    const disj = selecionarPorFaixaAjustavel(corrente, FAIXAS_DISJUNTOR_MOTOR);
+    const cont = selecionarPorFaixaSimples(corrente, FAIXAS_CONTATOR_AC3);
+    const rele = selecionarPorFaixaAjustavel(corrente, FAIXAS_RELE_TERMICO);
+    itens.push({ tipo:'Disjuntor-motor', especificacao:`${disj.min}–${disj.max}A`, quantidade:1 });
+    itens.push({ tipo:'Contator', especificacao:`${cont}A AC-3`, quantidade:1 });
+    itens.push({ tipo:'Relé térmico', especificacao:`${rele.min}–${rele.max}A`, quantidade:1 });
+    protecaoTexto = `Disjuntor-motor ${disj.min}–${disj.max}A`;
+    contatorTexto = `${cont}A AC-3`;
+    releAcionamentoTexto = `Térmico ${rele.min}–${rele.max}A`;
+  }
+
+  itens.push({ tipo:'Cabo de potência', especificacao:`${cabo.secao}mm² (até ${cabo.ampacidade}A)`, quantidade:3 });
+  itens.push({ tipo:'Cabo de comando', especificacao:'1,5mm²', quantidade:4 });
+  itens.push({ tipo:'Bornes de potência', especificacao:'Padrão', quantidade:3 });
+  itens.push({ tipo:'Bornes de comando', especificacao:'Padrão', quantidade:4 });
+
+  return { itens, protecaoTexto, contatorTexto, releAcionamentoTexto };
+}
+
+function consolidarBOMPainel(motoresCalculados){
+  const mapa = {};
+  motoresCalculados.forEach(m=>{
+    if(!m.componentes) return;
+    m.componentes.forEach(c=>{
+      const chave = c.tipo + '|' + c.especificacao;
+      if(!mapa[chave]) mapa[chave] = { item:c.tipo, especificacao:c.especificacao, quantidade:0, tags:[] };
+      mapa[chave].quantidade += c.quantidade;
+      if(m.tag && !mapa[chave].tags.includes(m.tag)) mapa[chave].tags.push(m.tag);
+    });
+  });
+  return Object.values(mapa).map((b, idx) => ({ ...b, numero: String(idx+1).padStart(2,'0') }));
+}
+
+/* ---------- Dimensionamento físico do painel (estimativa inicial, sempre editável) ---------- */
+const LARGURA_MM_COMPONENTE = {
+  'Disjuntor de proteção': 18, 'Disjuntor-motor': 45, 'Contator': 45, 'Relé térmico': 45,
+  'Temporizador estrela-triângulo': 22, 'Soft starter': 90, 'Inversor de frequência': 120
+};
+function estimarDimensionamentoFisico(bom, motoresCalculados, componentesGerais){
+  let larguraTotalMm = 0;
+  let temSoftOuInversor = false;
+  bom.forEach(b=>{
+    const largura = LARGURA_MM_COMPONENTE[b.item] || 25;
+    larguraTotalMm += largura * b.quantidade;
+    if(b.item === 'Soft starter' || b.item === 'Inversor de frequência') temSoftOuInversor = true;
+  });
+  // disjuntor geral + barramento + outros componentes gerais do painel
+  larguraTotalMm += 100; // disjuntor geral + barramento (estimativa fixa de referência)
+
+  const larguraComMargem = larguraTotalMm * 1.3; // margem de 30% pra manobra, fiação e expansão futura
+
+  // Tabela de portes comerciais comuns de gabinete (referência, arredonda sempre pra cima)
+  const TIERS_GABINETE = [
+    { largura:300, dim:'400 × 300 × 200 mm' },
+    { largura:500, dim:'600 × 400 × 250 mm' },
+    { largura:700, dim:'800 × 600 × 300 mm' },
+    { largura:1000, dim:'1000 × 800 × 300 mm' },
+    { largura:1300, dim:'1200 × 800 × 400 mm' },
+    { largura:1700, dim:'1600 × 1000 × 400 mm' },
+    { largura:2200, dim:'2000 × 1200 × 500 mm' }
+  ];
+  const tier = TIERS_GABINETE.find(t => larguraComMargem <= t.largura) || TIERS_GABINETE[TIERS_GABINETE.length-1];
+
+  const trilhoM = Math.ceil(larguraComMargem / 1000 * 10) / 10; // metros, arredondado pra 1 casa
+  const canaletaM = Math.ceil(trilhoM * 0.8 * 10) / 10;
+  const totalBornes = bom.filter(b => b.item.toLowerCase().includes('borne')).reduce((s,b)=>s+b.quantidade, 0)
+    + (componentesGerais.find(c=>c.item.toLowerCase().includes('borne'))?.quantidade || 0);
+  const totalTerminais = totalBornes * 2;
+  const totalCabosInternos = motoresCalculados.length * 2;
+
+  return {
+    gabinete: tier.dim,
+    larguraEstimadaMm: Math.round(larguraComMargem),
+    trilhoM, canaletaM, totalBornes, totalTerminais, totalCabosInternos,
+    ventiladorSugerido: temSoftOuInversor
+  };
+}
+
+/* ---------- Pré-layout do painel (resumo de áreas, sem CAD) ---------- */
+function gerarPreLayoutPainel(motoresCalculados){
+  const porPartida = {};
+  motoresCalculados.forEach(m=>{
+    const label = TIPO_PARTIDA_LABEL[m.tipoPartida] || m.tipoPartida;
+    porPartida[label] = (porPartida[label] || 0) + 1;
+  });
+  const temEstTri = motoresCalculados.some(m => m.tipoPartida === 'estrela_triangulo');
+  const temSoftInv = motoresCalculados.some(m => m.tipoPartida === 'soft_starter' || m.tipoPartida === 'inversor');
+
+  return [
+    { area:'Proteção geral', desc:'1 disjuntor geral + barramento de entrada' },
+    { area:'Distribuição de potência', desc:`Cabos e disjuntores-motor para ${motoresCalculados.length} motor(es)` },
+    { area:'Partidas dos motores', desc: Object.keys(porPartida).map(k => `${porPartida[k]}× ${k}`).join(', ') || '—' },
+    { area:'Comando', desc: temEstTri ? 'Relés, botoeiras e temporizador(es) de estrela-triângulo' : 'Relés e botoeiras de comando' },
+    { area:'Fonte/PLC', desc:'1 fonte 24Vcc (ajustar se houver CLP/IHM no projeto)' },
+    { area:'Bornes', desc:'Régua de bornes de potência e comando, separadas por função' },
+    { area:'Ventilação', desc: temSoftInv ? 'Necessária — soft starter/inversor geram mais calor' : 'Ventilação natural pode ser suficiente' }
+  ];
+}
+
+async function loadPaineisList(){
+  try{
+    const res = await window.storage.get(PAINEL_KEY, true);
+    paineisList = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ paineisList = []; }
+}
+async function savePaineisList(){
+  try{
+    await window.storage.set(PAINEL_KEY, JSON.stringify(paineisList), true);
+    return true;
+  }catch(e){ return false; }
+}
+
+function renderPaineisList(){
+  const list = document.getElementById('paineisList');
+  const q = document.getElementById('paineisSearchInput').value.trim().toLowerCase();
+  const filtered = paineisList.filter(p => !q || (p.nome||'').toLowerCase().includes(q));
+  document.getElementById('paineisStatTotal').textContent = fmtInt(paineisList.length);
+
+  if(filtered.length === 0){
+    list.innerHTML = paineisList.length === 0
+      ? '<div class="empty"><div class="big">🔌</div><p>Nenhum painel cadastrado ainda.<br>Toque em + para montar o primeiro.</p></div>'
+      : '<div class="empty"><div class="big">🔍</div><p>Nenhum painel encontrado.</p></div>';
+    return;
+  }
+  list.innerHTML = filtered.slice().reverse().map(p => `
+    <div class="item" data-id="${p.id}">
+      <div class="thumb placeholder">🔌</div>
+      <div style="flex:1; min-width:0;">
+        <div class="code">${(p.motores||[]).length} motor(es)</div>
+        <div class="name">${escapeHtml(p.nome)}</div>
+        <div class="actions">
+          <button class="icon-btn painel-edit-btn" data-id="${p.id}" title="Editar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.painel-edit-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openPainelEdit(btn.dataset.id));
+  });
+}
+document.getElementById('paineisSearchInput').addEventListener('input', renderPaineisList);
+
+/* ---------- Tabela de motores dentro da sheet do painel ---------- */
+function renderPainelMotoresTable(){
+  const tbody = document.getElementById('painelMotoresTableBody');
+  const inputStyle = 'background:var(--graphite); border:1px solid var(--line); border-radius:5px; color:var(--paper); padding:4px; font-size:12px;';
+  const tagsDuplicadas = validarTagsDuplicadasPainel();
+  const avisoDup = document.getElementById('painelTagDuplicadaAviso');
+  if(tagsDuplicadas.length){
+    avisoDup.textContent = '⚠️ TAGs duplicadas: ' + tagsDuplicadas.join(', ') + '. Corrija antes de dimensionar.';
+    avisoDup.style.display = 'block';
+  }else{
+    avisoDup.style.display = 'none';
+  }
+  tbody.innerHTML = painelMotoresAtual.map((m, idx) => {
+    const check = calcularCorrenteMotor(m);
+    const tagDup = tagsDuplicadas.includes((m.tag||'').trim().toUpperCase());
+    return `
+      <tr data-idx="${idx}" style="border-bottom:1px solid var(--line); ${tagDup ? 'background:rgba(232,163,61,0.18);' : (!check.valido ? 'background:rgba(193,85,63,0.12);' : '')}">
+        <td style="padding:4px;"><input class="painel-mot-input" data-field="tag" data-idx="${idx}" value="${escapeHtmlA(m.tag||'')}" style="width:65px; ${inputStyle} ${tagDup ? 'border-color:var(--amber);' : ''}"></td>
+        <td style="padding:4px;"><input class="painel-mot-input" data-field="descricao" data-idx="${idx}" value="${escapeHtmlA(m.descricao||'')}" style="width:100px; ${inputStyle}"></td>
+        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="potencia" data-idx="${idx}" value="${m.potencia||''}" style="width:55px; ${inputStyle}"></td>
+        <td style="padding:4px;">
+          <select class="painel-mot-input" data-field="unidadePotencia" data-idx="${idx}" style="${inputStyle}">
+            <option value="cv" ${m.unidadePotencia==='cv'?'selected':''}>CV</option>
+            <option value="hp" ${m.unidadePotencia==='hp'?'selected':''}>HP</option>
+            <option value="kw" ${m.unidadePotencia==='kw'?'selected':''}>kW</option>
+          </select>
+        </td>
+        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="tensao" data-idx="${idx}" value="${m.tensao||''}" style="width:55px; ${inputStyle}"></td>
+        <td style="padding:4px;">
+          <select class="painel-mot-input" data-field="fases" data-idx="${idx}" style="${inputStyle}">
+            <option value="trifasico" ${m.fases==='trifasico'?'selected':''}>Tri</option>
+            <option value="monofasico" ${m.fases==='monofasico'?'selected':''}>Mono</option>
+          </select>
+        </td>
+        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="fatorPotencia" data-idx="${idx}" value="${m.fatorPotencia||''}" style="width:50px; ${inputStyle}" placeholder="pad."></td>
+        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="rendimento" data-idx="${idx}" value="${m.rendimento||''}" style="width:50px; ${inputStyle}" placeholder="pad."></td>
+        <td style="padding:4px;">
+          <select class="painel-mot-input" data-field="tipoPartida" data-idx="${idx}" style="${inputStyle}">
+            <option value="direta" ${m.tipoPartida==='direta'?'selected':''}>Direta</option>
+            <option value="reversora" ${m.tipoPartida==='reversora'?'selected':''}>Reversora</option>
+            <option value="estrela_triangulo" ${m.tipoPartida==='estrela_triangulo'?'selected':''}>Estrela-triângulo</option>
+            <option value="soft_starter" ${m.tipoPartida==='soft_starter'?'selected':''}>Soft starter</option>
+            <option value="inversor" ${m.tipoPartida==='inversor'?'selected':''}>Inversor</option>
+          </select>
+        </td>
+        <td style="padding:4px;"><button class="small-btn danger painel-mot-remove" data-idx="${idx}" type="button">X</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.painel-mot-input').forEach(inp=>{
+    inp.addEventListener('input', (e)=>{
+      const idx = parseInt(e.target.dataset.idx, 10);
+      const field = e.target.dataset.field;
+      let val = e.target.value;
+      if(['potencia','tensao','fatorPotencia','rendimento'].includes(field)) val = val === '' ? null : parseFloat(val);
+      painelMotoresAtual[idx][field] = val;
+    });
+    inp.addEventListener('change', ()=>{
+      document.getElementById('painelResultados').style.display = 'none';
+      renderPainelMotoresTable();
+    });
+  });
+  tbody.querySelectorAll('.painel-mot-remove').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      painelMotoresAtual.splice(parseInt(btn.dataset.idx, 10), 1);
+      document.getElementById('painelResultados').style.display = 'none';
+      renderPainelMotoresTable();
+    });
+  });
+}
+document.getElementById('painelAddMotorBtn').addEventListener('click', ()=>{
+  painelMotoresAtual.push({ tag: gerarProximaTagPainel(), descricao:'', potencia:0, unidadePotencia:'cv', tensao:0, fases:'trifasico', fatorPotencia:null, rendimento:null, tipoPartida:'direta' });
+  renderPainelMotoresTable();
+});
+
+document.getElementById('painelGerarLinhasBtn').addEventListener('click', ()=>{
+  const qtd = parseInt(document.getElementById('painelNumEstimadoMotores').value, 10) || 0;
+  if(qtd <= 0){
+    showToast('Informe quantos motores o painel deve ter.');
+    return;
+  }
+  if(painelMotoresAtual.length > 0 && !confirm(`Já existem ${painelMotoresAtual.length} motor(es) na lista. Adicionar mais ${qtd} linha(s)?`)) return;
+  const tensaoPadrao = parseFloat(document.getElementById('painelTensaoPrincipal').value) || 0;
+  for(let i=0; i<qtd; i++){
+    painelMotoresAtual.push({ tag: gerarProximaTagPainel(), descricao:'', potencia:0, unidadePotencia:'cv', tensao:tensaoPadrao, fases:'trifasico', fatorPotencia:null, rendimento:null, tipoPartida:'direta' });
+  }
+  renderPainelMotoresTable();
+  showToast(qtd + ' linha(s) gerada(s) — de ' + painelMotoresAtual[painelMotoresAtual.length-qtd].tag + ' até ' + painelMotoresAtual[painelMotoresAtual.length-1].tag + '.');
+});
+
+document.getElementById('painelImportarBtn').addEventListener('click', ()=> document.getElementById('painelImportarInput').click());
+document.getElementById('painelImportarInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  showToast('Lendo planilha...');
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    const buf = await file.arrayBuffer();
+    const wb = window.XLSX.read(buf, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = window.XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+    const partidaMap = { 'direta':'direta', 'reversora':'reversora', 'estrela-triangulo':'estrela_triangulo', 'estrela triangulo':'estrela_triangulo', 'soft starter':'soft_starter', 'inversor':'inversor', 'inversor de frequencia':'inversor' };
+    const parsed = rows.map(row => {
+      const tagPlanilha = String(getFieldValue(row, ['tag','identificacao','identificação']) || '').trim();
+      const descricao = String(getFieldValue(row, ['descricao','descrição','equipamento']) || '').trim();
+      const potencia = parseFloat(getFieldValue(row, ['potencia','potência'])) || 0;
+      let unidadePotencia = String(getFieldValue(row, ['unidade']) || 'cv').trim().toLowerCase();
+      if(!['cv','hp','kw'].includes(unidadePotencia)) unidadePotencia = 'cv';
+      const tensao = parseFloat(getFieldValue(row, ['tensao','tensão'])) || 0;
+      const fases = String(getFieldValue(row, ['fases','sistema']) || '').toLowerCase().includes('mono') ? 'monofasico' : 'trifasico';
+      const fpVal = parseFloat(getFieldValue(row, ['fator de potencia','fator de potência','fp']));
+      const rendVal = parseFloat(getFieldValue(row, ['rendimento']));
+      const partidaRaw = String(getFieldValue(row, ['tipo de partida','partida']) || '').trim().toLowerCase();
+      const tipoPartida = partidaMap[partidaRaw] || 'direta';
+      return { tag: tagPlanilha, descricao, potencia, unidadePotencia, tensao, fases, fatorPotencia: isNaN(fpVal)?null:fpVal, rendimento: isNaN(rendVal)?null:rendVal, tipoPartida };
+    }).filter(m => m.tag || m.descricao);
+
+    if(parsed.length === 0){
+      showToast('Não encontrei motores válidos nessa planilha.');
+      return;
+    }
+    // Preserva TAGs já válidas da planilha; gera automaticamente só as que vieram vazias.
+    let semTag = 0;
+    parsed.forEach(m=>{
+      if(!m.tag){
+        m.tag = gerarProximaTagPainel();
+        painelMotoresAtual.push(m); // já entra na lista antes do próximo cálculo de gerarProximaTagPainel considerar essa TAG usada
+        semTag++;
+      }else{
+        painelMotoresAtual.push(m);
+      }
+    });
+    document.getElementById('painelResultados').style.display = 'none';
+    renderPainelMotoresTable();
+    const duplicadas = validarTagsDuplicadasPainel();
+    let msg = parsed.length + ' motor(es) importado(s)';
+    if(semTag) msg += `, ${semTag} sem TAG na planilha (gerada(s) automaticamente)`;
+    msg += '. Confira a tabela antes de calcular.';
+    showToast(msg);
+    if(duplicadas.length){
+      showToast('⚠️ TAGs duplicadas encontradas: ' + duplicadas.join(', ') + '. Corrija antes de dimensionar.');
+    }
+  }catch(err){
+    console.error(err);
+    showToast('Não foi possível ler esse arquivo.');
+  }
+});
+
+/* ---------- Cálculo do painel ---------- */
+function calcularPainel(){
+  const duplicadas = validarTagsDuplicadasPainel();
+  const avisoDup = document.getElementById('painelTagDuplicadaAviso');
+  if(duplicadas.length){
+    avisoDup.textContent = '⚠️ TAGs duplicadas: ' + duplicadas.join(', ') + '. Corrija antes de dimensionar.';
+    avisoDup.style.display = 'block';
+    document.getElementById('painelResultados').style.display = 'none';
+    showToast('Existem TAGs duplicadas. Corrija antes de calcular o painel.');
+    return null;
+  }
+  avisoDup.style.display = 'none';
+
+  const motoresCalculados = painelMotoresAtual.map(m=>{
+    const check = calcularCorrenteMotor(m);
+    if(!check.valido){
+      return { ...m, valido:false, correnteNominal:null, componentes:[], protecaoTexto:'—', contatorTexto:'—', releAcionamentoTexto:'—', caboTexto:'—', bornesTexto:'—' };
+    }
+    const { itens, protecaoTexto, contatorTexto, releAcionamentoTexto } = gerarComponentesMotorPainel(m, check.corrente);
+    const caboItem = itens.find(i => i.tipo === 'Cabo de potência');
+    const bornesItem = itens.find(i => i.tipo === 'Bornes de potência');
+    return {
+      ...m, valido:true, correnteNominal:check.corrente, usouPadrao: !!(check.fpEhPadrao || check.rendEhPadrao),
+      componentes:itens, protecaoTexto, contatorTexto, releAcionamentoTexto,
+      caboTexto: caboItem ? caboItem.especificacao : '—',
+      bornesTexto: bornesItem ? (bornesItem.quantidade + ' pot. + 4 comando') : '—'
+    };
+  });
+
+  // 1. Resumo dos motores
+  document.getElementById('painelResumoTableBody').innerHTML = motoresCalculados.map(m => `
+    <tr style="border-bottom:1px solid var(--line); ${!m.valido ? 'background:rgba(193,85,63,0.12);' : ''}">
+      <td style="padding:5px 4px;">${escapeHtml(m.tag||'—')}</td>
+      <td style="padding:5px 4px;">${escapeHtml(m.descricao||'—')}</td>
+      <td style="padding:5px 4px;">${m.potencia} ${(m.unidadePotencia||'cv').toUpperCase()}</td>
+      <td style="padding:5px 4px;">${m.tensao}V</td>
+      <td style="padding:5px 4px;">${m.valido ? m.correnteNominal.toFixed(2)+'A' : 'dados insuficientes'}</td>
+      <td style="padding:5px 4px;">${TIPO_PARTIDA_LABEL[m.tipoPartida]||m.tipoPartida}</td>
+      <td style="padding:5px 4px;">${escapeHtml(m.protecaoTexto)}</td>
+      <td style="padding:5px 4px;">${escapeHtml(m.contatorTexto)}</td>
+      <td style="padding:5px 4px;">${escapeHtml(m.releAcionamentoTexto)}</td>
+      <td style="padding:5px 4px;">${escapeHtml(m.caboTexto)}</td>
+      <td style="padding:5px 4px;">${escapeHtml(m.bornesTexto)}</td>
+    </tr>
+  `).join('');
+
+  // Corrente geral do painel — agrupado por tensão + fases, nunca somado entre grupos diferentes
+  const grupos = {};
+  let potenciaTotalKw = 0;
+  motoresCalculados.forEach(m=>{
+    const fatorConv = POTENCIA_CONVERSAO_MOTOR[m.unidadePotencia] || POTENCIA_CONVERSAO_MOTOR.cv;
+    potenciaTotalKw += (parseFloat(m.potencia)||0) * fatorConv / 1000;
+    if(!m.valido) return;
+    const chave = `${m.tensao}V · ${FASES_LABEL_MOTOR[m.fases]||m.fases}`;
+    if(!grupos[chave]) grupos[chave] = { qtd:0, corrente:0 };
+    grupos[chave].qtd++;
+    grupos[chave].corrente += m.correnteNominal;
+  });
+  const fatorDemanda = (parseFloat(document.getElementById('painelFatorDemanda').value) || 100) / 100;
+  const chaves = Object.keys(grupos);
+  document.getElementById('painelCorrenteGeral').innerHTML =
+    `<p style="font-size:13px; margin:0 0 8px;">Potência instalada total: <b>${potenciaTotalKw.toFixed(2)} kW</b></p>` +
+    (chaves.length === 0 ? '<p class="admin-note">Nenhum motor válido para calcular corrente.</p>' :
+      chaves.map(k => {
+        const g = grupos[k];
+        const ajustada = g.corrente * fatorDemanda;
+        return `<div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;"><span>${escapeHtml(k)} (${g.qtd} motor${g.qtd>1?'es':''})</span><span style="font-weight:700; color:var(--amber);">${g.corrente.toFixed(2)}A total · ${ajustada.toFixed(2)}A com fator de demanda</span></div>`;
+      }).join(''));
+
+  // BOM consolidada (com número do item e aplicação por motor)
+  const bom = consolidarBOMPainel(motoresCalculados);
+
+  // Componentes gerais (só popula se ainda não tiver, pra não perder edição manual ao recalcular)
+  if(!window._painelComponentesGeraisAtual || !window._painelComponentesGeraisAtual.length){
+    window._painelComponentesGeraisAtual = JSON.parse(JSON.stringify(COMPONENTES_GERAIS_PADRAO));
+  }
+  renderComponentesGeraisPainel();
+
+  // Dimensionamento físico (estimativa inicial)
+  const fisico = estimarDimensionamentoFisico(bom, motoresCalculados, window._painelComponentesGeraisAtual);
+  document.getElementById('painelDimensaoFisica').innerHTML = `
+    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span>Gabinete sugerido</span><span style="font-weight:700; color:var(--amber);">${fisico.gabinete}</span></div>
+    <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px;">Largura interna estimada: ~${fisico.larguraEstimadaMm}mm (com margem de manobra e fiação)</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:13px;">
+      <div>Trilho DIN: <b>${fisico.trilhoM} m</b></div>
+      <div>Canaleta: <b>${fisico.canaletaM} m</b></div>
+      <div>Bornes (total): <b>${fisico.totalBornes}</b></div>
+      <div>Terminais (aprox.): <b>${fisico.totalTerminais}</b></div>
+      <div>Cabos internos (aprox.): <b>${fisico.totalCabosInternos}</b></div>
+      <div>Ventilação: <b>${fisico.ventiladorSugerido ? 'Recomendada' : 'Opcional'}</b></div>
+    </div>
+  `;
+
+  // Pré-layout
+  const layout = gerarPreLayoutPainel(motoresCalculados);
+  document.getElementById('painelPreLayout').innerHTML = layout.map(l => `
+    <div style="margin-bottom:8px;">
+      <div style="font-size:13px; font-weight:700; color:var(--paper);">${escapeHtml(l.area)}</div>
+      <div style="font-size:12.5px; color:var(--text-dim);">${escapeHtml(l.desc)}</div>
+    </div>
+  `).join('');
+
+  // 2. BOM consolidada (tabela)
+  document.getElementById('painelBomTableBody').innerHTML = bom.length === 0
+    ? '<tr><td colspan="5" style="padding:8px 4px; color:var(--text-dim);">Nenhum componente calculado ainda.</td></tr>'
+    : bom.map(b => `<tr style="border-bottom:1px solid var(--line);"><td style="padding:5px 4px;">${b.numero}</td><td style="padding:5px 4px;">${escapeHtml(b.item)}</td><td style="padding:5px 4px;">${escapeHtml(b.especificacao)}</td><td style="padding:5px 4px;">${b.quantidade}</td><td style="padding:5px 4px;">${escapeHtml(b.tags.join(', '))}</td></tr>`).join('');
+
+  document.getElementById('painelResultados').style.display = 'block';
+  window._painelMotoresCalculados = motoresCalculados;
+  return { motoresCalculados, bom, potenciaTotalKw, fisico, layout };
+}
+function renderComponentesGeraisPainel(){
+  const wrap = document.getElementById('painelComponentesGeraisList');
+  wrap.innerHTML = window._painelComponentesGeraisAtual.map((c, idx) => `
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+      <div style="flex:1; font-size:13px;">${escapeHtml(c.item)}</div>
+      <input type="number" min="0" value="${c.quantidade}" data-idx="${idx}" class="componente-geral-qtd" style="width:60px; background:var(--graphite); border:1px solid var(--line); border-radius:5px; color:var(--paper); padding:4px; font-size:12px;">
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.componente-geral-qtd').forEach(inp=>{
+    inp.addEventListener('input', (e)=>{
+      window._painelComponentesGeraisAtual[parseInt(e.target.dataset.idx,10)].quantidade = parseInt(e.target.value,10) || 0;
+    });
+  });
+}
+document.getElementById('painelCalcularBtn').addEventListener('click', calcularPainel);
+
+/* ---------- Abrir/salvar/excluir painel ---------- */
+function openPainelSheet(){
+  document.getElementById('painelBackdrop').classList.add('open');
+  document.getElementById('painelSheet').classList.add('open');
+}
+function closePainelSheet(){
+  document.getElementById('painelBackdrop').classList.remove('open');
+  document.getElementById('painelSheet').classList.remove('open');
+  document.getElementById('painelFormErr').classList.remove('show');
+}
+function openPainelAdd(){
+  editingPainelId = null;
+  document.getElementById('painelSheetTitle').textContent = 'Novo painel elétrico';
+  document.getElementById('painelNome').value = '';
+  document.getElementById('painelCliente').value = '';
+  document.getElementById('painelTensaoPrincipal').value = '';
+  document.getElementById('painelFrequenciaPrincipal').value = '60';
+  document.getElementById('painelTensaoComando').value = '';
+  document.getElementById('painelNumEstimadoMotores').value = '';
+  document.getElementById('painelTagDuplicadaAviso').style.display = 'none';
+  painelMotoresAtual = [];
+  window._painelComponentesGeraisAtual = JSON.parse(JSON.stringify(COMPONENTES_GERAIS_PADRAO));
+  document.getElementById('painelFatorDemanda').value = 100;
+  document.getElementById('painelResultados').style.display = 'none';
+  renderPainelMotoresTable();
+  document.getElementById('painelDeleteRow').style.display = 'none';
+  openPainelSheet();
+}
+function openPainelEdit(id){
+  const p = paineisList.find(x=>x.id === id);
+  if(!p) return;
+  editingPainelId = id;
+  document.getElementById('painelSheetTitle').textContent = 'Editar painel';
+  document.getElementById('painelNome').value = p.nome || '';
+  document.getElementById('painelCliente').value = p.cliente || '';
+  document.getElementById('painelTensaoPrincipal').value = p.tensaoPrincipal || '';
+  document.getElementById('painelFrequenciaPrincipal').value = p.frequenciaPrincipal || '60';
+  document.getElementById('painelTensaoComando').value = p.tensaoComando || '';
+  document.getElementById('painelNumEstimadoMotores').value = p.numEstimadoMotores || '';
+  document.getElementById('painelTagDuplicadaAviso').style.display = 'none';
+  painelMotoresAtual = JSON.parse(JSON.stringify(p.motores || []));
+  window._painelComponentesGeraisAtual = Array.isArray(p.componentesGerais) && p.componentesGerais.length
+    ? JSON.parse(JSON.stringify(p.componentesGerais)) : JSON.parse(JSON.stringify(COMPONENTES_GERAIS_PADRAO));
+  document.getElementById('painelFatorDemanda').value = p.fatorDemanda || 100;
+  document.getElementById('painelResultados').style.display = 'none';
+  renderPainelMotoresTable();
+  document.getElementById('painelDeleteRow').style.display = 'flex';
+  openPainelSheet();
+  if(painelMotoresAtual.length) calcularPainel();
+}
+document.getElementById('painelFabBtn').addEventListener('click', openPainelAdd);
+document.getElementById('painelCancelBtn').addEventListener('click', closePainelSheet);
+document.getElementById('painelBackdrop').addEventListener('click', closePainelSheet);
+
+document.getElementById('painelSaveBtn').addEventListener('click', async ()=>{
+  const nome = document.getElementById('painelNome').value.trim();
+  const errEl = document.getElementById('painelFormErr');
+  errEl.classList.remove('show');
+  if(!nome || painelMotoresAtual.length === 0){
+    errEl.textContent = 'Preencha o nome do painel e adicione ao menos um motor.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const resultado = calcularPainel();
+  if(!resultado){
+    errEl.textContent = 'Corrija as TAGs duplicadas antes de salvar.';
+    errEl.classList.add('show');
+    return;
+  }
+  const dados = {
+    nome,
+    cliente: document.getElementById('painelCliente').value.trim(),
+    tensaoPrincipal: parseFloat(document.getElementById('painelTensaoPrincipal').value) || 0,
+    frequenciaPrincipal: document.getElementById('painelFrequenciaPrincipal').value,
+    tensaoComando: parseFloat(document.getElementById('painelTensaoComando').value) || 0,
+    numEstimadoMotores: parseInt(document.getElementById('painelNumEstimadoMotores').value, 10) || null,
+    motores: JSON.parse(JSON.stringify(painelMotoresAtual)),
+    fatorDemanda: parseFloat(document.getElementById('painelFatorDemanda').value) || 100,
+    motoresCalculados: resultado.motoresCalculados,
+    bomConsolidada: resultado.bom,
+    componentesGerais: JSON.parse(JSON.stringify(window._painelComponentesGeraisAtual)),
+    potenciaTotalKw: resultado.potenciaTotalKw,
+    dimensaoFisica: resultado.fisico,
+    preLayout: resultado.layout
+  };
+
+  if(editingPainelId){
+    const p = paineisList.find(x=>x.id === editingPainelId);
+    Object.assign(p, dados);
+    p.editadoPor = currentUser;
+  }else{
+    paineisList.push({
+      id: 'painel_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      ...dados, criadoPor: currentUser, criadoEm: new Date().toISOString()
+    });
+  }
+
+  const ok = await savePaineisList();
+  if(!ok){
+    errEl.textContent = 'Não foi possível salvar agora. Tente novamente.';
+    errEl.classList.add('show');
+    return;
+  }
+  closePainelSheet();
+  renderPaineisList();
+  showToast(editingPainelId ? 'Painel atualizado.' : 'Painel cadastrado.');
+});
+
+document.getElementById('painelDeleteBtn').addEventListener('click', ()=> requestAdminAuth(async ()=>{
+  if(!editingPainelId) return;
+  const idx = paineisList.findIndex(x=>x.id === editingPainelId);
+  if(idx>=0) paineisList.splice(idx,1);
+  const ok = await savePaineisList();
+  if(!ok){ showToast('Não foi possível excluir agora.'); return; }
+  closePainelSheet();
+  renderPaineisList();
+  showToast('Painel excluído.');
+}));
 
 /* ======================================================
    ORDENS DE SERVIÇO DA NFS ENERGY
