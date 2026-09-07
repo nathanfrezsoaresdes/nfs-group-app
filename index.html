@@ -1648,6 +1648,10 @@
         <div class="mini-menu-icon">💼</div>
         <div class="mini-menu-label">Investidores</div>
       </div>
+      <div class="mini-menu-card" id="nfsEnergyFinanceiroCard" style="display:none;">
+        <div class="mini-menu-icon">💰</div>
+        <div class="mini-menu-label">Financeiro</div>
+      </div>
     </div>
   </div>
 
@@ -1950,9 +1954,11 @@
 
   <!-- MENU (preparado para outros tipos de orçamento no futuro) -->
   <div id="orcamentoMenuView" class="admin-content">
-    <div class="admin-card" data-orc-nav="solar" style="cursor:pointer;">
-      <h3>☀️ Orçamento Solar</h3>
-      <p class="card-sub">Sistema fotovoltaico — consumo, potência, custos e retorno estimado.</p>
+    <div class="mini-menu-grid">
+      <div class="mini-menu-card" data-orc-nav="solar">
+        <div class="mini-menu-icon">☀️</div>
+        <div class="mini-menu-label">Orçamento Solar</div>
+      </div>
     </div>
   </div>
 
@@ -2013,13 +2019,15 @@
 
   <!-- MENU -->
   <div id="dimensionamentosMenuView" class="admin-content">
-    <div class="admin-card" data-dim-nav="motores" style="cursor:pointer;">
-      <h3>⚙️ Dimensionamento de Motores</h3>
-      <p class="card-sub">Corrente nominal por motor — individual ou por lista importada.</p>
-    </div>
-    <div class="admin-card" data-dim-nav="painel" style="cursor:pointer;">
-      <h3>🔌 Dimensionamento de Painel Elétrico</h3>
-      <p class="card-sub">Lista de motores → correntes, seleção de componentes e lista de materiais do painel.</p>
+    <div class="mini-menu-grid">
+      <div class="mini-menu-card" data-dim-nav="motores">
+        <div class="mini-menu-icon">⚙️</div>
+        <div class="mini-menu-label">Dimensionamento de Motores</div>
+      </div>
+      <div class="mini-menu-card" data-dim-nav="painel">
+        <div class="mini-menu-icon">🔌</div>
+        <div class="mini-menu-label">Painel Elétrico</div>
+      </div>
     </div>
   </div>
 
@@ -2092,45 +2100,47 @@
 
   <!-- MENU DE CATEGORIAS -->
   <div id="configMenuView" class="admin-content">
-    <div class="admin-card" data-config-nav="usuarios" style="cursor:pointer;">
-      <h3>👤 Usuários</h3>
-      <p class="card-sub">Cadastrar, editar, ativar/desativar colaboradores e definir acessos.</p>
-    </div>
-    <div class="admin-card" data-config-nav="permissoes" style="cursor:pointer;">
-      <h3>🔐 Permissões</h3>
-      <p class="card-sub">Aplicar perfis prontos de acesso por módulo.</p>
-    </div>
-    <div class="admin-card" data-config-nav="empresa" style="cursor:pointer;">
-      <h3>🏢 Dados da Empresa</h3>
-      <p class="card-sub">Usados em propostas, orçamentos e relatórios do sistema.</p>
-    </div>
-    <div class="admin-card" data-config-nav="orcamento-config" style="cursor:pointer;">
-      <h3>🧮 Configurações de Orçamento</h3>
-      <p class="card-sub">HSP padrão e outros parâmetros usados no cálculo.</p>
-    </div>
-    <div class="admin-card" data-config-nav="cobranca-config" style="cursor:pointer;">
-      <h3>💰 Financeiro → Cobranças</h3>
-      <p class="card-sub">PIX, multa, juros, régua de cobrança e modelo de mensagem.</p>
-    </div>
-    <div class="admin-card" data-config-nav="dimensionamentos-config" style="cursor:pointer;">
-      <h3>📐 Configurações de Dimensionamentos</h3>
-      <p class="card-sub">Base de componentes elétricos (fabricantes, motores, disjuntores...).</p>
-    </div>
-    <div class="admin-card" data-config-nav="parametros" style="cursor:pointer;">
-      <h3>⚙️ Parâmetros Gerais</h3>
-      <p class="card-sub">Link do app e outros ajustes do sistema.</p>
-    </div>
-    <div class="admin-card" data-config-nav="auditoria" style="cursor:pointer;">
-      <h3>📜 Auditoria</h3>
-      <p class="card-sub">Histórico das alterações importantes feitas no sistema.</p>
-    </div>
-    <div class="admin-card" data-config-nav="aparencia" style="cursor:pointer;">
-      <h3>🖥️ Aparência / Layout</h3>
-      <p class="card-sub">Modo de exibição, largura no computador e colunas da tela inicial.</p>
-    </div>
-    <div class="admin-card" data-config-nav="licenca" style="cursor:pointer;">
-      <h3>🔑 Licença / Plano</h3>
-      <p class="card-sub">Módulos contratados nesta implantação.</p>
+    <div class="mini-menu-grid">
+      <div class="mini-menu-card" data-config-nav="usuarios">
+        <div class="mini-menu-icon">👤</div>
+        <div class="mini-menu-label">Usuários</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="permissoes">
+        <div class="mini-menu-icon">🔐</div>
+        <div class="mini-menu-label">Permissões</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="empresa">
+        <div class="mini-menu-icon">🏢</div>
+        <div class="mini-menu-label">Dados da Empresa</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="orcamento-config">
+        <div class="mini-menu-icon">🧮</div>
+        <div class="mini-menu-label">Config. Orçamento</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="cobranca-config">
+        <div class="mini-menu-icon">💰</div>
+        <div class="mini-menu-label">Financeiro/Cobranças</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="dimensionamentos-config">
+        <div class="mini-menu-icon">📐</div>
+        <div class="mini-menu-label">Config. Dimensionamentos</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="parametros">
+        <div class="mini-menu-icon">⚙️</div>
+        <div class="mini-menu-label">Parâmetros Gerais</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="auditoria">
+        <div class="mini-menu-icon">📜</div>
+        <div class="mini-menu-label">Auditoria</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="aparencia">
+        <div class="mini-menu-icon">🖥️</div>
+        <div class="mini-menu-label">Aparência / Layout</div>
+      </div>
+      <div class="mini-menu-card" data-config-nav="licenca">
+        <div class="mini-menu-icon">🔑</div>
+        <div class="mini-menu-label">Licença / Plano</div>
+      </div>
     </div>
   </div>
 
@@ -2288,6 +2298,41 @@
           <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
             <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
               <input type="checkbox" id="newColabAcessoOsEnergy" style="width:16px; height:16px;"> 🛠️ OS (NFS Energy)
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabAcessoNfsEnergyFinanceiro" style="width:16px; height:16px;"> 💰 Financeiro (NFS Energy) — independente do Financeiro Geral
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Dentro do Financeiro do NFS Energy (só faz efeito se marcado acima)</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinCadastrar" checked style="width:16px; height:16px;"> Cadastrar lançamentos
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinEditar" checked style="width:16px; height:16px;"> Editar lançamentos
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinReceber" checked style="width:16px; height:16px;"> Dar baixa (receber)
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinPagar" checked style="width:16px; height:16px;"> Dar baixa (pagar)
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinExcluir" style="width:16px; height:16px;"> Excluir lançamentos
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinRelatorios" checked style="width:16px; height:16px;"> Ver relatórios
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinSaldos" checked style="width:16px; height:16px;"> Ver saldos bancários
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinMultiempresa" style="width:16px; height:16px;"> Ver todas as empresas/consolidado
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabNfsFinExportacao" checked style="width:16px; height:16px;"> Exportar relatórios
             </label>
           </div>
         </div>
@@ -4737,16 +4782,37 @@
    mesma base de código roda com um TENANT_ID próprio (ou, preferencialmente,
    seu próprio projeto Firebase/Firestore) — os dados nunca se misturam entre
    empresas porque toda chave de leitura/escrita passa por tenantKey().
-*/
+
+   ---------- 1.1) FINANCEIRO CORE — MESMO CÓDIGO, DOIS CONTEXTOS DE DADOS ----------
+   O sistema tem "dois financeiros": o Financeiro Geral (módulo próprio) e o
+   Financeiro dentro de NFS Energy. Eles usam exatamente as mesmas telas, funções
+   e cálculos (o mesmo "core") — a única coisa que muda é ONDE os dados são
+   gravados. Isso é feito bem aqui embaixo, prefixando as chaves do Financeiro
+   quando o contexto ativo é "nfsEnergy", sem precisar duplicar nenhuma tela ou
+   função do módulo. Corrigir um cálculo aqui corrige nos dois; os dados nunca
+   se misturam. Isso é o que permite vender só o Financeiro, só o NFS Energy
+   (com financeiro próprio), ou os dois juntos, sem dependência entre eles. */
+const CHAVES_FINANCEIRO_CORE = [
+  'estoque:contas_pagar', 'estoque:contas_receber',
+  'estoque:fin_categorias', 'estoque:fin_centros_custo', 'estoque:fin_empresas', 'estoque:fin_contas_bancarias',
+  'estoque:fin_transferencias', 'estoque:fin_recorrencias', 'estoque:config_cobranca'
+];
+let contextoFinanceiroAtivo = 'geral'; // 'geral' | 'nfsEnergy' — trocado em showFinanceiroScreen()/showNfsEnergyFinanceiroScreen()
+function chaveComContextoFinanceiro(key){
+  if(contextoFinanceiroAtivo === 'nfsEnergy' && CHAVES_FINANCEIRO_CORE.includes(key)){
+    return key.replace('estoque:', 'estoque:nfs_energy_');
+  }
+  return key;
+}
 const TENANT_ID = ''; // Vazio = implantação atual (NFS Group). Outra empresa = outro valor/projeto.
 function tenantKey(key){
   return TENANT_ID ? (TENANT_ID + ':' + key) : key;
 }
 async function storageGet(key, shared){
-  return window.storage.get(tenantKey(key), shared);
+  return window.storage.get(tenantKey(chaveComContextoFinanceiro(key)), shared);
 }
 async function storageSet(key, value, shared){
-  return window.storage.set(tenantKey(key), value, shared);
+  return window.storage.set(tenantKey(chaveComContextoFinanceiro(key)), value, shared);
 }
 
 /* ---------- 2) REGISTRO DE MÓDULOS ---------- */
@@ -5146,6 +5212,7 @@ function showOsScreen(){
   startOsAutoRefresh();
 }
 async function showFinanceiroScreen(){
+  contextoFinanceiroAtivo = 'geral';
   if(!moduloHabilitadoNaLicenca('financeiro')){
     showToast('Módulo Financeiro não está disponível nesta licença.');
     return;
@@ -5170,6 +5237,36 @@ async function showFinanceiroScreen(){
   stopOsAutoRefresh();
   showFinSubView('menu');
 }
+
+/* ---------- Financeiro dentro do NFS Energy — MESMA TELA, contexto diferente ----------
+   Reaproveita literalmente o mesmo finApp/showFinSubView do Financeiro Geral — só troca
+   o contexto ativo antes de abrir. Corrigir uma função aqui corrige nos dois financeiros;
+   os dados nunca se misturam porque storageGet/storageSet já isolam por contexto. */
+async function showNfsEnergyFinanceiroScreen(){
+  contextoFinanceiroAtivo = 'nfsEnergy';
+  if(!moduloHabilitadoNaLicenca('nfsEnergy')){
+    showToast('Módulo NFS Energy não está disponível nesta licença.');
+    return;
+  }
+  if(!temAcessoNfsEnergyFinanceiro()){
+    showToast('Você não tem acesso liberado ao Financeiro do NFS Energy.');
+    return;
+  }
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('osApp').style.display = 'none';
+  document.getElementById('nfsEnergyApp').style.display = 'none';
+  document.getElementById('orcamentoApp').style.display = 'none';
+  document.getElementById('dimensionamentosApp').style.display = 'none';
+  document.getElementById('homeApp').style.display = 'none';
+  document.getElementById('adminPanelView').style.display = 'none';
+  document.getElementById('finApp').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'none'; // veio de dentro de NFS Energy, não da barra principal
+  document.getElementById('finUserChipName').textContent = currentUser;
+  window.scrollTo(0,0);
+  stopAutoRefresh();
+  stopOsAutoRefresh();
+  showFinSubView('menu');
+}
 function showNfsEnergyScreen(){
   if(!moduloHabilitadoNaLicenca('nfsEnergy')){
     showToast('Módulo NFS Energy não está disponível nesta licença.');
@@ -5189,6 +5286,7 @@ function showNfsEnergyScreen(){
   document.getElementById('nfsEnergyApp').style.display = 'flex';
   document.getElementById('bottomNav').style.display = 'flex';
   document.getElementById('nfsEnergyUserChipName').textContent = currentUser;
+  document.getElementById('nfsEnergyFinanceiroCard').style.display = temAcessoNfsEnergyFinanceiro() ? 'flex' : 'none';
   document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.target === 'nfsenergy'));
   window.scrollTo(0,0);
   stopAutoRefresh();
@@ -5203,7 +5301,13 @@ document.getElementById('navNfsEnergyBtn').addEventListener('click', showNfsEner
 document.getElementById('navOrcamentoBtn').addEventListener('click', showOrcamentoScreen);
 document.getElementById('homeBtnEstoque').addEventListener('click', showHomeScreen);
 document.getElementById('homeBtnOs').addEventListener('click', showHomeScreen);
-document.getElementById('homeBtnFin').addEventListener('click', showHomeScreen);
+document.getElementById('homeBtnFin').addEventListener('click', ()=>{
+  if(contextoFinanceiroAtivo === 'nfsEnergy'){
+    showNfsEnergyScreen();
+  }else{
+    showHomeScreen();
+  }
+});
 document.getElementById('homeBtnNfsEnergy').addEventListener('click', showHomeScreen);
 document.getElementById('homeBtnOrcamento').addEventListener('click', showHomeScreen);
 document.getElementById('nfsEnergyUserChip').addEventListener('click', ()=>{
@@ -5429,6 +5533,16 @@ async function createColaborador(){
   const copelCredRevelar = document.getElementById('newColabCopelCredRevelar').checked;
   const copelCredTestar = document.getElementById('newColabCopelCredTestar').checked;
   const copelCredExcluir = document.getElementById('newColabCopelCredExcluir').checked;
+  const acessoNfsEnergyFinanceiro = document.getElementById('newColabAcessoNfsEnergyFinanceiro').checked;
+  const nfsFinCadastrar = document.getElementById('newColabNfsFinCadastrar').checked;
+  const nfsFinEditar = document.getElementById('newColabNfsFinEditar').checked;
+  const nfsFinReceber = document.getElementById('newColabNfsFinReceber').checked;
+  const nfsFinPagar = document.getElementById('newColabNfsFinPagar').checked;
+  const nfsFinExcluir = document.getElementById('newColabNfsFinExcluir').checked;
+  const nfsFinRelatorios = document.getElementById('newColabNfsFinRelatorios').checked;
+  const nfsFinSaldos = document.getElementById('newColabNfsFinSaldos').checked;
+  const nfsFinMultiempresa = document.getElementById('newColabNfsFinMultiempresa').checked;
+  const nfsFinExportacao = document.getElementById('newColabNfsFinExportacao').checked;
   const acessoCopelProtocolos = document.getElementById('newColabAcessoCopelProtocolos').checked;
   const acessoCopelOutrosServicos = document.getElementById('newColabAcessoCopelOutrosServicos').checked;
   const acessoCopelFinanceiro = document.getElementById('newColabAcessoCopelFinanceiro').checked;
@@ -5457,7 +5571,7 @@ async function createColaborador(){
   }
 
   const senhaHash = await hashSenha(senha);
-  colaboradores[chave] = { nome: nomeRaw, email, senhaHash, ativo: true, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, finCadastrar, finEditar, finReceber, finPagar, finExcluir, finRelatorios, finSaldos, finMultiempresa, finExportacao, copelCredVisualizar, copelCredCadastrar, copelCredEditar, copelCredRevelar, copelCredTestar, copelCredExcluir, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
+  colaboradores[chave] = { nome: nomeRaw, email, senhaHash, ativo: true, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, finCadastrar, finEditar, finReceber, finPagar, finExcluir, finRelatorios, finSaldos, finMultiempresa, finExportacao, copelCredVisualizar, copelCredCadastrar, copelCredEditar, copelCredRevelar, copelCredTestar, copelCredExcluir, nfsEnergyFinanceiro: acessoNfsEnergyFinanceiro, nfsFinCadastrar, nfsFinEditar, nfsFinReceber, nfsFinPagar, nfsFinExcluir, nfsFinRelatorios, nfsFinSaldos, nfsFinMultiempresa, nfsFinExportacao, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
   const ok = await saveColaboradores();
   if(!ok){
     errEl.textContent = 'Não foi possível salvar o cadastro agora. Verifique sua internet e tente de novo.';
@@ -6784,12 +6898,13 @@ function showFinSubView(view){
   if(view === 'cobranca-central') document.getElementById(viewIds[view]).style.flexDirection = 'column';
 
   document.getElementById('finBackBtn').style.display = view === 'menu' ? 'none' : 'flex';
-  document.getElementById('finHeaderTitle').textContent = {
+  const tituloBase = {
     menu: 'Financeiro', cobrancas: 'Cobranças de OS', pagar: 'Contas a Pagar', receber: 'Contas a Receber',
     equilibrio: 'Ponto de Equilíbrio', nfe: 'Emissão de NFe', 'contas-bancarias': 'Contas Bancárias e Caixas',
     recorrencias: 'Lançamentos Recorrentes', 'cobranca-central': 'Central de Cobranças',
     relatorios: 'Relatórios', dre: 'DRE Gerencial'
   }[view];
+  document.getElementById('finHeaderTitle').textContent = contextoFinanceiroAtivo === 'nfsEnergy' ? ('NFS Energy / ' + tituloBase) : tituloBase;
 
   document.getElementById('finFab').style.display = (view === 'pagar' || view === 'receber') ? 'flex' : 'none';
 
@@ -6799,6 +6914,13 @@ function showFinSubView(view){
     document.querySelector('[data-fin-nav="relatorios"]').style.display = temAcessoFin('relatorios') ? 'flex' : 'none';
     document.querySelector('[data-fin-nav="dre"]').style.display = temAcessoFin('relatorios') ? 'flex' : 'none';
     document.querySelector('[data-fin-nav="contas-bancarias"]').style.display = temAcessoFin('saldos') ? 'flex' : 'none';
+    // "Cobranças de OS", "Ponto de Equilíbrio" e "NFe" dependem de dados do Estoque/OS geral,
+    // que não fazem parte do core isolado do Financeiro — não fazem sentido dentro do
+    // Financeiro do NFS Energy (evita misturar dado de um módulo com o outro, item 4).
+    const escondeNoNfsEnergy = contextoFinanceiroAtivo === 'nfsEnergy';
+    document.querySelector('[data-fin-nav="cobrancas"]').style.display = escondeNoNfsEnergy ? 'none' : 'flex';
+    document.querySelector('[data-fin-nav="equilibrio"]').style.display = escondeNoNfsEnergy ? 'none' : 'flex';
+    document.querySelector('[data-fin-nav="nfe"]').style.display = escondeNoNfsEnergy ? 'none' : 'flex';
   }
   if(view === 'cobrancas'){
     loadOS().then(renderFinanceiro);
@@ -7773,8 +7895,10 @@ function renderRelatorioIndicadores(wrap){
    ====================================================== */
 function renderDreGerencial(){
   const mes = document.getElementById('dreMes').value || hojeStr().slice(0,7);
-  const receitasBrutas = contasReceber.filter(c=>c.vencimento&&c.vencimento.slice(0,7)===mes).reduce((s,c)=>s+c.valor,0)
-    + ordens.filter(o=>o.status==='concluido' && o.dataConclusao && toLocalDateStr(o.dataConclusao).slice(0,7)===mes && !o.garantia).reduce((s,o)=>s+(o.valorTotal||0),0);
+  const receitaOsGeral = contextoFinanceiroAtivo === 'geral'
+    ? ordens.filter(o=>o.status==='concluido' && o.dataConclusao && toLocalDateStr(o.dataConclusao).slice(0,7)===mes && !o.garantia).reduce((s,o)=>s+(o.valorTotal||0),0)
+    : 0;
+  const receitasBrutas = contasReceber.filter(c=>c.vencimento&&c.vencimento.slice(0,7)===mes).reduce((s,c)=>s+c.valor,0) + receitaOsGeral;
   const despesasPorCategoria = {};
   contasPagar.filter(c=>c.vencimento&&c.vencimento.slice(0,7)===mes).forEach(c=>{
     const cat = categoriasFin.find(x=>x.id===c.categoriaId);
@@ -7856,11 +7980,13 @@ function atualizarDashboardFinanceiro(){
   let entradasMes = 0, saidasMes = 0;
   contasReceberView.forEach(c => (c.baixas||[]).forEach(b => { if(b.data && b.data.slice(0,7) === mesAtual) entradasMes += b.valor; }));
   contasPagarView.forEach(c => (c.baixas||[]).forEach(b => { if(b.data && b.data.slice(0,7) === mesAtual) saidasMes += b.valor; }));
-  (typeof ordens !== 'undefined' ? ordens : []).forEach(o=>{
-    if(o.status === 'concluido' && o.dataConclusao && toLocalDateStr(o.dataConclusao).slice(0,7) === mesAtual && !o.garantia){
-      entradasMes += (o.valorTotal || 0);
-    }
-  });
+  if(contextoFinanceiroAtivo === 'geral'){
+    (typeof ordens !== 'undefined' ? ordens : []).forEach(o=>{
+      if(o.status === 'concluido' && o.dataConclusao && toLocalDateStr(o.dataConclusao).slice(0,7) === mesAtual && !o.garantia){
+        entradasMes += (o.valorTotal || 0);
+      }
+    });
+  }
   const resultadoMes = entradasMes - saidasMes;
 
   document.getElementById('dashSaldoDisponivel').textContent = temAcessoFin('saldos') ? fmtMoney(saldoDisponivel) : '•••••';
@@ -8796,7 +8922,7 @@ async function renderFaturasCopelResumoELista(){
               <thead><tr style="text-align:left; color:var(--text-dim);">
                 <th style="padding:5px 4px;">Referência</th><th style="padding:5px 4px;">Vencimento</th>
                 <th style="padding:5px 4px;">Dias atraso</th><th style="padding:5px 4px;">Valor</th>
-                <th style="padding:5px 4px;">Status</th><th style="padding:5px 4px;">PDF</th>
+                <th style="padding:5px 4px;">Status</th><th style="padding:5px 4px;">PDF</th><th style="padding:5px 4px;">Financeiro</th>
               </tr></thead>
               <tbody>
                 ${faturasDaUc.map(f => {
@@ -8812,6 +8938,7 @@ async function renderFaturasCopelResumoELista(){
                       ${st !== 'paga' ? `<button class="small-btn copel-marcar-paga" data-id="${f.id}" type="button" style="margin-left:4px;">Marcar paga</button>` : ''}
                     </td>
                     <td style="padding:5px 4px;">${f.temPdf ? `<button class="small-btn copel-baixar-pdf" data-key="${f.pdfKey}" data-nome="${escapeHtmlA((f.referencia||f.id)+'.pdf')}" type="button">Baixar PDF</button>` : '—'}</td>
+                    <td style="padding:5px 4px;">${f.contaPagarGeradaId ? '<span class="badge status-concluido">Gerada</span>' : `<button class="small-btn copel-gerar-conta" data-id="${f.id}" type="button">💰 Gerar conta a pagar</button>`}</td>
                   </tr>`;
                 }).join('')}
               </tbody>
@@ -8857,9 +8984,55 @@ async function renderFaturasCopelResumoELista(){
       showToast('Fatura marcada como paga.');
     });
   });
+  wrap.querySelectorAll('.copel-gerar-conta').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); gerarContaPagarDeFatura(btn.dataset.id); });
+  });
 }
 document.getElementById('faturasCopelSearchInput').addEventListener('input', renderFaturasCopelResumoELista);
 
+/* ---------- Fatura Copel → Conta a pagar (item 7 do pedido: integração só dentro
+   do Financeiro do NFS Energy, nunca automática pro Financeiro Geral) ---------- */
+async function gerarContaPagarDeFatura(faturaId){
+  const f = copelFaturas.find(x=>x.id === faturaId);
+  if(!f) return;
+  if(f.contaPagarGeradaId){
+    showToast('Essa fatura já gerou uma conta a pagar.');
+    return;
+  }
+  if(!temAcessoNfsEnergyFinanceiro()){
+    showToast('Você não tem acesso ao Financeiro do NFS Energy.');
+    return;
+  }
+  const uc = copelUcs.find(u => u.uc === f.uc);
+  const contextoAnterior = contextoFinanceiroAtivo;
+  contextoFinanceiroAtivo = 'nfsEnergy'; // grava só no financeiro isolado do NFS Energy, nunca no geral
+  try{
+    await Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]);
+    const novaConta = {
+      id: gerarIdConta('pagar'), tipo: 'pagar',
+      contraparte: 'Copel', cpfCnpj: '', whatsapp: '',
+      descricao: `Fatura Copel UC ${f.uc} — ${f.referencia}${uc && uc.titular ? ' — ' + uc.titular : ''}`,
+      categoriaId: '', centroCustoId: '', empresaId: '',
+      dataEmissao: hojeStr(), vencimento: f.vencimento,
+      formaPagamento: '', contaBancariaId: '',
+      observacoes: 'Gerada automaticamente a partir da fatura Copel processada.',
+      anexo: null, status: 'aberto',
+      numeroParcela: 1, totalParcelas: 1, grupoParcelamentoId: null,
+      baixas: [], criadoPor: currentUser, criadoEm: new Date().toISOString(),
+      origemCopelFaturaId: f.id
+    };
+    contasPagar.push(novaConta);
+    const ok = await saveContasPagar();
+    if(!ok){ showToast('Não foi possível gerar a conta agora.'); return; }
+    f.contaPagarGeradaId = novaConta.id;
+    await saveCopelFaturas();
+    registrarAuditoria('NFS Energy (Faturas Copel)', 'Conta a pagar gerada no Financeiro do NFS Energy', f.uc + ' — ' + f.referencia, '', fmtMoney(f.valor||0));
+    showToast('Conta a pagar gerada no Financeiro do NFS Energy (não afeta o Financeiro Geral).');
+    renderFaturasCopelResumoELista();
+  }finally{
+    contextoFinanceiroAtivo = contextoAnterior; // nunca deixa o contexto global "vazado" pra outra tela
+  }
+}
 
 async function loadCopelCredenciais(){
   try{
@@ -9293,6 +9466,7 @@ function showNfsSubView(view){
 document.querySelectorAll('[data-nfs-nav]').forEach(card=>{
   card.addEventListener('click', ()=> showNfsSubView(card.dataset.nfsNav));
 });
+document.getElementById('nfsEnergyFinanceiroCard').addEventListener('click', showNfsEnergyFinanceiroScreen);
 document.querySelectorAll('[data-copel-nav]').forEach(card=>{
   card.addEventListener('click', ()=> showNfsSubView('copel-' + card.dataset.copelNav));
 });
@@ -9331,11 +9505,16 @@ function temAcessoOrcamentoSolar(){
    padrão pra não travar quem já usava o Financeiro antes dessas permissões existirem. */
 function temAcessoFin(acao){
   if(isAdminSession) return true;
-  if(!currentUserAccess || currentUserAccess.financeiro !== true) return false;
-  const campo = 'fin' + acao.charAt(0).toUpperCase() + acao.slice(1);
+  const campoModulo = contextoFinanceiroAtivo === 'nfsEnergy' ? 'nfsEnergyFinanceiro' : 'financeiro';
+  if(!currentUserAccess || currentUserAccess[campoModulo] !== true) return false;
+  const prefixo = contextoFinanceiroAtivo === 'nfsEnergy' ? 'nfsFin' : 'fin';
+  const campo = prefixo + acao.charAt(0).toUpperCase() + acao.slice(1);
   const padraoAtivado = !['excluir','multiempresa'].includes(acao);
   const valor = currentUserAccess[campo];
   return valor === undefined ? padraoAtivado : valor === true;
+}
+function temAcessoNfsEnergyFinanceiro(){
+  return isAdminSession || (currentUserAccess && currentUserAccess.nfsEnergyFinanceiro === true);
 }
 
 /* ---------- Permissões de Acessos Copel (item 19 do Pacote 3) ----------
