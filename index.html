@@ -1676,6 +1676,10 @@
           <div class="mini-menu-icon">🔐</div>
           <div class="mini-menu-label">Acessos Copel</div>
         </div>
+        <div class="mini-menu-card" data-copel-nav="faturas" id="copelFaturasCard" style="display:none;">
+          <div class="mini-menu-icon">📄</div>
+          <div class="mini-menu-label">Faturas Copel</div>
+        </div>
       </div>
       <div class="admin-empty" id="copelSemAcesso" style="display:none;">Você não tem acesso liberado a nenhuma área dentro de Copel. Fale com o administrador.</div>
     </div>
@@ -1795,6 +1799,54 @@
     </div>
     <div class="list" id="copelCredList">
       <div class="loading">Carregando…</div>
+    </div>
+  </div>
+
+  <!-- COPEL > FATURAS (processadas a partir de PDFs enviados manualmente — item 11 do pedido original) -->
+  <div id="nfsEnergyCopelFaturasView" style="display:none;">
+    <p class="card-sub" style="padding:0 18px 4px; margin-top:12px; line-height:1.6;">📥 O login na Copel continua manual. Depois de baixar a fatura pela Agência Virtual, envie o PDF aqui — o sistema lê os dados sozinho (UC, vencimento, valor, dias em atraso) e organiza tudo por unidade consumidora.</p>
+
+    <div class="summary" style="padding:0 18px; margin-top:10px;">
+      <div class="stat">
+        <div class="num" id="faturasCopelStatUcs">0</div>
+        <div class="lbl">UCs</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="faturasCopelStatTotal">0</div>
+        <div class="lbl">faturas</div>
+      </div>
+      <div class="stat value">
+        <div class="num" id="faturasCopelStatVencidas">0</div>
+        <div class="lbl">vencidas</div>
+      </div>
+    </div>
+    <div class="admin-card" style="margin:10px 18px;">
+      <p style="font-size:13px; margin:0 0 4px;">Valor total vencido: <b id="faturasCopelValorVencido" style="color:var(--red);">R$ 0,00</b></p>
+      <p style="font-size:13px; margin:0;">UCs com débito: <b id="faturasCopelUcsComDebito">0</b> · Última sincronização: <b id="faturasCopelUltimaSinc">nunca</b></p>
+    </div>
+
+    <div style="padding:0 18px; margin-bottom:10px;">
+      <button class="small-btn primary full-btn" id="processarFaturasBtn" type="button">📥 Processar faturas enviadas</button>
+      <input type="file" id="processarFaturasInput" accept="application/pdf" multiple style="display:none;">
+    </div>
+
+    <div id="faturasCopelProgresso" style="display:none; padding:0 18px; margin-bottom:14px;">
+      <div class="admin-card">
+        <p style="font-size:13px; margin:0 0 8px;" id="faturasCopelProgressoTexto">Lendo arquivo 1 de 3...</p>
+        <div style="background:var(--graphite); border-radius:6px; height:8px; overflow:hidden;">
+          <div id="faturasCopelProgressoBarra" style="background:var(--amber); height:100%; width:0%; transition:width 0.2s;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="faturasCopelSearchInput" type="text" placeholder="Buscar por UC ou titular">
+      </div>
+    </div>
+    <div class="list" id="faturasCopelUcList">
+      <div class="empty"><div class="big">📄</div><p>Nenhuma fatura processada ainda.<br>Envie os PDFs baixados da Agência Virtual.</p></div>
     </div>
   </div>
 
@@ -3956,23 +4008,20 @@
   <div class="admin-card" style="margin-bottom:14px;">
     <h3>Motores do painel</h3>
     <p class="admin-note" id="painelTagDuplicadaAviso" style="display:none; color:var(--red); margin-bottom:8px;"></p>
-    <div style="overflow-x:auto; margin-bottom:10px; -webkit-overflow-scrolling:touch;">
-      <table style="width:100%; min-width:1080px; border-collapse:collapse; font-size:12.5px;">
-        <thead>
+    <div style="overflow-x:auto; margin-bottom:10px; -webkit-overflow-scrolling:touch; max-height:520px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;">
+      <table style="width:100%; min-width:760px; border-collapse:collapse; font-size:12.5px;">
+        <thead style="position:sticky; top:0; z-index:2; background:var(--graphite-2);">
           <tr style="text-align:left; color:var(--text-dim);">
+            <th style="padding:6px 4px;"><input type="checkbox" id="painelSelTodosCb"></th>
             <th style="padding:6px 4px;">Tag</th>
             <th style="padding:6px 4px;">Descrição</th>
             <th style="padding:6px 4px;">Potência</th>
             <th style="padding:6px 4px;">Un.</th>
             <th style="padding:6px 4px;">Tensão</th>
-            <th style="padding:6px 4px;">Fases</th>
-            <th style="padding:6px 4px;">FP</th>
-            <th style="padding:6px 4px;">Rend.</th>
             <th style="padding:6px 4px;">Partida</th>
-            <th style="padding:6px 4px;">Estratégia</th>
-            <th style="padding:6px 4px;">Comprim. (m)</th>
+            <th style="padding:6px 4px;">Corrente</th>
             <th style="padding:6px 4px;">Sinais</th>
-            <th style="padding:6px 4px;"></th>
+            <th style="padding:6px 4px;">Ações</th>
           </tr>
         </thead>
         <tbody id="painelMotoresTableBody"></tbody>
@@ -3982,6 +4031,7 @@
       <button class="small-btn" id="painelAddMotorBtn" type="button">+ Adicionar motor</button>
       <button class="small-btn" id="painelImportarBtn" type="button">📥 Importar planilha</button>
       <button class="small-btn" id="painelAplicarSinaisBtn" type="button">🔌 Aplicar/duplicar sinais</button>
+      <button class="small-btn" id="painelAcoesLoteBtn" type="button">⚙️ Ações em lote</button>
       <input type="file" id="painelImportarInput" accept=".xlsx,.xls,.csv" style="display:none;">
     </div>
   </div>
@@ -4239,6 +4289,128 @@
   </div>
 </div>
 
+<div class="sheet-backdrop" id="painelDetalhesBackdrop"></div>
+<div class="sheet" id="painelDetalhesSheet">
+  <div class="sheet-handle"></div>
+  <h2 id="painelDetalhesTitulo">Detalhes do motor</h2>
+  <div class="row2">
+    <div class="field">
+      <label>Fases</label>
+      <select id="detFases">
+        <option value="trifasico">Trifásico</option>
+        <option value="monofasico">Monofásico</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Estratégia de proteção</label>
+      <select id="detEstrategia">
+        <option value="disjuntor_motor">Disjuntor-motor</option>
+        <option value="disjuntor_convencional">Disjuntor + relé</option>
+      </select>
+    </div>
+  </div>
+  <div class="row2">
+    <div class="field">
+      <label>Fator de potência</label>
+      <input id="detFatorPotencia" type="number" min="0" max="1" step="0.01" placeholder="Padrão se vazio">
+    </div>
+    <div class="field">
+      <label>Rendimento</label>
+      <input id="detRendimento" type="number" min="0" max="1" step="0.01" placeholder="Padrão se vazio">
+    </div>
+  </div>
+  <div class="field">
+    <label>Comprimento do circuito (m)</label>
+    <input id="detComprimento" type="number" min="0" step="1">
+  </div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="painelDetalhesCancelBtn">Fechar</button>
+    <button class="btn btn-primary" id="painelDetalhesSalvarBtn">Salvar detalhes</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="acoesLoteBackdrop"></div>
+<div class="sheet" id="acoesLoteSheet">
+  <div class="sheet-handle"></div>
+  <h2>⚙️ Ações em lote</h2>
+  <p class="card-sub" id="acoesLoteContagem" style="margin-bottom:14px;">0 motor(es) selecionado(s) na tabela.</p>
+
+  <div class="field">
+    <label>O que você quer fazer?</label>
+    <select id="acoesLoteTipo">
+      <option value="definir">Definir valores diretamente</option>
+      <option value="copiar">Copiar configuração de um motor</option>
+      <option value="excluir">Excluir os selecionados</option>
+    </select>
+  </div>
+
+  <div id="acoesLoteDefinirBox">
+    <p class="admin-note" style="margin-bottom:10px;">Deixe em branco o que não quiser alterar — só os campos preenchidos serão aplicados.</p>
+    <div class="row2">
+      <div class="field">
+        <label>Tensão (V)</label>
+        <input id="loteTensao" type="number" min="0" step="1">
+      </div>
+      <div class="field">
+        <label>Tipo de partida</label>
+        <select id="loteTipoPartida">
+          <option value="">Não alterar</option>
+          <option value="direta">Direta</option>
+          <option value="reversora">Reversora</option>
+          <option value="estrela_triangulo">Estrela-triângulo</option>
+          <option value="soft_starter">Soft starter</option>
+          <option value="inversor">Inversor</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Fator de potência</label>
+        <input id="loteFatorPotencia" type="number" min="0" max="1" step="0.01">
+      </div>
+      <div class="field">
+        <label>Rendimento</label>
+        <input id="loteRendimento" type="number" min="0" max="1" step="0.01">
+      </div>
+    </div>
+    <div class="field">
+      <label>Estratégia de proteção</label>
+      <select id="loteEstrategia">
+        <option value="">Não alterar</option>
+        <option value="disjuntor_motor">Disjuntor-motor</option>
+        <option value="disjuntor_convencional">Disjuntor + relé</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="acoesLoteCopiarBox" style="display:none;">
+    <div class="field">
+      <label>Copiar configuração do motor:</label>
+      <select id="loteMotorOrigem"></select>
+    </div>
+    <div class="field">
+      <label>O que copiar?</label>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="copiarDadosEletricos" checked> Dados elétricos (potência, tensão, fases, FP, rendimento)</label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="copiarPartida" checked> Tipo de partida</label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="copiarProtecao" checked> Estratégia de proteção</label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="copiarCabo"> Comprimento do circuito</label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="copiarSinais"> Sinais DI/DO</label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700;"><input type="checkbox" id="copiarTudo"> Tudo</label>
+      </div>
+    </div>
+  </div>
+
+  <div id="acoesLoteExcluirBox" style="display:none;">
+    <p class="admin-note" style="color:var(--red);">⚠️ Essa ação remove os motores selecionados da lista. Não pode ser desfeita depois de salvar o painel.</p>
+  </div>
+
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="acoesLoteCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="acoesLoteConfirmarBtn">Aplicar</button>
+  </div>
+</div>
+
 <div class="sheet-backdrop" id="importClientesEnergyBackdrop"></div>
 <div class="sheet" id="importClientesEnergySheet">
   <div class="sheet-handle"></div>
@@ -4462,8 +4634,12 @@
     </div>
   </div>
   <div id="copelCredRevelarBox" style="display:none; margin-bottom:14px;">
-    <button class="small-btn full-btn" id="copelCredRevelarBtn" type="button">🔓 Revelar senha salva</button>
+    <div style="display:flex; gap:8px;">
+      <button class="small-btn" id="copelCredRevelarBtn" type="button" style="flex:1;">🔓 Revelar senha salva</button>
+      <button class="small-btn" id="copelCredAbrirPortalBtn" type="button" style="flex:1;">🌐 Abrir Agência Virtual</button>
+    </div>
     <p class="admin-note" id="copelCredRevelarResultado" style="margin-top:8px; display:none;"></p>
+    <p class="admin-note" style="margin-top:6px;">Abre só a página de login da Copel numa aba nova — o login em si é feito manualmente por você, com a senha revelada acima.</p>
   </div>
 
   <div class="field">
@@ -4496,7 +4672,25 @@
   </div>
   <p class="admin-note" id="copelCredMetaInfo" style="margin-bottom:10px;"></p>
 
-  <button class="small-btn full-btn" id="copelCredTestarBtn" type="button" style="margin-bottom:14px;">🔍 Testar acesso</button>
+  <div class="admin-card" style="margin-bottom:14px;">
+    <h3>✅ Registrar verificação manual</h3>
+    <p class="card-sub">Depois de conferir pessoalmente na Agência Virtual, registre aqui o que encontrou. Isso atualiza o status e a data da última verificação — não existe teste automático (ver observação de segurança no topo desta tela).</p>
+    <div class="field">
+      <label for="verifManualStatus">O que você encontrou?</label>
+      <select id="verifManualStatus">
+        <option value="valido">✅ Login funcionou normalmente</option>
+        <option value="senha_invalida">❌ Senha incorreta</option>
+        <option value="bloqueado">🔒 Conta bloqueada</option>
+        <option value="necessita_atualizacao">⚠️ Precisa atualizar cadastro/senha</option>
+        <option value="inativo">⛔ Acesso inativo/cancelado</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="verifManualObs">Observação (opcional)</label>
+      <input id="verifManualObs" type="text" placeholder="Ex: pediu confirmação por SMS">
+    </div>
+    <button class="small-btn primary full-btn" id="verifManualSalvarBtn" type="button">Salvar verificação</button>
+  </div>
 
   <div class="err" id="copelCredFormErr">Preencha o cliente e um CPF/CNPJ válido.</div>
   <div class="sheet-actions">
@@ -8366,6 +8560,307 @@ async function chamarBackendCopelCred(acao, dadosExtras){
   return json;
 }
 
+/* ======================================================
+   NFS ENERGY > COPEL > FATURAS
+   Login continua manual (Agência Virtual). O usuário baixa o PDF normalmente e
+   envia aqui — o sistema só lê o conteúdo do arquivo já baixado, sem nenhum
+   acesso automatizado à Copel. Reaproveita as mesmas funções de extração já
+   validadas no Orçamento Solar (extrairUC, extrairVencimento etc.).
+   ====================================================== */
+const COPEL_UCS_KEY = 'estoque:copel_ucs';
+const COPEL_FATURAS_KEY = 'estoque:copel_faturas';
+let copelUcs = [];
+let copelFaturas = [];
+let copelUcExpandida = null;
+
+async function loadCopelUcs(){
+  try{ const res = await storageGet(COPEL_UCS_KEY, true); copelUcs = res && res.value ? JSON.parse(res.value) : []; }
+  catch(e){ copelUcs = []; }
+}
+async function saveCopelUcs(){
+  try{ await storageSet(COPEL_UCS_KEY, JSON.stringify(copelUcs), true); return true; }catch(e){ return false; }
+}
+async function loadCopelFaturas(){
+  try{ const res = await storageGet(COPEL_FATURAS_KEY, true); copelFaturas = res && res.value ? JSON.parse(res.value) : []; }
+  catch(e){ copelFaturas = []; }
+}
+async function saveCopelFaturas(){
+  try{ await storageSet(COPEL_FATURAS_KEY, JSON.stringify(copelFaturas), true); return true; }catch(e){ return false; }
+}
+
+function converterDataBrParaIso(dataBr){
+  if(!dataBr) return null;
+  const m = dataBr.match(/(\d{2})\/(\d{2})\/(\d{2,4})/);
+  if(!m) return null;
+  let ano = m[3];
+  if(ano.length === 2) ano = '20' + ano;
+  return `${ano}-${m[2]}-${m[1]}`;
+}
+function converterValorBrParaNumero(valorBr){
+  if(!valorBr) return null;
+  return parseFloat(valorBr.replace(/\./g,'').replace(',','.')) || null;
+}
+function referenciaParaOrdenavel(ref){
+  // "AGO/26" -> "2026-08", pra ordenar corretamente
+  if(!ref) return '';
+  const MESES = { JAN:'01',FEV:'02',MAR:'03',ABR:'04',MAI:'05',JUN:'06',JUL:'07',AGO:'08',SET:'09',OUT:'10',NOV:'11',DEZ:'12' };
+  const m = ref.match(/([A-Z]{3})\/(\d{2})/i);
+  if(!m) return ref;
+  return '20' + m[2] + '-' + (MESES[m[1].toUpperCase()] || '01');
+}
+
+function statusEfetivoFatura(f){
+  if(f.statusManual === 'paga') return 'paga';
+  if(f.vencimento && f.vencimento < hojeStr()) return 'vencida';
+  return 'aberto';
+}
+function diasEmAtrasoFatura(f){
+  if(statusEfetivoFatura(f) !== 'vencida') return 0;
+  const venc = new Date(f.vencimento + 'T00:00:00');
+  const hoje = new Date(hojeStr() + 'T00:00:00');
+  return Math.round((hoje - venc) / (1000*60*60*24));
+}
+const STATUS_FATURA_LABEL = { paga:'Paga', vencida:'Vencida', aberto:'Em aberto' };
+const STATUS_FATURA_CLASS = { paga:'status-concluido', vencida:'status-cancelado', aberto:'status-aberto' };
+
+/* ---------- Processamento dos PDFs enviados ---------- */
+document.getElementById('processarFaturasBtn').addEventListener('click', ()=> document.getElementById('processarFaturasInput').click());
+document.getElementById('processarFaturasInput').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if(files.length === 0) return;
+
+  const progresso = document.getElementById('faturasCopelProgresso');
+  const progressoTexto = document.getElementById('faturasCopelProgressoTexto');
+  const progressoBarra = document.getElementById('faturasCopelProgressoBarra');
+  progresso.style.display = 'block';
+
+  await Promise.all([loadCopelUcs(), loadCopelFaturas()]);
+
+  let ucsNovas = 0, ucsAtualizadas = 0, faturasNovas = 0, faturasAtualizadas = 0, comErro = 0;
+
+  for(let i = 0; i < files.length; i++){
+    const file = files[i];
+    progressoTexto.textContent = `Lendo fatura ${i+1} de ${files.length}: ${file.name}`;
+    progressoBarra.style.width = Math.round(((i) / files.length) * 100) + '%';
+
+    try{
+      const texto = await extrairTextoDePdf(file);
+
+      progressoTexto.textContent = `Extraindo dados de ${file.name}...`;
+      const uc = extrairUC(texto);
+      if(!uc){
+        comErro++;
+        continue; // sem UC identificada, não dá pra organizar essa fatura com segurança
+      }
+      const titular = extrairNome(texto);
+      const endereco = extrairEndereco(texto);
+      const { cidade, estado } = extrairCidadeEstado(texto);
+      const cpfCnpj = extrairDocumento(texto);
+      const referencia = extrairReferencia(texto);
+      const vencimentoIso = converterDataBrParaIso(extrairVencimento(texto));
+      const valor = converterValorBrParaNumero(extrairValorTotalFatura(texto));
+
+      // Salva/atualiza a UC
+      let registroUc = copelUcs.find(u => u.uc === uc);
+      if(!registroUc){
+        registroUc = { uc, titular, endereco, cidade, estado, cpfCnpj, ultimaAtualizacao: new Date().toISOString() };
+        copelUcs.push(registroUc);
+        ucsNovas++;
+      }else{
+        if(titular) registroUc.titular = titular;
+        if(endereco) registroUc.endereco = endereco;
+        if(cidade) registroUc.cidade = cidade;
+        if(estado) registroUc.estado = estado;
+        if(cpfCnpj) registroUc.cpfCnpj = cpfCnpj;
+        registroUc.ultimaAtualizacao = new Date().toISOString();
+        ucsAtualizadas++;
+      }
+
+      // Chave única UC + referência — nunca duplica a mesma fatura (item 8 do pedido)
+      const idFatura = uc + '_' + (referencia || 'sem-ref-' + Date.now());
+      const pdfKey = 'copel_fatura_pdf_' + idFatura;
+      progressoTexto.textContent = `Salvando PDF de ${file.name}...`;
+      const pdfBase64 = await new Promise((resolve, reject)=>{
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      await storageSet(pdfKey, pdfBase64, true);
+
+      let registroFatura = copelFaturas.find(f => f.id === idFatura);
+      if(!registroFatura){
+        registroFatura = {
+          id: idFatura, uc, referencia, referenciaOrdenavel: referenciaParaOrdenavel(referencia),
+          vencimento: vencimentoIso, valor, statusManual: null,
+          temPdf: true, pdfKey,
+          processadoEm: new Date().toISOString(), processadoPor: currentUser
+        };
+        copelFaturas.push(registroFatura);
+        faturasNovas++;
+      }else{
+        registroFatura.vencimento = vencimentoIso || registroFatura.vencimento;
+        registroFatura.valor = valor || registroFatura.valor;
+        registroFatura.temPdf = true;
+        registroFatura.pdfKey = pdfKey;
+        registroFatura.processadoEm = new Date().toISOString();
+        registroFatura.processadoPor = currentUser;
+        faturasAtualizadas++;
+      }
+    }catch(err){
+      console.error('Erro ao processar', file.name, err);
+      comErro++;
+    }
+
+    progressoBarra.style.width = Math.round(((i+1) / files.length) * 100) + '%';
+  }
+
+  progressoTexto.textContent = 'Salvando dados...';
+  const okUcs = await saveCopelUcs();
+  const okFaturas = await saveCopelFaturas();
+
+  progresso.style.display = 'none';
+
+  if(!okUcs || !okFaturas){
+    showToast('Alguns dados podem não ter sido salvos. Tente novamente.');
+  }
+
+  registrarAuditoria('NFS Energy (Faturas Copel)', 'Faturas processadas', '', '',
+    `${faturasNovas} nova(s), ${faturasAtualizadas} atualizada(s)${comErro ? ', ' + comErro + ' com erro' : ''}`);
+
+  atualizarUltimaSincCopel();
+  renderFaturasCopelResumoELista();
+
+  const vencidasNovoTotal = copelFaturas.filter(f => statusEfetivoFatura(f) === 'vencida').length;
+  showToast(`Concluído: ${ucsNovas} UC(s) nova(s), ${ucsAtualizadas} atualizada(s), ${faturasNovas} fatura(s) nova(s), ${faturasAtualizadas} atualizada(s)${comErro ? `, ${comErro} arquivo(s) não reconhecido(s)` : ''}. ${vencidasNovoTotal} fatura(s) vencida(s) no total.`);
+});
+
+const COPEL_ULTIMA_SINC_KEY = 'estoque:copel_ultima_sinc';
+async function atualizarUltimaSincCopel(){
+  try{ await storageSet(COPEL_ULTIMA_SINC_KEY, new Date().toISOString(), true); }catch(e){}
+}
+async function carregarUltimaSincCopel(){
+  try{
+    const res = await storageGet(COPEL_ULTIMA_SINC_KEY, true);
+    return res && res.value ? res.value : null;
+  }catch(e){ return null; }
+}
+
+/* ---------- Resumo + lista por UC (item 3, 6 e 7 do pedido) ---------- */
+async function renderFaturasCopelResumoELista(){
+  const vencidas = copelFaturas.filter(f => statusEfetivoFatura(f) === 'vencida');
+  const valorVencido = vencidas.reduce((s,f)=> s + (f.valor||0), 0);
+  const ucsComDebito = new Set(vencidas.map(f=>f.uc)).size;
+
+  document.getElementById('faturasCopelStatUcs').textContent = fmtInt(copelUcs.length);
+  document.getElementById('faturasCopelStatTotal').textContent = fmtInt(copelFaturas.length);
+  document.getElementById('faturasCopelStatVencidas').textContent = fmtInt(vencidas.length);
+  document.getElementById('faturasCopelValorVencido').textContent = fmtMoney(valorVencido);
+  document.getElementById('faturasCopelUcsComDebito').textContent = fmtInt(ucsComDebito);
+
+  const ultimaSinc = await carregarUltimaSincCopel();
+  document.getElementById('faturasCopelUltimaSinc').textContent = ultimaSinc ? new Date(ultimaSinc).toLocaleString('pt-BR') : 'nunca';
+
+  const q = document.getElementById('faturasCopelSearchInput').value.trim().toLowerCase();
+  const ucsFiltradas = copelUcs.filter(u => !q || u.uc.includes(q) || (u.titular||'').toLowerCase().includes(q));
+
+  const wrap = document.getElementById('faturasCopelUcList');
+  if(ucsFiltradas.length === 0){
+    wrap.innerHTML = '<div class="empty"><div class="big">📄</div><p>Nenhuma fatura processada ainda.<br>Envie os PDFs baixados da Agência Virtual.</p></div>';
+    return;
+  }
+
+  wrap.innerHTML = ucsFiltradas.map(u => {
+    const faturasDaUc = copelFaturas.filter(f => f.uc === u.uc).sort((a,b)=> b.referenciaOrdenavel.localeCompare(a.referenciaOrdenavel));
+    const vencidasDaUc = faturasDaUc.filter(f => statusEfetivoFatura(f) === 'vencida').length;
+    const expandida = copelUcExpandida === u.uc;
+    return `
+      <div class="item" data-uc="${escapeHtmlA(u.uc)}" style="flex-direction:column; align-items:stretch;">
+        <div style="display:flex; gap:12px; cursor:pointer;" class="copel-uc-toggle" data-uc="${escapeHtmlA(u.uc)}">
+          <div class="thumb placeholder">⚡</div>
+          <div style="flex:1; min-width:0;">
+            <div class="code">UC ${escapeHtml(u.uc)}${u.cpfCnpj ? ' · ' + escapeHtml(u.cpfCnpj) : ''}</div>
+            <div class="name">${escapeHtml(u.titular || 'Titular não identificado')}</div>
+            <div class="meta"><span>${escapeHtml(u.cidade||'')}${u.estado ? '/'+escapeHtml(u.estado) : ''}</span></div>
+            <div class="badges">
+              <span class="badge">${faturasDaUc.length} fatura(s)</span>
+              ${vencidasDaUc > 0 ? `<span class="badge status-cancelado">${vencidasDaUc} vencida(s)</span>` : ''}
+            </div>
+          </div>
+          <div style="align-self:center; font-size:18px;">${expandida ? '▲' : '▼'}</div>
+        </div>
+        ${expandida ? `
+          <div style="margin-top:10px; overflow-x:auto;">
+            <table style="width:100%; min-width:560px; border-collapse:collapse; font-size:12.5px;">
+              <thead><tr style="text-align:left; color:var(--text-dim);">
+                <th style="padding:5px 4px;">Referência</th><th style="padding:5px 4px;">Vencimento</th>
+                <th style="padding:5px 4px;">Dias atraso</th><th style="padding:5px 4px;">Valor</th>
+                <th style="padding:5px 4px;">Status</th><th style="padding:5px 4px;">PDF</th>
+              </tr></thead>
+              <tbody>
+                ${faturasDaUc.map(f => {
+                  const st = statusEfetivoFatura(f);
+                  const dias = diasEmAtrasoFatura(f);
+                  return `<tr style="border-bottom:1px solid var(--line);">
+                    <td style="padding:5px 4px;">${escapeHtml(f.referencia||'—')}</td>
+                    <td style="padding:5px 4px;">${f.vencimento ? new Date(f.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td>
+                    <td style="padding:5px 4px;">${dias > 0 ? dias + ' dias' : '—'}</td>
+                    <td style="padding:5px 4px;">${fmtMoney(f.valor||0)}</td>
+                    <td style="padding:5px 4px;">
+                      <span class="badge ${STATUS_FATURA_CLASS[st]}">${STATUS_FATURA_LABEL[st]}</span>
+                      ${st !== 'paga' ? `<button class="small-btn copel-marcar-paga" data-id="${f.id}" type="button" style="margin-left:4px;">Marcar paga</button>` : ''}
+                    </td>
+                    <td style="padding:5px 4px;">${f.temPdf ? `<button class="small-btn copel-baixar-pdf" data-key="${f.pdfKey}" data-nome="${escapeHtmlA((f.referencia||f.id)+'.pdf')}" type="button">Baixar PDF</button>` : '—'}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  wrap.querySelectorAll('.copel-uc-toggle').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const uc = el.dataset.uc;
+      copelUcExpandida = copelUcExpandida === uc ? null : uc;
+      renderFaturasCopelResumoELista();
+    });
+  });
+  wrap.querySelectorAll('.copel-baixar-pdf').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      try{
+        const res = await storageGet(btn.dataset.key, true);
+        if(!res || !res.value){ showToast('PDF não encontrado.'); return; }
+        const a = document.createElement('a');
+        a.href = res.value;
+        a.download = btn.dataset.nome;
+        a.click();
+      }catch(err){
+        showToast('Não foi possível baixar o PDF agora.');
+      }
+    });
+  });
+  wrap.querySelectorAll('.copel-marcar-paga').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const f = copelFaturas.find(x=>x.id === btn.dataset.id);
+      if(!f) return;
+      f.statusManual = 'paga';
+      const ok = await saveCopelFaturas();
+      if(!ok){ showToast('Não foi possível salvar agora.'); return; }
+      registrarAuditoria('NFS Energy (Faturas Copel)', 'Fatura marcada como paga', f.uc + ' — ' + f.referencia, '', '');
+      renderFaturasCopelResumoELista();
+      showToast('Fatura marcada como paga.');
+    });
+  });
+}
+document.getElementById('faturasCopelSearchInput').addEventListener('input', renderFaturasCopelResumoELista);
+
+
 async function loadCopelCredenciais(){
   try{
     const { credenciais } = await chamarBackendCopelCred('listar', {});
@@ -8635,20 +9130,40 @@ document.getElementById('copelCredDeleteBtn').addEventListener('click', ()=> req
   }
 }));
 
-document.getElementById('copelCredTestarBtn').addEventListener('click', async ()=>{
-  if(!temAcessoCopelCredenciais('testar')){
-    showToast('Você não tem permissão para testar acessos Copel.');
-    return;
-  }
+document.getElementById('copelCredAbrirPortalBtn').addEventListener('click', ()=>{
+  // Só abre a página de login — nenhum dado é enviado, nenhum preenchimento automático.
+  // O login em si é feito manualmente pela pessoa, com a senha que ela mesma revelou acima.
+  window.open('https://www.copel.com/avaweb/paginaLogin/login.jsf', '_blank');
+});
+
+document.getElementById('verifManualSalvarBtn').addEventListener('click', async ()=>{
   if(!editingCopelCredId){
-    showToast('Salve o cadastro primeiro para poder testar o acesso.');
+    showToast('Salve o cadastro primeiro para poder registrar uma verificação.');
     return;
   }
+  if(!temAcessoCopelCredenciais('testar')){
+    showToast('Você não tem permissão para registrar verificação de acesso.');
+    return;
+  }
+  const novoStatus = document.getElementById('verifManualStatus').value;
+  const obs = document.getElementById('verifManualObs').value.trim();
   try{
-    const resultado = await chamarBackendCopelCred('testarAcesso', { id: editingCopelCredId });
-    showToast(resultado.mensagem || 'Pendente de integração.');
+    await chamarBackendCopelCred('atualizarStatus', { id: editingCopelCredId, status: novoStatus });
+    registrarAuditoria('NFS Energy (Acessos Copel)', 'Verificação manual registrada' + (obs ? ' — ' + obs : ''), document.getElementById('copelCredCliente').value, '', COPEL_CRED_STATUS_LABEL[novoStatus]);
+    document.getElementById('copelCredStatus').value = novoStatus;
+    document.getElementById('verifManualObs').value = '';
+    await loadCopelCredenciais();
+    renderCopelCredList();
+    const atualizado = copelCredenciais.find(c=>c.id===editingCopelCredId);
+    if(atualizado){
+      document.getElementById('copelCredMetaInfo').textContent =
+        `Cadastrado por ${atualizado.criadoPor||'—'} em ${atualizado.criadoEm ? new Date(atualizado.criadoEm).toLocaleDateString('pt-BR') : '—'}`
+        + (atualizado.atualizadoEm ? ` · Última alteração: ${new Date(atualizado.atualizadoEm).toLocaleDateString('pt-BR')} por ${atualizado.atualizadoPor||'—'}` : '')
+        + (atualizado.ultimaVerificacao ? ` · Última verificação: ${new Date(atualizado.ultimaVerificacao).toLocaleString('pt-BR')}` : '');
+    }
+    showToast('Verificação registrada: ' + COPEL_CRED_STATUS_LABEL[novoStatus]);
   }catch(e){
-    showToast(e.message || 'Pendente de integração.');
+    showToast(e.message || 'Não foi possível registrar agora.');
   }
 });
 
@@ -8663,6 +9178,7 @@ function atualizarCopelMenuVisibility(){
   document.getElementById('copelOutrosServicosCard').style.display = podeOutrosServicos ? 'flex' : 'none';
   document.getElementById('copelFinanceiroCard').style.display = podeFinanceiro ? 'flex' : 'none';
   document.getElementById('copelAcessosCard').style.display = podeAcessos ? 'flex' : 'none';
+  document.getElementById('copelFaturasCard').style.display = podeAcessos ? 'flex' : 'none';
   document.getElementById('copelSemAcesso').style.display = (!podeProtocolos && !podeOutrosServicos && !podeFinanceiro && !podeAcessos) ? 'block' : 'none';
 }
 
@@ -8682,6 +9198,7 @@ function showNfsSubView(view){
     'copel-outros-servicos': 'nfsEnergyCopelOutrosServicosView',
     'copel-financeiro': 'nfsEnergyCopelFinanceiroView',
     'copel-acessos': 'nfsEnergyCopelAcessosView',
+    'copel-faturas': 'nfsEnergyCopelFaturasView',
     'investidores': 'nfsEnergyInvestidoresView'
   };
   Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
@@ -8698,6 +9215,7 @@ function showNfsSubView(view){
     'copel-outros-servicos': 'Outros Serviços (Copel)',
     'copel-financeiro': 'Financeiro (Copel)',
     'copel-acessos': 'Acessos Copel',
+    'copel-faturas': 'Faturas Copel',
     investidores: 'Investidores'
   }[view];
 
@@ -8726,6 +9244,15 @@ function showNfsSubView(view){
       return;
     }
     Promise.all([loadCopelCredenciais(), loadEmpresasFin()]).then(renderCopelCredList);
+  }
+  if(view === 'copel-faturas'){
+    if(!temAcessoCopelCredenciais('visualizar')){
+      showToast('Você não tem acesso liberado às Faturas Copel.');
+      showNfsSubView('copel');
+      return;
+    }
+    copelUcExpandida = null;
+    Promise.all([loadCopelUcs(), loadCopelFaturas()]).then(renderFaturasCopelResumoELista);
   }
   if(view === 'copel-acompanhamento'){
     if(!temAcessoCopelProtocolos() && !temAcessoCopelOutrosServicos()){
@@ -8770,7 +9297,7 @@ document.querySelectorAll('[data-copel-nav]').forEach(card=>{
   card.addEventListener('click', ()=> showNfsSubView('copel-' + card.dataset.copelNav));
 });
 document.getElementById('nfsEnergyBackBtn').addEventListener('click', ()=>{
-  if(nfsCurrentSubView === 'copel-acompanhamento' || nfsCurrentSubView === 'copel-protocolos' || nfsCurrentSubView === 'copel-outros-servicos' || nfsCurrentSubView === 'copel-financeiro' || nfsCurrentSubView === 'copel-acessos'){
+  if(nfsCurrentSubView === 'copel-acompanhamento' || nfsCurrentSubView === 'copel-protocolos' || nfsCurrentSubView === 'copel-outros-servicos' || nfsCurrentSubView === 'copel-financeiro' || nfsCurrentSubView === 'copel-acessos' || nfsCurrentSubView === 'copel-faturas'){
     showNfsSubView('copel');
   }else{
     showNfsSubView('menu');
@@ -10590,6 +11117,8 @@ function renderPaineisList(){
 document.getElementById('paineisSearchInput').addEventListener('input', renderPaineisList);
 
 /* ---------- Tabela de motores dentro da sheet do painel ---------- */
+let painelMotoresSelecionados = new Set();
+
 function renderPainelMotoresTable(){
   const tbody = document.getElementById('painelMotoresTableBody');
   const inputStyle = 'background:var(--graphite); border:1px solid var(--line); border-radius:5px; color:var(--paper); padding:4px; font-size:12px;';
@@ -10601,14 +11130,17 @@ function renderPainelMotoresTable(){
   }else{
     avisoDup.style.display = 'none';
   }
+
   tbody.innerHTML = painelMotoresAtual.map((m, idx) => {
     const check = calcularCorrenteMotor(m);
     const tagDup = tagsDuplicadas.includes((m.tag||'').trim().toUpperCase());
+    const corLinha = tagDup ? 'background:rgba(232,163,61,0.18);' : (!check.valido ? 'background:rgba(193,85,63,0.12);' : '');
     return `
-      <tr data-idx="${idx}" style="border-bottom:1px solid var(--line); ${tagDup ? 'background:rgba(232,163,61,0.18);' : (!check.valido ? 'background:rgba(193,85,63,0.12);' : '')}">
-        <td style="padding:4px;"><input class="painel-mot-input" data-field="tag" data-idx="${idx}" value="${escapeHtmlA(m.tag||'')}" style="width:65px; ${inputStyle} ${tagDup ? 'border-color:var(--amber);' : ''}"></td>
-        <td style="padding:4px;"><input class="painel-mot-input" data-field="descricao" data-idx="${idx}" value="${escapeHtmlA(m.descricao||'')}" style="width:100px; ${inputStyle}"></td>
-        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="potencia" data-idx="${idx}" value="${m.potencia||''}" style="width:55px; ${inputStyle}"></td>
+      <tr data-idx="${idx}" style="border-bottom:1px solid var(--line); ${corLinha}">
+        <td style="padding:4px;"><input type="checkbox" class="painel-mot-sel-cb" data-idx="${idx}" ${painelMotoresSelecionados.has(idx)?'checked':''}></td>
+        <td style="padding:4px;"><input class="painel-mot-input" data-field="tag" data-idx="${idx}" value="${escapeHtmlA(m.tag||'')}" style="width:60px; ${inputStyle} ${tagDup ? 'border-color:var(--amber);' : ''}"></td>
+        <td style="padding:4px;"><input class="painel-mot-input" data-field="descricao" data-idx="${idx}" value="${escapeHtmlA(m.descricao||'')}" style="width:90px; ${inputStyle}"></td>
+        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="potencia" data-idx="${idx}" value="${m.potencia||''}" style="width:50px; ${inputStyle}"></td>
         <td style="padding:4px;">
           <select class="painel-mot-input" data-field="unidadePotencia" data-idx="${idx}" style="${inputStyle}">
             <option value="cv" ${m.unidadePotencia==='cv'?'selected':''}>CV</option>
@@ -10616,39 +11148,41 @@ function renderPainelMotoresTable(){
             <option value="kw" ${m.unidadePotencia==='kw'?'selected':''}>kW</option>
           </select>
         </td>
-        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="tensao" data-idx="${idx}" value="${m.tensao||''}" style="width:55px; ${inputStyle}"></td>
-        <td style="padding:4px;">
-          <select class="painel-mot-input" data-field="fases" data-idx="${idx}" style="${inputStyle}">
-            <option value="trifasico" ${m.fases==='trifasico'?'selected':''}>Tri</option>
-            <option value="monofasico" ${m.fases==='monofasico'?'selected':''}>Mono</option>
-          </select>
-        </td>
-        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="fatorPotencia" data-idx="${idx}" value="${m.fatorPotencia||''}" style="width:50px; ${inputStyle}" placeholder="pad."></td>
-        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="rendimento" data-idx="${idx}" value="${m.rendimento||''}" style="width:50px; ${inputStyle}" placeholder="pad."></td>
+        <td style="padding:4px;"><input class="painel-mot-input" type="number" data-field="tensao" data-idx="${idx}" value="${m.tensao||''}" style="width:50px; ${inputStyle}"></td>
         <td style="padding:4px;">
           <select class="painel-mot-input" data-field="tipoPartida" data-idx="${idx}" style="${inputStyle}">
             <option value="direta" ${m.tipoPartida==='direta'?'selected':''}>Direta</option>
             <option value="reversora" ${m.tipoPartida==='reversora'?'selected':''}>Reversora</option>
-            <option value="estrela_triangulo" ${m.tipoPartida==='estrela_triangulo'?'selected':''}>Estrela-triângulo</option>
-            <option value="soft_starter" ${m.tipoPartida==='soft_starter'?'selected':''}>Soft starter</option>
+            <option value="estrela_triangulo" ${m.tipoPartida==='estrela_triangulo'?'selected':''}>Estr-tri</option>
+            <option value="soft_starter" ${m.tipoPartida==='soft_starter'?'selected':''}>Soft</option>
             <option value="inversor" ${m.tipoPartida==='inversor'?'selected':''}>Inversor</option>
           </select>
         </td>
-        <td style="padding:4px;">
-          <select class="painel-mot-input" data-field="estrategiaProtecao" data-idx="${idx}" style="${inputStyle}" ${['estrela_triangulo','soft_starter','inversor'].includes(m.tipoPartida) ? 'disabled' : ''}>
-            <option value="disjuntor_motor" ${(m.estrategiaProtecao||'disjuntor_motor')==='disjuntor_motor'?'selected':''}>Disjuntor-motor</option>
-            <option value="disjuntor_convencional" ${m.estrategiaProtecao==='disjuntor_convencional'?'selected':''}>Disjuntor + relé</option>
-          </select>
-        </td>
-        <td style="padding:4px;"><input class="painel-mot-input" type="number" min="0" data-field="comprimentoCircuito" data-idx="${idx}" value="${m.comprimentoCircuito||''}" style="width:55px; ${inputStyle}" placeholder="m"></td>
+        <td style="padding:4px; white-space:nowrap;">${check.valido ? check.corrente.toFixed(2)+'A' : '<span style="color:var(--red);">—</span>'}</td>
         <td style="padding:4px;"><button class="small-btn painel-mot-sinais" data-idx="${idx}" type="button">${((m.diSelecionados||[]).length + (m.doSelecionados||[]).length) || 0}</button></td>
-        <td style="padding:4px;"><button class="small-btn danger painel-mot-remove" data-idx="${idx}" type="button">X</button></td>
+        <td style="padding:4px; white-space:nowrap;">
+          <button class="icon-btn painel-mot-detalhes" data-idx="${idx}" title="Detalhes">🔧</button>
+          <button class="icon-btn painel-mot-duplicar" data-idx="${idx}" title="Duplicar motor">📑</button>
+          <button class="icon-btn painel-mot-remove" data-idx="${idx}" title="Remover">🗑️</button>
+        </td>
       </tr>
     `;
   }).join('');
 
+  tbody.querySelectorAll('.painel-mot-sel-cb').forEach(cb=>{
+    cb.addEventListener('change', (e)=>{
+      const idx = parseInt(e.target.dataset.idx, 10);
+      if(e.target.checked) painelMotoresSelecionados.add(idx); else painelMotoresSelecionados.delete(idx);
+    });
+  });
   tbody.querySelectorAll('.painel-mot-sinais').forEach(btn=>{
     btn.addEventListener('click', ()=> abrirSinaisMotor(parseInt(btn.dataset.idx, 10)));
+  });
+  tbody.querySelectorAll('.painel-mot-detalhes').forEach(btn=>{
+    btn.addEventListener('click', ()=> abrirDetalhesMotor(parseInt(btn.dataset.idx, 10)));
+  });
+  tbody.querySelectorAll('.painel-mot-duplicar').forEach(btn=>{
+    btn.addEventListener('click', ()=> duplicarMotorComQuantidade(parseInt(btn.dataset.idx, 10)));
   });
 
   tbody.querySelectorAll('.painel-mot-input').forEach(inp=>{
@@ -10656,7 +11190,7 @@ function renderPainelMotoresTable(){
       const idx = parseInt(e.target.dataset.idx, 10);
       const field = e.target.dataset.field;
       let val = e.target.value;
-      if(['potencia','tensao','fatorPotencia','rendimento','comprimentoCircuito'].includes(field)) val = val === '' ? null : parseFloat(val);
+      if(['potencia','tensao'].includes(field)) val = val === '' ? null : parseFloat(val);
       painelMotoresAtual[idx][field] = val;
     });
     inp.addEventListener('change', ()=>{
@@ -10666,12 +11200,187 @@ function renderPainelMotoresTable(){
   });
   tbody.querySelectorAll('.painel-mot-remove').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      painelMotoresAtual.splice(parseInt(btn.dataset.idx, 10), 1);
+      const idx = parseInt(btn.dataset.idx, 10);
+      painelMotoresAtual.splice(idx, 1);
+      painelMotoresSelecionados.clear();
       document.getElementById('painelResultados').style.display = 'none';
       renderPainelMotoresTable();
     });
   });
 }
+document.getElementById('painelSelTodosCb').addEventListener('change', (e)=>{
+  if(e.target.checked){
+    painelMotoresAtual.forEach((_, idx) => painelMotoresSelecionados.add(idx));
+  }else{
+    painelMotoresSelecionados.clear();
+  }
+  renderPainelMotoresTable();
+});
+
+/* ---------- Detalhes do motor (item 3 — campos secundários saem da tabela principal) ---------- */
+let painelDetalhesEditandoIdx = null;
+function abrirDetalhesMotor(idx){
+  painelDetalhesEditandoIdx = idx;
+  const m = painelMotoresAtual[idx];
+  document.getElementById('painelDetalhesTitulo').textContent = 'Detalhes — ' + (m.tag || 'motor');
+  document.getElementById('detFases').value = m.fases || 'trifasico';
+  document.getElementById('detEstrategia').value = m.estrategiaProtecao || 'disjuntor_motor';
+  document.getElementById('detFatorPotencia').value = m.fatorPotencia || '';
+  document.getElementById('detRendimento').value = m.rendimento || '';
+  document.getElementById('detComprimento').value = m.comprimentoCircuito || '';
+  document.getElementById('painelDetalhesBackdrop').classList.add('open');
+  document.getElementById('painelDetalhesSheet').classList.add('open');
+}
+function fecharDetalhesMotor(){
+  document.getElementById('painelDetalhesBackdrop').classList.remove('open');
+  document.getElementById('painelDetalhesSheet').classList.remove('open');
+}
+document.getElementById('painelDetalhesCancelBtn').addEventListener('click', fecharDetalhesMotor);
+document.getElementById('painelDetalhesBackdrop').addEventListener('click', fecharDetalhesMotor);
+document.getElementById('painelDetalhesSalvarBtn').addEventListener('click', ()=>{
+  if(painelDetalhesEditandoIdx == null) return;
+  const m = painelMotoresAtual[painelDetalhesEditandoIdx];
+  m.fases = document.getElementById('detFases').value;
+  m.estrategiaProtecao = document.getElementById('detEstrategia').value;
+  m.fatorPotencia = parseFloat(document.getElementById('detFatorPotencia').value) || null;
+  m.rendimento = parseFloat(document.getElementById('detRendimento').value) || null;
+  m.comprimentoCircuito = parseFloat(document.getElementById('detComprimento').value) || null;
+  fecharDetalhesMotor();
+  document.getElementById('painelResultados').style.display = 'none';
+  renderPainelMotoresTable();
+  showToast('Detalhes salvos.');
+});
+
+/* ---------- Duplicar motor (item 4) e quantidade de motores iguais (item 5) ----------
+   Copia todos os dados técnicos, MENOS a tag — a próxima tag livre é sempre gerada
+   automaticamente, nunca duplicada. */
+function duplicarMotor(idxOrigem){
+  const original = painelMotoresAtual[idxOrigem];
+  const { tag, ...dadosSemTag } = original;
+  const copia = JSON.parse(JSON.stringify(dadosSemTag));
+  copia.tag = gerarProximaTagPainel();
+  painelMotoresAtual.splice(idxOrigem + 1, 0, copia);
+  return copia;
+}
+function duplicarMotorComQuantidade(idxOrigem){
+  const qtdStr = prompt('Duplicar esse motor quantas vezes? (1 = uma cópia)', '1');
+  if(!qtdStr) return;
+  const qtd = parseInt(qtdStr, 10);
+  if(isNaN(qtd) || qtd < 1){ showToast('Informe um número válido.'); return; }
+  let pos = idxOrigem;
+  for(let i=0; i<qtd; i++){
+    duplicarMotor(pos);
+    pos++;
+  }
+  document.getElementById('painelResultados').style.display = 'none';
+  renderPainelMotoresTable();
+  showToast(qtd + ' cópia(s) criada(s) com TAG nova, sem duplicidade.');
+}
+
+/* ---------- Ações em lote (itens 6 e 7) ---------- */
+document.getElementById('painelAcoesLoteBtn').addEventListener('click', ()=>{
+  if(painelMotoresSelecionados.size === 0){
+    showToast('Marque pelo menos um motor na tabela (caixinha da primeira coluna) antes de abrir ações em lote.');
+    return;
+  }
+  document.getElementById('acoesLoteContagem').textContent = painelMotoresSelecionados.size + ' motor(es) selecionado(s) na tabela.';
+  document.getElementById('acoesLoteTipo').value = 'definir';
+  atualizarBoxesAcoesLote();
+  document.getElementById('loteMotorOrigem').innerHTML = painelMotoresAtual.map((m,idx) => `<option value="${idx}">${escapeHtmlA(m.tag||'Motor '+(idx+1))}</option>`).join('');
+  ['loteTensao','loteFatorPotencia','loteRendimento'].forEach(id=> document.getElementById(id).value = '');
+  ['loteTipoPartida','loteEstrategia'].forEach(id=> document.getElementById(id).value = '');
+  document.getElementById('acoesLoteBackdrop').classList.add('open');
+  document.getElementById('acoesLoteSheet').classList.add('open');
+});
+function atualizarBoxesAcoesLote(){
+  const tipo = document.getElementById('acoesLoteTipo').value;
+  document.getElementById('acoesLoteDefinirBox').style.display = tipo === 'definir' ? 'block' : 'none';
+  document.getElementById('acoesLoteCopiarBox').style.display = tipo === 'copiar' ? 'block' : 'none';
+  document.getElementById('acoesLoteExcluirBox').style.display = tipo === 'excluir' ? 'block' : 'none';
+}
+document.getElementById('acoesLoteTipo').addEventListener('change', atualizarBoxesAcoesLote);
+document.getElementById('copiarTudo').addEventListener('change', (e)=>{
+  ['copiarDadosEletricos','copiarPartida','copiarProtecao','copiarCabo','copiarSinais'].forEach(id=>{
+    document.getElementById(id).checked = e.target.checked;
+  });
+});
+function fecharAcoesLote(){
+  document.getElementById('acoesLoteBackdrop').classList.remove('open');
+  document.getElementById('acoesLoteSheet').classList.remove('open');
+}
+document.getElementById('acoesLoteCancelBtn').addEventListener('click', fecharAcoesLote);
+document.getElementById('acoesLoteBackdrop').addEventListener('click', fecharAcoesLote);
+
+document.getElementById('acoesLoteConfirmarBtn').addEventListener('click', ()=>{
+  const tipo = document.getElementById('acoesLoteTipo').value;
+  const indices = Array.from(painelMotoresSelecionados);
+
+  if(tipo === 'excluir'){
+    if(!confirm(`Excluir ${indices.length} motor(es) selecionado(s)? Essa ação não pode ser desfeita.`)) return;
+    // Remove do maior índice pro menor, pra não bagunçar os índices durante o loop
+    indices.sort((a,b)=>b-a).forEach(idx => painelMotoresAtual.splice(idx,1));
+    painelMotoresSelecionados.clear();
+    fecharAcoesLote();
+    document.getElementById('painelResultados').style.display = 'none';
+    renderPainelMotoresTable();
+    showToast('Motores excluídos.');
+    return;
+  }
+
+  if(tipo === 'definir'){
+    const tensao = parseFloat(document.getElementById('loteTensao').value);
+    const tipoPartida = document.getElementById('loteTipoPartida').value;
+    const fp = parseFloat(document.getElementById('loteFatorPotencia').value);
+    const rend = parseFloat(document.getElementById('loteRendimento').value);
+    const estrategia = document.getElementById('loteEstrategia').value;
+    indices.forEach(idx=>{
+      const m = painelMotoresAtual[idx];
+      if(!isNaN(tensao)) m.tensao = tensao;
+      if(tipoPartida) m.tipoPartida = tipoPartida;
+      if(!isNaN(fp)) m.fatorPotencia = fp;
+      if(!isNaN(rend)) m.rendimento = rend;
+      if(estrategia) m.estrategiaProtecao = estrategia;
+    });
+    fecharAcoesLote();
+    document.getElementById('painelResultados').style.display = 'none';
+    renderPainelMotoresTable();
+    showToast('Valores aplicados a ' + indices.length + ' motor(es).');
+    return;
+  }
+
+  if(tipo === 'copiar'){
+    const origemIdx = parseInt(document.getElementById('loteMotorOrigem').value, 10);
+    const origem = painelMotoresAtual[origemIdx];
+    const tudo = document.getElementById('copiarTudo').checked;
+    const copiarEletricos = tudo || document.getElementById('copiarDadosEletricos').checked;
+    const copiarPartida = tudo || document.getElementById('copiarPartida').checked;
+    const copiarProtecao = tudo || document.getElementById('copiarProtecao').checked;
+    const copiarCabo = tudo || document.getElementById('copiarCabo').checked;
+    const copiarSinais = tudo || document.getElementById('copiarSinais').checked;
+
+    indices.forEach(idx=>{
+      if(idx === origemIdx) return;
+      const m = painelMotoresAtual[idx];
+      if(copiarEletricos){
+        m.potencia = origem.potencia; m.unidadePotencia = origem.unidadePotencia;
+        m.tensao = origem.tensao; m.fases = origem.fases;
+        m.fatorPotencia = origem.fatorPotencia; m.rendimento = origem.rendimento;
+      }
+      if(copiarPartida) m.tipoPartida = origem.tipoPartida;
+      if(copiarProtecao) m.estrategiaProtecao = origem.estrategiaProtecao;
+      if(copiarCabo) m.comprimentoCircuito = origem.comprimentoCircuito;
+      if(copiarSinais){
+        m.diSelecionados = [...(origem.diSelecionados||[])];
+        m.doSelecionados = [...(origem.doSelecionados||[])];
+      }
+    });
+    fecharAcoesLote();
+    document.getElementById('painelResultados').style.display = 'none';
+    renderPainelMotoresTable();
+    showToast('Configuração de ' + (origem.tag||'motor') + ' copiada para ' + (indices.length - (indices.includes(origemIdx)?1:0)) + ' motor(es).');
+  }
+});
+
 document.getElementById('painelAddMotorBtn').addEventListener('click', ()=>{
   painelMotoresAtual.push({ tag: gerarProximaTagPainel(), descricao:'', potencia:0, unidadePotencia:'cv', tensao:0, fases:'trifasico', fatorPotencia:null, rendimento:null, tipoPartida:'direta' });
   renderPainelMotoresTable();
