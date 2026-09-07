@@ -1672,9 +1672,9 @@
           <div class="mini-menu-icon">🔧</div>
           <div class="mini-menu-label">Outros Serviços</div>
         </div>
-        <div class="mini-menu-card" data-copel-nav="financeiro" id="copelFinanceiroCard" style="display:none;">
-          <div class="mini-menu-icon">💰</div>
-          <div class="mini-menu-label">Financeiro</div>
+        <div class="mini-menu-card" data-copel-nav="debitos" id="copelDebitosCard" style="display:none;">
+          <div class="mini-menu-icon">📊</div>
+          <div class="mini-menu-label">Débitos</div>
         </div>
         <div class="mini-menu-card" data-copel-nav="acessos" id="copelAcessosCard" style="display:none;">
           <div class="mini-menu-icon">🔐</div>
@@ -1852,6 +1852,59 @@
     <div class="list" id="faturasCopelUcList">
       <div class="empty"><div class="big">📄</div><p>Nenhuma fatura processada ainda.<br>Envie os PDFs baixados da Agência Virtual.</p></div>
     </div>
+  </div>
+
+  <!-- COPEL > DÉBITOS (consultaDebitos.jsf) -->
+  <div id="nfsEnergyCopelDebitosView" style="display:none;">
+    <p class="card-sub" style="padding:0 18px 4px; margin-top:12px; line-height:1.6;">📥 Depois do login manual, abra a página de Consulta de Débitos da Copel, selecione e copie o conteúdo (Ctrl+A, Ctrl+C) e cole aqui — ou, se preferir, imprima a página como PDF e envie o arquivo. O sistema organiza os débitos por UC automaticamente.</p>
+
+    <div class="summary" style="padding:0 18px; margin-top:10px;">
+      <div class="stat">
+        <div class="num" id="debCopelStatUcs">0</div>
+        <div class="lbl">UCs c/ débito</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="debCopelStatAberto">0</div>
+        <div class="lbl">em aberto</div>
+      </div>
+      <div class="stat value">
+        <div class="num" id="debCopelStatVencidas">0</div>
+        <div class="lbl">vencidas</div>
+      </div>
+    </div>
+    <div class="admin-card" style="margin:10px 18px;">
+      <p style="font-size:13px; margin:0 0 4px;">Valor total em aberto: <b id="debCopelValorAberto">R$ 0,00</b> · Valor total vencido: <b id="debCopelValorVencido" style="color:var(--red);">R$ 0,00</b></p>
+      <p style="font-size:13px; margin:0 0 4px;">Maior atraso: <b id="debCopelMaiorAtraso">0 dias</b></p>
+      <p style="font-size:13px; margin:0;">1ª via (nunca baixada): <b id="debCopelQtd1Via">0</b> · 2ª via (já baixada antes): <b id="debCopelQtd2Via">0</b></p>
+    </div>
+
+    <div style="padding:0 18px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="small-btn primary" id="debCopelColarBtn" type="button" style="flex:1;">📋 Colar texto da página</button>
+      <button class="small-btn" id="debCopelUploadBtn" type="button" style="flex:1;">📥 Enviar PDF</button>
+      <input type="file" id="debCopelUploadInput" accept="application/pdf" style="display:none;">
+    </div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="debCopelSearchInput" type="text" placeholder="Buscar por UC ou endereço">
+      </div>
+    </div>
+    <div style="overflow-x:auto; padding:0 18px;">
+      <table style="width:100%; min-width:900px; border-collapse:collapse; font-size:12px;">
+        <thead style="position:sticky; top:0; background:var(--graphite);">
+          <tr style="text-align:left; color:var(--text-dim);">
+            <th style="padding:6px 4px;">UC</th><th style="padding:6px 4px;">Endereço</th>
+            <th style="padding:6px 4px;">Referência</th><th style="padding:6px 4px;">Nº Fatura</th>
+            <th style="padding:6px 4px;">Vencimento</th><th style="padding:6px 4px;">Dias atraso</th>
+            <th style="padding:6px 4px;">Valor</th><th style="padding:6px 4px;">Situação</th>
+            <th style="padding:6px 4px;">Via</th><th style="padding:6px 4px;">PDF</th>
+          </tr>
+        </thead>
+        <tbody id="debCopelTableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="debCopelEmpty"><div class="big">📊</div><p>Nenhum débito importado ainda.</p></div>
   </div>
 
   <!-- OS DA NFS ENERGY -->
@@ -4744,6 +4797,43 @@
   </div>
   <div class="sheet-actions" id="copelCredDeleteRow" style="display:none; margin-top:10px;">
     <button class="btn btn-danger" id="copelCredDeleteBtn">Excluir/inativar</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="debColarBackdrop"></div>
+<div class="sheet" id="debColarSheet">
+  <div class="sheet-handle"></div>
+  <h2>Colar texto da página de Débitos</h2>
+  <p class="card-sub" style="margin-bottom:10px;">Na página de Consulta de Débitos da Copel (depois do login manual), selecione tudo (Ctrl+A), copie (Ctrl+C) e cole abaixo (Ctrl+V).</p>
+  <textarea id="debColarTextarea" rows="12" style="width:100%; background:var(--graphite); border:1px solid var(--line); border-radius:9px; padding:10px; color:var(--paper); font-size:12px; resize:vertical; font-family:monospace;" placeholder="Cole aqui o texto copiado da página..."></textarea>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="debColarCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="debColarProcessarBtn">Processar</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="debConferenciaBackdrop"></div>
+<div class="sheet" id="debConferenciaSheet">
+  <div class="sheet-handle"></div>
+  <h2>Conferência dos débitos identificados</h2>
+  <p class="card-sub" style="margin-bottom:10px;">Confira antes de salvar — corrija qualquer campo que tenha vindo errado. Linhas destacadas têm algum dado que não foi reconhecido com segurança.</p>
+  <div style="overflow-x:auto; max-height:400px; overflow-y:auto;">
+    <table style="width:100%; min-width:820px; border-collapse:collapse; font-size:11.5px;">
+      <thead style="position:sticky; top:0; background:var(--graphite-2);">
+        <tr style="text-align:left; color:var(--text-dim);">
+          <th style="padding:5px 4px;">UC</th><th style="padding:5px 4px;">Endereço</th>
+          <th style="padding:5px 4px;">Ref.</th><th style="padding:5px 4px;">Nº Fatura</th>
+          <th style="padding:5px 4px;">Vencimento</th><th style="padding:5px 4px;">Valor</th>
+          <th style="padding:5px 4px;">Situação</th><th style="padding:5px 4px;">Via</th><th style="padding:5px 4px;"></th>
+        </tr>
+      </thead>
+      <tbody id="debConferenciaTableBody"></tbody>
+    </table>
+  </div>
+  <p class="admin-note" id="debConferenciaResumo" style="margin-top:10px;"></p>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="debConferenciaCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="debConferenciaSalvarBtn">Salvar débitos</button>
   </div>
 </div>
 
@@ -8693,6 +8783,254 @@ async function chamarBackendCopelCred(acao, dadosExtras){
    acesso automatizado à Copel. Reaproveita as mesmas funções de extração já
    validadas no Orçamento Solar (extrairUC, extrairVencimento etc.).
    ====================================================== */
+/* ======================================================
+   NFS ENERGY > COPEL > DÉBITOS (consultaDebitos.jsf)
+   Login manual, como sempre. O usuário copia/cola o texto da página (ou envia um
+   PDF impresso dela) e o sistema organiza por UC. Nunca inferimos "2ª via" a
+   partir de uma ação nossa — isso só é atualizado quando a Copel mostrar isso
+   de novo numa próxima sincronização (regra explícita do pedido).
+   ====================================================== */
+const COPEL_DEBITOS_KEY = 'estoque:copel_debitos';
+let copelDebitos = [];
+let debConferenciaAtual = [];
+
+async function loadCopelDebitos(){
+  try{ const res = await storageGet(COPEL_DEBITOS_KEY, true); copelDebitos = res && res.value ? JSON.parse(res.value) : []; }
+  catch(e){ copelDebitos = []; }
+}
+async function saveCopelDebitos(){
+  try{ await storageSet(COPEL_DEBITOS_KEY, JSON.stringify(copelDebitos), true); return true; }catch(e){ return false; }
+}
+
+function extrairCampoLabelDebito(texto, regexLabel){
+  const m = texto.match(regexLabel);
+  if(!m) return null;
+  const resto = texto.slice(m.index + m[0].length);
+  const linha = resto.match(/^\s*([^\n\r]+)/);
+  return linha ? linha[1].trim() : null;
+}
+
+/* Parser baseado em rótulos "Campo: valor", igual ao exemplo que a Copel mostra
+   (Situação: AB / Via: 2ª via). Cada bloco de UC começa em "Unidade consumidora
+   ANEEL:" e cada fatura dentro do bloco começa em "Referência:" — isso preserva
+   o relacionamento UC → endereço → faturas sem misturar UCs diferentes. */
+function parseTextoDebitosCopel(texto){
+  const resultado = [];
+  const blocosUc = texto.split(/Unidade\s+consumidora\s+ANEEL\s*:/i).slice(1);
+  blocosUc.forEach(blocoTexto=>{
+    const mUc = blocoTexto.match(/^\s*(\d{6,15})/);
+    if(!mUc) return;
+    const uc = mUc[1];
+    const endereco = extrairCampoLabelDebito(blocoTexto, /Endere[cç]o\s*:/i) || '';
+
+    const partesFatura = blocoTexto.split(/(?:M[eê]s de )?[Rr]efer[eê]ncia\s*:/).slice(1);
+    partesFatura.forEach(faturaTexto=>{
+      const referencia = extrairCampoLabelDebito('Referência:' + faturaTexto, /Referência\s*:/i);
+      const numeroFatura = extrairCampoLabelDebito(faturaTexto, /N[uú]mero da fatura\s*:/i) || extrairCampoLabelDebito(faturaTexto, /N[ºo]\.?\s*[Ff]atura\s*:/i);
+      const situacao = extrairCampoLabelDebito(faturaTexto, /Situa[cç][aã]o(?:\s*da fatura)?\s*:/i);
+      const origem = extrairCampoLabelDebito(faturaTexto, /Origem\s*:/i);
+      const vencimentoBr = extrairCampoLabelDebito(faturaTexto, /(?:Data de )?[Vv]encimento\s*:/i);
+      const valorBr = extrairCampoLabelDebito(faturaTexto, /Valor(?:\s*emitido)?\s*:/i);
+      const viaTexto = extrairCampoLabelDebito(faturaTexto, /Via\s*:/i);
+      const mVia = viaTexto ? viaTexto.match(/(1|2)/) : null;
+
+      if(!referencia && !numeroFatura && !vencimentoBr) return; // sub-bloco vazio/lixo, ignora
+
+      resultado.push({
+        uc, endereco,
+        referencia: referencia || null,
+        numeroFatura: numeroFatura || null,
+        vencimento: vencimentoBr ? converterDataBrParaIso(vencimentoBr.match(/\d{2}\/\d{2}\/\d{2,4}/)?.[0] || '') : null,
+        valor: valorBr ? converterValorBrParaNumero(valorBr.match(/[\d.,]+/)?.[0] || '') : null,
+        situacao: situacao || null,
+        origem: origem || null,
+        via: mVia ? mVia[1] : null,
+        linkDocumento: null
+      });
+    });
+  });
+  return resultado;
+}
+
+/* ---------- Colar texto ---------- */
+document.getElementById('debCopelColarBtn').addEventListener('click', ()=>{
+  document.getElementById('debColarTextarea').value = '';
+  document.getElementById('debColarBackdrop').classList.add('open');
+  document.getElementById('debColarSheet').classList.add('open');
+});
+document.getElementById('debColarCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('debColarBackdrop').classList.remove('open');
+  document.getElementById('debColarSheet').classList.remove('open');
+});
+document.getElementById('debColarBackdrop').addEventListener('click', ()=>{
+  document.getElementById('debColarBackdrop').classList.remove('open');
+  document.getElementById('debColarSheet').classList.remove('open');
+});
+document.getElementById('debColarProcessarBtn').addEventListener('click', ()=>{
+  const texto = document.getElementById('debColarTextarea').value;
+  if(!texto.trim()){ showToast('Cole o texto da página primeiro.'); return; }
+  const parsed = parseTextoDebitosCopel(texto);
+  if(parsed.length === 0){
+    showToast('Não encontrei nenhum débito reconhecível nesse texto. Confira se copiou a página inteira.');
+    return;
+  }
+  document.getElementById('debColarBackdrop').classList.remove('open');
+  document.getElementById('debColarSheet').classList.remove('open');
+  abrirConferenciaDebitos(parsed);
+});
+
+/* ---------- Enviar PDF (reaproveita a mesma extração de texto já usada em Faturas) ---------- */
+document.getElementById('debCopelUploadBtn').addEventListener('click', ()=> document.getElementById('debCopelUploadInput').click());
+document.getElementById('debCopelUploadInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  try{
+    showToast('Lendo PDF...');
+    const texto = await extrairTextoDePdf(file);
+    const parsed = parseTextoDebitosCopel(texto);
+    if(parsed.length === 0){
+      showToast('Não encontrei nenhum débito reconhecível nesse PDF.');
+      return;
+    }
+    abrirConferenciaDebitos(parsed);
+  }catch(err){
+    console.error(err);
+    showToast('Não foi possível ler esse PDF.');
+  }
+});
+
+/* ---------- Conferência antes de salvar (nada é gravado sem revisão) ---------- */
+function abrirConferenciaDebitos(parsed){
+  debConferenciaAtual = parsed;
+  renderConferenciaDebitos();
+  document.getElementById('debConferenciaBackdrop').classList.add('open');
+  document.getElementById('debConferenciaSheet').classList.add('open');
+}
+function renderConferenciaDebitos(){
+  const tbody = document.getElementById('debConferenciaTableBody');
+  const inputStyle = 'background:var(--graphite); border:1px solid var(--line); border-radius:5px; color:var(--paper); padding:3px; font-size:11px;';
+  tbody.innerHTML = debConferenciaAtual.map((d, idx) => {
+    const incompleto = !d.uc || !d.vencimento || d.valor == null;
+    return `
+      <tr style="border-bottom:1px solid var(--line); ${incompleto ? 'background:rgba(232,163,61,0.15);' : ''}">
+        <td style="padding:3px;"><input class="deb-conf-input" data-field="uc" data-idx="${idx}" value="${escapeHtmlA(d.uc||'')}" style="width:90px; ${inputStyle}"></td>
+        <td style="padding:3px;"><input class="deb-conf-input" data-field="endereco" data-idx="${idx}" value="${escapeHtmlA(d.endereco||'')}" style="width:130px; ${inputStyle}"></td>
+        <td style="padding:3px;"><input class="deb-conf-input" data-field="referencia" data-idx="${idx}" value="${escapeHtmlA(d.referencia||'')}" style="width:60px; ${inputStyle}"></td>
+        <td style="padding:3px;"><input class="deb-conf-input" data-field="numeroFatura" data-idx="${idx}" value="${escapeHtmlA(d.numeroFatura||'')}" style="width:90px; ${inputStyle}"></td>
+        <td style="padding:3px;"><input class="deb-conf-input" type="date" data-field="vencimento" data-idx="${idx}" value="${d.vencimento||''}" style="width:110px; ${inputStyle}"></td>
+        <td style="padding:3px;"><input class="deb-conf-input" type="number" step="0.01" data-field="valor" data-idx="${idx}" value="${d.valor!=null?d.valor:''}" style="width:70px; ${inputStyle}"></td>
+        <td style="padding:3px;"><input class="deb-conf-input" data-field="situacao" data-idx="${idx}" value="${escapeHtmlA(d.situacao||'')}" style="width:45px; ${inputStyle}"></td>
+        <td style="padding:3px;">
+          <select class="deb-conf-input" data-field="via" data-idx="${idx}" style="${inputStyle}">
+            <option value="">—</option>
+            <option value="1" ${d.via==='1'?'selected':''}>1ª</option>
+            <option value="2" ${d.via==='2'?'selected':''}>2ª</option>
+          </select>
+        </td>
+        <td style="padding:3px;"><button class="small-btn danger deb-conf-remove" data-idx="${idx}" type="button">X</button></td>
+      </tr>
+    `;
+  }).join('');
+  tbody.querySelectorAll('.deb-conf-input').forEach(inp=>{
+    inp.addEventListener('input', (e)=>{
+      const idx = parseInt(e.target.dataset.idx,10);
+      const field = e.target.dataset.field;
+      debConferenciaAtual[idx][field] = field === 'valor' ? (e.target.value===''?null:parseFloat(e.target.value)) : e.target.value;
+    });
+  });
+  tbody.querySelectorAll('.deb-conf-remove').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ debConferenciaAtual.splice(parseInt(btn.dataset.idx,10),1); renderConferenciaDebitos(); });
+  });
+  const incompletos = debConferenciaAtual.filter(d => !d.uc || !d.vencimento || d.valor==null).length;
+  document.getElementById('debConferenciaResumo').textContent =
+    `${debConferenciaAtual.length} débito(s) identificado(s)` + (incompletos ? `, ${incompletos} com algum campo faltando (destacados)` : '.');
+}
+document.getElementById('debConferenciaCancelBtn').addEventListener('click', ()=>{
+  document.getElementById('debConferenciaBackdrop').classList.remove('open');
+  document.getElementById('debConferenciaSheet').classList.remove('open');
+});
+document.getElementById('debConferenciaBackdrop').addEventListener('click', ()=>{
+  document.getElementById('debConferenciaBackdrop').classList.remove('open');
+  document.getElementById('debConferenciaSheet').classList.remove('open');
+});
+document.getElementById('debConferenciaSalvarBtn').addEventListener('click', async ()=>{
+  await loadCopelDebitos();
+  let novos = 0, atualizados = 0;
+  debConferenciaAtual.forEach(d=>{
+    if(!d.uc || !d.numeroFatura) return; // sem chave única confiável, não salva
+    const id = d.uc + '_' + d.numeroFatura;
+    const existente = copelDebitos.find(x=>x.id === id);
+    if(existente){
+      Object.assign(existente, d, { id, atualizadoEm: new Date().toISOString(), atualizadoPor: currentUser });
+      atualizados++;
+    }else{
+      copelDebitos.push({ ...d, id, criadoEm: new Date().toISOString(), criadoPor: currentUser });
+      novos++;
+    }
+  });
+  const ok = await saveCopelDebitos();
+  if(!ok){ showToast('Não foi possível salvar agora.'); return; }
+  registrarAuditoria('NFS Energy (Débitos Copel)', 'Débitos importados', '', '', `${novos} novo(s), ${atualizados} atualizado(s)`);
+  document.getElementById('debConferenciaBackdrop').classList.remove('open');
+  document.getElementById('debConferenciaSheet').classList.remove('open');
+  renderDebitosCopelResumoELista();
+  showToast(`${novos} débito(s) novo(s), ${atualizados} atualizado(s).`);
+});
+
+/* ---------- Resumo + lista principal ---------- */
+function diasEmAtrasoDebito(d){
+  if(!d.vencimento || d.vencimento >= hojeStr()) return 0;
+  const venc = new Date(d.vencimento + 'T00:00:00');
+  const hoje = new Date(hojeStr() + 'T00:00:00');
+  return Math.round((hoje - venc) / (1000*60*60*24));
+}
+function renderDebitosCopelResumoELista(){
+  const q = document.getElementById('debCopelSearchInput').value.trim().toLowerCase();
+  const filtrados = copelDebitos.filter(d => !q || (d.uc||'').includes(q) || (d.endereco||'').toLowerCase().includes(q));
+
+  const ucsComDebito = new Set(copelDebitos.map(d=>d.uc)).size;
+  const abertos = copelDebitos.filter(d => diasEmAtrasoDebito(d) === 0);
+  const vencidos = copelDebitos.filter(d => diasEmAtrasoDebito(d) > 0);
+  const valorAberto = copelDebitos.reduce((s,d)=> s + (d.valor||0), 0);
+  const valorVencido = vencidos.reduce((s,d)=> s + (d.valor||0), 0);
+  const maiorAtraso = copelDebitos.reduce((max,d)=> Math.max(max, diasEmAtrasoDebito(d)), 0);
+  const qtd1Via = copelDebitos.filter(d=>d.via==='1').length;
+  const qtd2Via = copelDebitos.filter(d=>d.via==='2').length;
+
+  document.getElementById('debCopelStatUcs').textContent = fmtInt(ucsComDebito);
+  document.getElementById('debCopelStatAberto').textContent = fmtInt(abertos.length);
+  document.getElementById('debCopelStatVencidas').textContent = fmtInt(vencidos.length);
+  document.getElementById('debCopelValorAberto').textContent = fmtMoney(valorAberto);
+  document.getElementById('debCopelValorVencido').textContent = fmtMoney(valorVencido);
+  document.getElementById('debCopelMaiorAtraso').textContent = maiorAtraso + ' dias';
+  document.getElementById('debCopelQtd1Via').textContent = fmtInt(qtd1Via);
+  document.getElementById('debCopelQtd2Via').textContent = fmtInt(qtd2Via);
+
+  const tbody = document.getElementById('debCopelTableBody');
+  document.getElementById('debCopelEmpty').style.display = filtrados.length === 0 ? 'block' : 'none';
+  tbody.innerHTML = filtrados
+    .sort((a,b)=> diasEmAtrasoDebito(b) - diasEmAtrasoDebito(a))
+    .map(d=>{
+      const dias = diasEmAtrasoDebito(d);
+      const viaTexto = d.via === '2' ? '2ª via disponível – já houve download anteriormente' : (d.via === '1' ? '1ª via disponível – ainda não baixada' : '—');
+      return `<tr style="border-bottom:1px solid var(--line); ${dias>0?'background:rgba(193,85,63,0.10);':''}">
+        <td style="padding:5px 4px;">${escapeHtml(d.uc||'—')}</td>
+        <td style="padding:5px 4px;">${escapeHtml(d.endereco||'—')}</td>
+        <td style="padding:5px 4px;">${escapeHtml(d.referencia||'—')}</td>
+        <td style="padding:5px 4px;">${escapeHtml(d.numeroFatura||'—')}</td>
+        <td style="padding:5px 4px;">${d.vencimento ? new Date(d.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td>
+        <td style="padding:5px 4px;">${dias>0 ? dias+' dias' : '—'}</td>
+        <td style="padding:5px 4px;">${fmtMoney(d.valor||0)}</td>
+        <td style="padding:5px 4px;">${escapeHtml(d.situacao||'—')}</td>
+        <td style="padding:5px 4px; font-size:11px;" title="${escapeHtmlA(viaTexto)}">${d.via ? (d.via+'ª via') : '—'}</td>
+        <td style="padding:5px 4px;">${d.linkDocumento ? `<a href="${escapeHtmlA(d.linkDocumento)}" target="_blank" class="small-btn" style="text-decoration:none; display:inline-block;">Baixar</a>` : '—'}</td>
+      </tr>`;
+    }).join('');
+}
+document.getElementById('debCopelSearchInput').addEventListener('input', renderDebitosCopelResumoELista);
+
+
 const COPEL_UCS_KEY = 'estoque:copel_ucs';
 const COPEL_FATURAS_KEY = 'estoque:copel_faturas';
 let copelUcs = [];
@@ -9344,15 +9682,14 @@ document.getElementById('verifManualSalvarBtn').addEventListener('click', async 
 function atualizarCopelMenuVisibility(){
   const podeProtocolos = temAcessoCopelProtocolos();
   const podeOutrosServicos = temAcessoCopelOutrosServicos();
-  const podeFinanceiro = temAcessoCopelFinanceiro();
   const podeAcessos = temAcessoCopelCredenciais('visualizar');
   document.getElementById('copelAcompanhamentoCard').style.display = (podeProtocolos || podeOutrosServicos) ? 'flex' : 'none';
   document.getElementById('copelProtocolosCard').style.display = podeProtocolos ? 'flex' : 'none';
   document.getElementById('copelOutrosServicosCard').style.display = podeOutrosServicos ? 'flex' : 'none';
-  document.getElementById('copelFinanceiroCard').style.display = podeFinanceiro ? 'flex' : 'none';
   document.getElementById('copelAcessosCard').style.display = podeAcessos ? 'flex' : 'none';
   document.getElementById('copelFaturasCard').style.display = podeAcessos ? 'flex' : 'none';
-  document.getElementById('copelSemAcesso').style.display = (!podeProtocolos && !podeOutrosServicos && !podeFinanceiro && !podeAcessos) ? 'block' : 'none';
+  document.getElementById('copelDebitosCard').style.display = podeAcessos ? 'flex' : 'none';
+  document.getElementById('copelSemAcesso').style.display = (!podeProtocolos && !podeOutrosServicos && !podeAcessos) ? 'block' : 'none';
 }
 
 function temAcessoOsEnergy(){
@@ -9369,9 +9706,9 @@ function showNfsSubView(view){
     'copel-acompanhamento': 'nfsEnergyCopelAcompanhamentoView',
     'copel-protocolos': 'nfsEnergyCopelProtocolosView',
     'copel-outros-servicos': 'nfsEnergyCopelOutrosServicosView',
-    'copel-financeiro': 'nfsEnergyCopelFinanceiroView',
     'copel-acessos': 'nfsEnergyCopelAcessosView',
     'copel-faturas': 'nfsEnergyCopelFaturasView',
+    'copel-debitos': 'nfsEnergyCopelDebitosView',
     'investidores': 'nfsEnergyInvestidoresView'
   };
   Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
@@ -9386,14 +9723,14 @@ function showNfsSubView(view){
     'copel-acompanhamento': 'Acompanhamento Diário',
     'copel-protocolos': 'Protocolos de Beneficiários',
     'copel-outros-servicos': 'Outros Serviços (Copel)',
-    'copel-financeiro': 'Financeiro (Copel)',
     'copel-acessos': 'Acessos Copel',
     'copel-faturas': 'Faturas Copel',
+    'copel-debitos': 'Débitos Copel',
     investidores: 'Investidores'
   }[view];
 
   document.getElementById('nfsEnergyFab').style.display =
-    (view === 'investidores' || view === 'copel-protocolos' || view === 'copel-outros-servicos' || view === 'copel-financeiro' || view === 'copel-acessos' || view === 'clientes-energy' || view === 'os-energy') ? 'flex' : 'none';
+    (view === 'investidores' || view === 'copel-protocolos' || view === 'copel-outros-servicos' || view === 'copel-acessos' || view === 'clientes-energy' || view === 'os-energy') ? 'flex' : 'none';
   document.getElementById('importClientesEnergyBtn').style.display = (view === 'clientes-energy') ? 'flex' : 'none';
 
   if(view === 'os-energy'){
@@ -9427,6 +9764,14 @@ function showNfsSubView(view){
     copelUcExpandida = null;
     Promise.all([loadCopelUcs(), loadCopelFaturas()]).then(renderFaturasCopelResumoELista);
   }
+  if(view === 'copel-debitos'){
+    if(!temAcessoCopelCredenciais('visualizar')){
+      showToast('Você não tem acesso liberado aos Débitos Copel.');
+      showNfsSubView('copel');
+      return;
+    }
+    loadCopelDebitos().then(renderDebitosCopelResumoELista);
+  }
   if(view === 'copel-acompanhamento'){
     if(!temAcessoCopelProtocolos() && !temAcessoCopelOutrosServicos()){
       showToast('Você não tem acesso liberado a Protocolos ou Outros Serviços.');
@@ -9451,14 +9796,6 @@ function showNfsSubView(view){
     }
     loadOutrosServicos().then(renderOutrosServicos);
   }
-  if(view === 'copel-financeiro'){
-    if(!temAcessoCopelFinanceiro()){
-      showToast('Você não tem acesso liberado ao Financeiro do Copel.');
-      showNfsSubView('copel');
-      return;
-    }
-    loadCopelFinanceiro().then(renderCopelFinanceiro);
-  }
   if(view === 'investidores'){
     loadInvestidores().then(renderInvestidores);
   }
@@ -9471,7 +9808,7 @@ document.querySelectorAll('[data-copel-nav]').forEach(card=>{
   card.addEventListener('click', ()=> showNfsSubView('copel-' + card.dataset.copelNav));
 });
 document.getElementById('nfsEnergyBackBtn').addEventListener('click', ()=>{
-  if(nfsCurrentSubView === 'copel-acompanhamento' || nfsCurrentSubView === 'copel-protocolos' || nfsCurrentSubView === 'copel-outros-servicos' || nfsCurrentSubView === 'copel-financeiro' || nfsCurrentSubView === 'copel-acessos' || nfsCurrentSubView === 'copel-faturas'){
+  if(nfsCurrentSubView === 'copel-acompanhamento' || nfsCurrentSubView === 'copel-protocolos' || nfsCurrentSubView === 'copel-outros-servicos' || nfsCurrentSubView === 'copel-acessos' || nfsCurrentSubView === 'copel-faturas' || nfsCurrentSubView === 'copel-debitos'){
     showNfsSubView('copel');
   }else{
     showNfsSubView('menu');
@@ -9481,7 +9818,6 @@ document.getElementById('nfsEnergyFabBtn').addEventListener('click', ()=>{
   if(nfsCurrentSubView === 'investidores') openInvestAdd();
   else if(nfsCurrentSubView === 'copel-protocolos') openProtocoloAdd();
   else if(nfsCurrentSubView === 'copel-outros-servicos') openOutroServicoAdd();
-  else if(nfsCurrentSubView === 'copel-financeiro') openCopelFinAdd();
   else if(nfsCurrentSubView === 'copel-acessos') openCopelCredAdd();
   else if(nfsCurrentSubView === 'clientes-energy') openClienteEnergiaAdd();
   else if(nfsCurrentSubView === 'os-energy') openOsEnergyAdd();
