@@ -551,6 +551,43 @@
   }
   .home-card:active{ transform:scale(0.96); }
 
+  /* ---------- Padrão reutilizável de ícones compactos (item 2 do Pacote 3) ----------
+     Usado nos menus internos de módulos com muitas opções (Financeiro, NFS Energy...).
+     Evita duplicar CSS: qualquer módulo novo com menu grande usa essas duas classes. */
+  .mini-menu-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:8px;
+    padding:12px 18px;
+  }
+  @media (min-width: 420px){
+    .mini-menu-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 700px){
+    .mini-menu-grid{ grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 1024px){
+    .mini-menu-grid{ grid-template-columns: repeat(6, 1fr); }
+  }
+  .mini-menu-card{
+    background:var(--graphite-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    cursor:pointer;
+    text-align:center;
+    min-height:76px;
+    transition:transform 0.1s;
+  }
+  .mini-menu-card:active{ transform:scale(0.95); }
+  .mini-menu-icon{ font-size:22px; line-height:1; }
+  .mini-menu-label{ font-size:11px; font-weight:600; color:var(--paper); line-height:1.25; }
+
   .fin-dash-grid{
     display:grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1235,45 +1272,47 @@
     </div>
 
     <p class="card-sub" style="padding:0 4px; margin-top:6px;">Áreas do Financeiro</p>
-    <div class="admin-card" data-fin-nav="cobrancas" style="cursor:pointer;">
-      <h3>💵 Cobranças de Ordens de Serviço</h3>
-      <p class="card-sub">Veja o faturamento, filtre por status/data e imprima as cobranças das OS concluídas.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="receber" style="cursor:pointer;">
-      <h3>🟢 Contas a Receber</h3>
-      <p class="card-sub">Outras entradas de dinheiro da empresa, fora das OS.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="pagar" style="cursor:pointer;">
-      <h3>🔴 Contas a Pagar</h3>
-      <p class="card-sub">Despesas, fornecedores e contas da empresa a controlar.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="contas-bancarias" style="cursor:pointer;">
-      <h3>🏦 Contas Bancárias e Caixas</h3>
-      <p class="card-sub">Bancos, caixas e saldo inicial de cada um.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="recorrencias" style="cursor:pointer;">
-      <h3>🔁 Lançamentos Recorrentes</h3>
-      <p class="card-sub">Aluguel, contador, internet, salários e outras contas que se repetem.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="cobranca-central" style="cursor:pointer;">
-      <h3>📞 Central de Cobranças</h3>
-      <p class="card-sub">Régua de cobrança, negociação, promessas e histórico por cliente.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="relatorios" style="cursor:pointer;">
-      <h3>📑 Relatórios</h3>
-      <p class="card-sub">Inadimplência, extrato, fluxo de caixa, previsto x realizado e mais.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="dre" style="cursor:pointer;">
-      <h3>📘 DRE Gerencial</h3>
-      <p class="card-sub">Resultado gerencial do período — não é a demonstração fiscal oficial.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="equilibrio" style="cursor:pointer;">
-      <h3>⚖️ Ponto de Equilíbrio</h3>
-      <p class="card-sub">Quanto a empresa precisa faturar no mês pra cobrir todos os custos, e o quanto já falta.</p>
-    </div>
-    <div class="admin-card" data-fin-nav="nfe" style="cursor:pointer;">
-      <h3>📄 Emissão de NFe</h3>
-      <p class="card-sub">Nota fiscal eletrônica — veja o que é necessário configurar.</p>
+    <div class="mini-menu-grid">
+      <div class="mini-menu-card" data-fin-nav="cobrancas">
+        <div class="mini-menu-icon">💵</div>
+        <div class="mini-menu-label">Cobranças de OS</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="receber">
+        <div class="mini-menu-icon">🟢</div>
+        <div class="mini-menu-label">Contas a Receber</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="pagar">
+        <div class="mini-menu-icon">🔴</div>
+        <div class="mini-menu-label">Contas a Pagar</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="contas-bancarias">
+        <div class="mini-menu-icon">🏦</div>
+        <div class="mini-menu-label">Contas Bancárias</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="recorrencias">
+        <div class="mini-menu-icon">🔁</div>
+        <div class="mini-menu-label">Recorrentes</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="cobranca-central">
+        <div class="mini-menu-icon">📞</div>
+        <div class="mini-menu-label">Central de Cobranças</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="relatorios">
+        <div class="mini-menu-icon">📑</div>
+        <div class="mini-menu-label">Relatórios</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="dre">
+        <div class="mini-menu-icon">📘</div>
+        <div class="mini-menu-label">DRE Gerencial</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="equilibrio">
+        <div class="mini-menu-icon">⚖️</div>
+        <div class="mini-menu-label">Ponto de Equilíbrio</div>
+      </div>
+      <div class="mini-menu-card" data-fin-nav="nfe">
+        <div class="mini-menu-icon">📄</div>
+        <div class="mini-menu-label">Emissão de NFe</div>
+      </div>
     </div>
   </div>
 
@@ -1592,21 +1631,23 @@
 
   <!-- MENU -->
   <div id="nfsEnergyMenuView" class="admin-content">
-    <div class="admin-card" data-nfs-nav="os-energy" style="cursor:pointer;">
-      <h3>🛠️ Ordens de Serviço</h3>
-      <p class="card-sub">Atendimentos da NFS Energy — cadastro, troca de titularidade, ligação nova e outros serviços junto à Copel.</p>
-    </div>
-    <div class="admin-card" data-nfs-nav="clientes-energy" style="cursor:pointer;">
-      <h3>👥 Base de Clientes</h3>
-      <p class="card-sub">UC, dados de contato, se é gerador, consumidor ou os dois.</p>
-    </div>
-    <div class="admin-card" data-nfs-nav="copel" style="cursor:pointer;">
-      <h3>⚡ Copel</h3>
-      <p class="card-sub">Dados de consumo e faturas Copel dos clientes.</p>
-    </div>
-    <div class="admin-card" data-nfs-nav="investidores" style="cursor:pointer;">
-      <h3>💼 Investidores</h3>
-      <p class="card-sub">Cadastro de investidores das usinas/projetos.</p>
+    <div class="mini-menu-grid">
+      <div class="mini-menu-card" data-nfs-nav="os-energy">
+        <div class="mini-menu-icon">🛠️</div>
+        <div class="mini-menu-label">Ordens de Serviço</div>
+      </div>
+      <div class="mini-menu-card" data-nfs-nav="clientes-energy">
+        <div class="mini-menu-icon">👥</div>
+        <div class="mini-menu-label">Base de Clientes</div>
+      </div>
+      <div class="mini-menu-card" data-nfs-nav="copel">
+        <div class="mini-menu-icon">⚡</div>
+        <div class="mini-menu-label">Copel</div>
+      </div>
+      <div class="mini-menu-card" data-nfs-nav="investidores">
+        <div class="mini-menu-icon">💼</div>
+        <div class="mini-menu-label">Investidores</div>
+      </div>
     </div>
   </div>
 
@@ -1614,21 +1655,27 @@
   <div id="nfsEnergyCopelView" style="display:none;">
     <div class="admin-content">
       <p class="card-sub" style="padding:0 4px 4px; line-height:1.6;">⚠️ A Copel não tem API pública para consulta automática de fatura/consumo — isso exigiria acessar a conta do cliente, o que é arriscado e juridicamente delicado. As áreas abaixo são de controle manual.</p>
-      <div class="admin-card" data-copel-nav="acompanhamento" id="copelAcompanhamentoCard" style="cursor:pointer; display:none;">
-        <h3>🔍 Acompanhamento Diário</h3>
-        <p class="card-sub">Todos os protocolos em aberto (Beneficiários + Outros Serviços) num só lugar, pra conferir na Copel.</p>
-      </div>
-      <div class="admin-card" data-copel-nav="protocolos" id="copelProtocolosCard" style="cursor:pointer; display:none;">
-        <h3>📋 Protocolos de Beneficiários</h3>
-        <p class="card-sub">Acompanhe os protocolos de conexão à geração distribuída junto à Copel.</p>
-      </div>
-      <div class="admin-card" data-copel-nav="outros-servicos" id="copelOutrosServicosCard" style="cursor:pointer; display:none;">
-        <h3>🔧 Protocolos de Outros Serviços</h3>
-        <p class="card-sub">Vistoria, troca de padrão, aumento de carga, ligação nova e outros pedidos junto à Copel.</p>
-      </div>
-      <div class="admin-card" data-copel-nav="financeiro" id="copelFinanceiroCard" style="cursor:pointer; display:none;">
-        <h3>💰 Financeiro</h3>
-        <p class="card-sub">Controle de custos e taxas relacionados à Copel.</p>
+      <div class="mini-menu-grid">
+        <div class="mini-menu-card" data-copel-nav="acompanhamento" id="copelAcompanhamentoCard" style="display:none;">
+          <div class="mini-menu-icon">🔍</div>
+          <div class="mini-menu-label">Acompanhamento Diário</div>
+        </div>
+        <div class="mini-menu-card" data-copel-nav="protocolos" id="copelProtocolosCard" style="display:none;">
+          <div class="mini-menu-icon">📋</div>
+          <div class="mini-menu-label">Protocolos Beneficiários</div>
+        </div>
+        <div class="mini-menu-card" data-copel-nav="outros-servicos" id="copelOutrosServicosCard" style="display:none;">
+          <div class="mini-menu-icon">🔧</div>
+          <div class="mini-menu-label">Outros Serviços</div>
+        </div>
+        <div class="mini-menu-card" data-copel-nav="financeiro" id="copelFinanceiroCard" style="display:none;">
+          <div class="mini-menu-icon">💰</div>
+          <div class="mini-menu-label">Financeiro</div>
+        </div>
+        <div class="mini-menu-card" data-copel-nav="acessos" id="copelAcessosCard" style="display:none;">
+          <div class="mini-menu-icon">🔐</div>
+          <div class="mini-menu-label">Acessos Copel</div>
+        </div>
       </div>
       <div class="admin-empty" id="copelSemAcesso" style="display:none;">Você não tem acesso liberado a nenhuma área dentro de Copel. Fale com o administrador.</div>
     </div>
@@ -1724,6 +1771,29 @@
       <button class="filter-chip" data-copelfinfilter="pago">Pago</button>
     </div>
     <div class="list" id="copelFinList">
+      <div class="loading">Carregando…</div>
+    </div>
+  </div>
+
+  <!-- COPEL > ACESSOS COPEL (credenciais — senha nunca fica no frontend, item 13-23) -->
+  <div id="nfsEnergyCopelAcessosView" style="display:none;">
+    <p class="card-sub" style="padding:0 18px; margin-top:12px; line-height:1.6;">🔒 As senhas ficam criptografadas em um serviço de backend separado — nunca neste arquivo, no navegador ou em texto puro. Só é possível ver uma senha com a permissão "Revelar credencial" e uma ação consciente.</p>
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="copelCredSearchInput" type="text" placeholder="Cliente, CPF/CNPJ, login, UC, empresa ou status">
+      </div>
+    </div>
+    <div class="filter-chips" id="copelCredFilterChipsContainer">
+      <button class="filter-chip active" data-copelcredfilter="todos">Todos</button>
+      <button class="filter-chip" data-copelcredfilter="nao_testado">Não testado</button>
+      <button class="filter-chip" data-copelcredfilter="valido">Válido</button>
+      <button class="filter-chip" data-copelcredfilter="senha_invalida">Senha inválida</button>
+      <button class="filter-chip" data-copelcredfilter="necessita_atualizacao">Precisa atualizar</button>
+      <button class="filter-chip" data-copelcredfilter="bloqueado">Bloqueado</button>
+      <button class="filter-chip" data-copelcredfilter="inativo">Inativo</button>
+    </div>
+    <div class="list" id="copelCredList">
       <div class="loading">Carregando…</div>
     </div>
   </div>
@@ -2180,6 +2250,29 @@
             </label>
             <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
               <input type="checkbox" id="newColabAcessoCopelFinanceiro" style="width:16px; height:16px;"> 💰 Financeiro (Copel)
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Dentro de Acessos Copel — credenciais (só faz efeito se NFS Energy estiver marcado)</label>
+          <div style="display:flex; gap:14px; margin-top:6px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabCopelCredVisualizar" checked style="width:16px; height:16px;"> Ver cadastro
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabCopelCredCadastrar" style="width:16px; height:16px;"> Cadastrar acesso
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabCopelCredEditar" style="width:16px; height:16px;"> Editar acesso
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabCopelCredRevelar" style="width:16px; height:16px;"> 🔓 Revelar credencial
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabCopelCredTestar" checked style="width:16px; height:16px;"> Testar acesso
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--paper); cursor:pointer;">
+              <input type="checkbox" id="newColabCopelCredExcluir" style="width:16px; height:16px;"> Excluir/inativar
             </label>
           </div>
         </div>
@@ -4342,6 +4435,79 @@
   </div>
 </div>
 
+<div class="sheet-backdrop" id="copelCredBackdrop"></div>
+<div class="sheet" id="copelCredSheet">
+  <div class="sheet-handle"></div>
+  <h2 id="copelCredSheetTitle">Novo acesso Copel</h2>
+  <p class="admin-note" style="margin-bottom:14px;">🔒 A senha é enviada direto para um serviço seguro de backend — não fica salva aqui no navegador.</p>
+
+  <div class="field">
+    <label for="copelCredCliente">Cliente / Razão Social</label>
+    <input id="copelCredCliente" type="text" placeholder="Nome ou razão social" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="copelCredCpfCnpj">CPF ou CNPJ</label>
+    <input id="copelCredCpfCnpj" type="text" placeholder="000.000.000-00 ou 00.000.000/0000-00" autocomplete="off">
+    <p class="admin-note" id="copelCredDocInfo" style="margin-top:4px;"></p>
+  </div>
+  <div class="field">
+    <label for="copelCredLogin">Login Copel</label>
+    <input id="copelCredLogin" type="text" placeholder="Preenchido automaticamente pelo CPF/CNPJ" autocomplete="off">
+  </div>
+  <div class="field">
+    <label for="copelCredSenha">Senha Copel <span id="copelCredSenhaHintEdit" style="display:none; color:var(--text-dim); font-weight:400;">(deixe em branco para manter a atual)</span></label>
+    <div class="password-row">
+      <input id="copelCredSenha" type="password" placeholder="••••••••" autocomplete="new-password">
+      <button class="small-btn" id="copelCredMostrarBtn" type="button">👁️</button>
+    </div>
+  </div>
+  <div id="copelCredRevelarBox" style="display:none; margin-bottom:14px;">
+    <button class="small-btn full-btn" id="copelCredRevelarBtn" type="button">🔓 Revelar senha salva</button>
+    <p class="admin-note" id="copelCredRevelarResultado" style="margin-top:8px; display:none;"></p>
+  </div>
+
+  <div class="field">
+    <label>Unidades Consumidoras (UCs) vinculadas</label>
+    <div id="copelCredUcsLista" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;"></div>
+    <div class="password-row">
+      <input id="copelCredNovaUc" type="text" placeholder="Número da UC">
+      <button class="small-btn" id="copelCredAddUcBtn" type="button">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="copelCredEmpresa">Empresa responsável (NFS Group)</label>
+    <select id="copelCredEmpresa"></select>
+  </div>
+  <div class="field">
+    <label for="copelCredObservacoes">Observações</label>
+    <textarea id="copelCredObservacoes" rows="3" style="width:100%; background:var(--graphite); border:1px solid var(--line); border-radius:9px; padding:10px; color:var(--paper); font-size:13px; resize:vertical;"></textarea>
+  </div>
+  <div class="field">
+    <label for="copelCredStatus">Status do acesso</label>
+    <select id="copelCredStatus">
+      <option value="nao_testado">Não testado</option>
+      <option value="valido">Acesso válido</option>
+      <option value="senha_invalida">Senha inválida</option>
+      <option value="necessita_atualizacao">Necessita atualização</option>
+      <option value="bloqueado">Bloqueado</option>
+      <option value="inativo">Inativo</option>
+    </select>
+  </div>
+  <p class="admin-note" id="copelCredMetaInfo" style="margin-bottom:10px;"></p>
+
+  <button class="small-btn full-btn" id="copelCredTestarBtn" type="button" style="margin-bottom:14px;">🔍 Testar acesso</button>
+
+  <div class="err" id="copelCredFormErr">Preencha o cliente e um CPF/CNPJ válido.</div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="copelCredCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="copelCredSaveBtn">Salvar</button>
+  </div>
+  <div class="sheet-actions" id="copelCredDeleteRow" style="display:none; margin-top:10px;">
+    <button class="btn btn-danger" id="copelCredDeleteBtn">Excluir/inativar</button>
+  </div>
+</div>
+
 <div class="sheet-backdrop" id="importBackdrop"></div>
 <div class="sheet" id="importSheet">
   <div class="sheet-handle"></div>
@@ -5063,6 +5229,12 @@ async function createColaborador(){
   const finSaldos = document.getElementById('newColabFinSaldos').checked;
   const finMultiempresa = document.getElementById('newColabFinMultiempresa').checked;
   const finExportacao = document.getElementById('newColabFinExportacao').checked;
+  const copelCredVisualizar = document.getElementById('newColabCopelCredVisualizar').checked;
+  const copelCredCadastrar = document.getElementById('newColabCopelCredCadastrar').checked;
+  const copelCredEditar = document.getElementById('newColabCopelCredEditar').checked;
+  const copelCredRevelar = document.getElementById('newColabCopelCredRevelar').checked;
+  const copelCredTestar = document.getElementById('newColabCopelCredTestar').checked;
+  const copelCredExcluir = document.getElementById('newColabCopelCredExcluir').checked;
   const acessoCopelProtocolos = document.getElementById('newColabAcessoCopelProtocolos').checked;
   const acessoCopelOutrosServicos = document.getElementById('newColabAcessoCopelOutrosServicos').checked;
   const acessoCopelFinanceiro = document.getElementById('newColabAcessoCopelFinanceiro').checked;
@@ -5091,7 +5263,7 @@ async function createColaborador(){
   }
 
   const senhaHash = await hashSenha(senha);
-  colaboradores[chave] = { nome: nomeRaw, email, senhaHash, ativo: true, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, finCadastrar, finEditar, finReceber, finPagar, finExcluir, finRelatorios, finSaldos, finMultiempresa, finExportacao, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
+  colaboradores[chave] = { nome: nomeRaw, email, senhaHash, ativo: true, valorHora, acessos: { estoque: acessoEstoque, os: acessoOs, financeiro: acessoFinanceiro, nfsEnergy: acessoNfsEnergy, orcamento: acessoOrcamento, dimensionamentos: acessoDimensionamentos, osEnergy: acessoOsEnergy, orcamentoSolar: acessoOrcamentoSolar, finCadastrar, finEditar, finReceber, finPagar, finExcluir, finRelatorios, finSaldos, finMultiempresa, finExportacao, copelCredVisualizar, copelCredCadastrar, copelCredEditar, copelCredRevelar, copelCredTestar, copelCredExcluir, copelProtocolos: acessoCopelProtocolos, copelOutrosServicos: acessoCopelOutrosServicos, copelFinanceiro: acessoCopelFinanceiro, agendamento: acessoAgendamento, alertaCobranca: acessoAlerta } };
   const ok = await saveColaboradores();
   if(!ok){
     errEl.textContent = 'Não foi possível salvar o cadastro agora. Verifique sua internet e tente de novo.';
@@ -6430,9 +6602,9 @@ function showFinSubView(view){
   stopFinAutoRefresh();
   if(view === 'menu'){
     Promise.all([loadContasPagar(), loadContasReceber(), carregarCatalogosFinanceiros(), loadOS()]).then(atualizarDashboardFinanceiro);
-    document.querySelector('[data-fin-nav="relatorios"]').style.display = temAcessoFin('relatorios') ? 'block' : 'none';
-    document.querySelector('[data-fin-nav="dre"]').style.display = temAcessoFin('relatorios') ? 'block' : 'none';
-    document.querySelector('[data-fin-nav="contas-bancarias"]').style.display = temAcessoFin('saldos') ? 'block' : 'none';
+    document.querySelector('[data-fin-nav="relatorios"]').style.display = temAcessoFin('relatorios') ? 'flex' : 'none';
+    document.querySelector('[data-fin-nav="dre"]').style.display = temAcessoFin('relatorios') ? 'flex' : 'none';
+    document.querySelector('[data-fin-nav="contas-bancarias"]').style.display = temAcessoFin('saldos') ? 'flex' : 'none';
   }
   if(view === 'cobrancas'){
     loadOS().then(renderFinanceiro);
@@ -8162,15 +8334,336 @@ function temAcessoCopelFinanceiro(){
   return isAdminSession || (currentUserAccess && currentUserAccess.copelFinanceiro === true);
 }
 
+/* ======================================================
+   NFS ENERGY > COPEL > ACESSOS COPEL
+   A senha da Copel NUNCA é lida/gravada diretamente no Firestore por aqui — tudo
+   passa pela função de backend netlify/functions/copel-credenciais.js, que é a
+   única peça do sistema que sabe a chave de criptografia (guardada como variável
+   de ambiente no Netlify, nunca neste arquivo). Ver item 17/22/23 do Pacote 3.
+   ====================================================== */
+let copelCredenciais = [];
+let editingCopelCredId = null;
+let copelCredUcsAtual = [];
+let copelCredFilter = 'todos';
+
+const COPEL_CRED_STATUS_LABEL = {
+  nao_testado:'Não testado', valido:'Acesso válido', senha_invalida:'Senha inválida',
+  necessita_atualizacao:'Necessita atualização', bloqueado:'Bloqueado', inativo:'Inativo'
+};
+const COPEL_CRED_STATUS_CLASS = {
+  nao_testado:'status-aberto', valido:'status-concluido', senha_invalida:'status-cancelado',
+  necessita_atualizacao:'status-andamento', bloqueado:'status-cancelado', inativo:'status-cancelado'
+};
+
+async function chamarBackendCopelCred(acao, dadosExtras){
+  const resp = await fetch('/.netlify/functions/copel-credenciais', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ acao, usuario: currentUser, ...dadosExtras })
+  });
+  const json = await resp.json();
+  if(!resp.ok || json.erro) throw new Error(json.erro || 'Erro ao falar com o servidor.');
+  return json;
+}
+
+async function loadCopelCredenciais(){
+  try{
+    const { credenciais } = await chamarBackendCopelCred('listar', {});
+    copelCredenciais = credenciais || [];
+  }catch(e){
+    console.error(e);
+    copelCredenciais = [];
+    showToast('Não foi possível carregar os acessos Copel agora. O backend está configurado? (ver ARQUITETURA/notas de deploy)');
+  }
+}
+
+function renderCopelCredList(){
+  const list = document.getElementById('copelCredList');
+  const q = document.getElementById('copelCredSearchInput').value.trim().toLowerCase();
+  let filtrado = copelCredenciais.filter(c => {
+    if(copelCredFilter !== 'todos' && c.status !== copelCredFilter) return false;
+    if(!q) return true;
+    const empresa = empresasFin.find(e=>e.id === c.empresaResponsavelId);
+    return (c.clienteRazaoSocial||'').toLowerCase().includes(q)
+      || (c.cpfCnpj||'').includes(q.replace(/\D/g,''))
+      || (c.loginCopel||'').toLowerCase().includes(q)
+      || (c.ucs||[]).some(uc => uc.toLowerCase().includes(q))
+      || (empresa && empresa.nome.toLowerCase().includes(q))
+      || (COPEL_CRED_STATUS_LABEL[c.status]||'').toLowerCase().includes(q);
+  });
+
+  if(filtrado.length === 0){
+    list.innerHTML = '<div class="empty"><div class="big">🔐</div><p>Nenhum acesso Copel cadastrado ainda.</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtrado.map(c => `
+    <div class="item" data-id="${c.id}">
+      <div class="thumb placeholder">🔐</div>
+      <div style="flex:1; min-width:0;">
+        <div class="code">${escapeHtml(formatarCpfCnpjExibicao(c.cpfCnpj))} · Login: ${escapeHtml(c.loginCopel||'—')}</div>
+        <div class="name">${escapeHtml(c.clienteRazaoSocial)}</div>
+        <div class="meta"><span>${(c.ucs||[]).length} UC(s): ${escapeHtml((c.ucs||[]).join(', ') || '—')}</span></div>
+        <div class="badges"><span class="badge ${COPEL_CRED_STATUS_CLASS[c.status]}">${COPEL_CRED_STATUS_LABEL[c.status]}</span></div>
+        <div class="actions">
+          <button class="icon-btn copel-cred-edit-btn" data-id="${c.id}" title="Editar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.copel-cred-edit-btn').forEach(btn=> btn.addEventListener('click', ()=> openCopelCredEdit(btn.dataset.id)));
+}
+document.getElementById('copelCredSearchInput').addEventListener('input', renderCopelCredList);
+document.querySelectorAll('[data-copelcredfilter]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    copelCredFilter = chip.dataset.copelcredfilter;
+    document.querySelectorAll('[data-copelcredfilter]').forEach(c=>c.classList.toggle('active', c===chip));
+    renderCopelCredList();
+  });
+});
+
+/* ---------- CPF/CNPJ: máscara visual + validação de dígitos + normalização (item 14) ---------- */
+function formatarCpfCnpjMascara(digitos){
+  if(digitos.length <= 11){
+    return digitos.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  }
+  return digitos.replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+}
+function formatarCpfCnpjExibicao(digitos){
+  return formatarCpfCnpjMascara(String(digitos||'').replace(/\D/g,''));
+}
+document.getElementById('copelCredCpfCnpj').addEventListener('input', (e)=>{
+  const digitos = e.target.value.replace(/\D/g,'').slice(0,14);
+  e.target.value = formatarCpfCnpjMascara(digitos);
+  const info = document.getElementById('copelCredDocInfo');
+  if(digitos.length === 11){
+    info.textContent = '✅ CPF (11 dígitos)';
+  }else if(digitos.length === 14){
+    info.textContent = '✅ CNPJ (14 dígitos)';
+  }else{
+    info.textContent = digitos.length > 0 ? `Faltam dígitos (CPF tem 11, CNPJ tem 14) — ${digitos.length}/11 ou /14` : '';
+  }
+  // Login Copel acompanha o documento automaticamente, mas continua editável (item 14)
+  if(!copelCredLoginEditadoManualmente){
+    document.getElementById('copelCredLogin').value = digitos;
+  }
+});
+let copelCredLoginEditadoManualmente = false;
+document.getElementById('copelCredLogin').addEventListener('input', ()=>{ copelCredLoginEditadoManualmente = true; });
+
+/* ---------- Várias UCs por credencial (item 15) ---------- */
+function renderCopelCredUcs(){
+  document.getElementById('copelCredUcsLista').innerHTML = copelCredUcsAtual.length === 0
+    ? '<p style="font-size:12.5px; color:var(--text-dim); margin:0;">Nenhuma UC adicionada ainda.</p>'
+    : copelCredUcsAtual.map((uc, idx) => `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="flex:1; font-size:13px; color:var(--paper);">${escapeHtml(uc)}</div>
+          <button class="small-btn danger copel-uc-remove" data-idx="${idx}" type="button">Remover</button>
+        </div>
+      `).join('');
+  document.getElementById('copelCredUcsLista').querySelectorAll('.copel-uc-remove').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ copelCredUcsAtual.splice(parseInt(btn.dataset.idx,10),1); renderCopelCredUcs(); });
+  });
+}
+document.getElementById('copelCredAddUcBtn').addEventListener('click', ()=>{
+  const uc = document.getElementById('copelCredNovaUc').value.trim();
+  if(!uc){ showToast('Informe o número da UC.'); return; }
+  if(copelCredUcsAtual.includes(uc)){ showToast('Essa UC já está na lista.'); return; }
+  copelCredUcsAtual.push(uc);
+  document.getElementById('copelCredNovaUc').value = '';
+  renderCopelCredUcs();
+});
+
+document.getElementById('copelCredMostrarBtn').addEventListener('click', ()=>{
+  const campo = document.getElementById('copelCredSenha');
+  campo.type = campo.type === 'password' ? 'text' : 'password';
+});
+
+/* ---------- Abrir/fechar/salvar ---------- */
+function openCopelCredSheet(){
+  document.getElementById('copelCredBackdrop').classList.add('open');
+  document.getElementById('copelCredSheet').classList.add('open');
+}
+function closeCopelCredSheet(){
+  document.getElementById('copelCredBackdrop').classList.remove('open');
+  document.getElementById('copelCredSheet').classList.remove('open');
+  document.getElementById('copelCredFormErr').classList.remove('show');
+  document.getElementById('copelCredRevelarResultado').style.display = 'none';
+  document.getElementById('copelCredSenha').value = '';
+}
+async function openCopelCredAdd(){
+  if(!temAcessoCopelCredenciais('cadastrar')){
+    showToast('Você não tem permissão para cadastrar acessos Copel.');
+    return;
+  }
+  editingCopelCredId = null;
+  copelCredLoginEditadoManualmente = false;
+  document.getElementById('copelCredSheetTitle').textContent = 'Novo acesso Copel';
+  document.getElementById('copelCredCliente').value = '';
+  document.getElementById('copelCredCpfCnpj').value = '';
+  document.getElementById('copelCredDocInfo').textContent = '';
+  document.getElementById('copelCredLogin').value = '';
+  document.getElementById('copelCredSenha').value = '';
+  document.getElementById('copelCredSenhaHintEdit').style.display = 'none';
+  document.getElementById('copelCredRevelarBox').style.display = 'none';
+  copelCredUcsAtual = [];
+  renderCopelCredUcs();
+  await popularSelectEmpresaSimples(document.getElementById('copelCredEmpresa'), null);
+  document.getElementById('copelCredObservacoes').value = '';
+  document.getElementById('copelCredStatus').value = 'nao_testado';
+  document.getElementById('copelCredMetaInfo').textContent = '';
+  document.getElementById('copelCredDeleteRow').style.display = 'none';
+  openCopelCredSheet();
+}
+async function openCopelCredEdit(id){
+  if(!temAcessoCopelCredenciais('visualizar')){
+    showToast('Você não tem permissão para ver esse cadastro.');
+    return;
+  }
+  const c = copelCredenciais.find(x=>x.id === id);
+  if(!c) return;
+  editingCopelCredId = id;
+  copelCredLoginEditadoManualmente = true; // ao editar, não sobrescreve o login já salvo
+  document.getElementById('copelCredSheetTitle').textContent = 'Editar acesso Copel';
+  document.getElementById('copelCredCliente').value = c.clienteRazaoSocial || '';
+  document.getElementById('copelCredCpfCnpj').value = formatarCpfCnpjExibicao(c.cpfCnpj);
+  document.getElementById('copelCredDocInfo').textContent = c.tipoDocumento === 'cpf' ? '✅ CPF (11 dígitos)' : '✅ CNPJ (14 dígitos)';
+  document.getElementById('copelCredLogin').value = c.loginCopel || '';
+  document.getElementById('copelCredSenha').value = '';
+  document.getElementById('copelCredSenhaHintEdit').style.display = 'inline';
+  document.getElementById('copelCredRevelarBox').style.display = temAcessoCopelCredenciais('revelar') ? 'block' : 'none';
+  document.getElementById('copelCredRevelarResultado').style.display = 'none';
+  copelCredUcsAtual = [...(c.ucs || [])];
+  renderCopelCredUcs();
+  await popularSelectEmpresaSimples(document.getElementById('copelCredEmpresa'), c.empresaResponsavelId);
+  document.getElementById('copelCredObservacoes').value = c.observacoes || '';
+  document.getElementById('copelCredStatus').value = c.status || 'nao_testado';
+  document.getElementById('copelCredMetaInfo').textContent =
+    `Cadastrado por ${c.criadoPor||'—'} em ${c.criadoEm ? new Date(c.criadoEm).toLocaleDateString('pt-BR') : '—'}`
+    + (c.atualizadoEm ? ` · Última alteração: ${new Date(c.atualizadoEm).toLocaleDateString('pt-BR')} por ${c.atualizadoPor||'—'}` : '')
+    + (c.ultimaVerificacao ? ` · Última verificação: ${new Date(c.ultimaVerificacao).toLocaleDateString('pt-BR')}` : '');
+  document.getElementById('copelCredDeleteRow').style.display = temAcessoCopelCredenciais('excluir') ? 'flex' : 'none';
+  document.getElementById('copelCredSaveBtn').style.display = temAcessoCopelCredenciais('editar') ? 'inline-block' : 'none';
+  openCopelCredSheet();
+}
+document.getElementById('copelCredCancelBtn').addEventListener('click', closeCopelCredSheet);
+document.getElementById('copelCredBackdrop').addEventListener('click', closeCopelCredSheet);
+
+document.getElementById('copelCredSaveBtn').addEventListener('click', async ()=>{
+  const acaoNecessaria = editingCopelCredId ? 'editar' : 'cadastrar';
+  const errEl = document.getElementById('copelCredFormErr');
+  errEl.classList.remove('show');
+  if(!temAcessoCopelCredenciais(acaoNecessaria)){
+    errEl.textContent = 'Você não tem permissão para ' + (editingCopelCredId ? 'editar' : 'cadastrar') + ' acessos Copel.';
+    errEl.classList.add('show');
+    return;
+  }
+  const cliente = document.getElementById('copelCredCliente').value.trim();
+  const cpfCnpjDigitos = document.getElementById('copelCredCpfCnpj').value.replace(/\D/g,'');
+  if(!cliente || (cpfCnpjDigitos.length !== 11 && cpfCnpjDigitos.length !== 14)){
+    errEl.textContent = 'Preencha o cliente e um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const dados = {
+    clienteRazaoSocial: cliente,
+    cpfCnpj: cpfCnpjDigitos,
+    loginCopel: document.getElementById('copelCredLogin').value.trim() || cpfCnpjDigitos,
+    ucs: copelCredUcsAtual,
+    empresaResponsavelId: document.getElementById('copelCredEmpresa').value,
+    observacoes: document.getElementById('copelCredObservacoes').value.trim(),
+    status: document.getElementById('copelCredStatus').value
+  };
+  const senhaDigitada = document.getElementById('copelCredSenha').value;
+  if(senhaDigitada) dados.senhaCopel = senhaDigitada; // só manda se realmente digitou uma senha nova
+
+  if(!editingCopelCredId && !senhaDigitada){
+    errEl.textContent = 'Informe a senha Copel para um novo cadastro.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  try{
+    await chamarBackendCopelCred('salvar', { id: editingCopelCredId, dados });
+    registrarAuditoria('NFS Energy (Acessos Copel)', editingCopelCredId ? 'Credencial atualizada' : 'Credencial cadastrada', cliente, '', '');
+    closeCopelCredSheet();
+    await loadCopelCredenciais();
+    renderCopelCredList();
+    showToast('Acesso Copel salvo com segurança.');
+  }catch(e){
+    errEl.textContent = e.message || 'Não foi possível salvar agora.';
+    errEl.classList.add('show');
+  }
+});
+
+document.getElementById('copelCredRevelarBtn').addEventListener('click', async ()=>{
+  if(!editingCopelCredId) return;
+  if(!temAcessoCopelCredenciais('revelar')){
+    showToast('Você não tem permissão para revelar credenciais.');
+    return;
+  }
+  if(!confirm('Revelar a senha desse acesso Copel? Essa ação fica registrada na auditoria (sem gravar a senha em si).')) return;
+  try{
+    const { senha } = await chamarBackendCopelCred('revelar', { id: editingCopelCredId });
+    const resultado = document.getElementById('copelCredRevelarResultado');
+    resultado.textContent = 'Senha: ' + senha;
+    resultado.style.display = 'block';
+    showToast('Senha revelada — feche esta tela quando terminar.');
+  }catch(e){
+    showToast(e.message || 'Não foi possível revelar a senha agora.');
+  }
+});
+
+document.getElementById('copelCredDeleteBtn').addEventListener('click', ()=> requestAdminAuth(async ()=>{
+  if(!editingCopelCredId) return;
+  if(!temAcessoCopelCredenciais('excluir')){
+    showToast('Você não tem permissão para excluir acessos Copel.');
+    return;
+  }
+  try{
+    await chamarBackendCopelCred('excluir', { id: editingCopelCredId });
+    registrarAuditoria('NFS Energy (Acessos Copel)', 'Credencial excluída', document.getElementById('copelCredCliente').value, '', '');
+    closeCopelCredSheet();
+    await loadCopelCredenciais();
+    renderCopelCredList();
+    showToast('Acesso Copel excluído.');
+  }catch(e){
+    showToast(e.message || 'Não foi possível excluir agora.');
+  }
+}));
+
+document.getElementById('copelCredTestarBtn').addEventListener('click', async ()=>{
+  if(!temAcessoCopelCredenciais('testar')){
+    showToast('Você não tem permissão para testar acessos Copel.');
+    return;
+  }
+  if(!editingCopelCredId){
+    showToast('Salve o cadastro primeiro para poder testar o acesso.');
+    return;
+  }
+  try{
+    const resultado = await chamarBackendCopelCred('testarAcesso', { id: editingCopelCredId });
+    showToast(resultado.mensagem || 'Pendente de integração.');
+  }catch(e){
+    showToast(e.message || 'Pendente de integração.');
+  }
+});
+
+
 function atualizarCopelMenuVisibility(){
   const podeProtocolos = temAcessoCopelProtocolos();
   const podeOutrosServicos = temAcessoCopelOutrosServicos();
   const podeFinanceiro = temAcessoCopelFinanceiro();
-  document.getElementById('copelAcompanhamentoCard').style.display = (podeProtocolos || podeOutrosServicos) ? 'block' : 'none';
-  document.getElementById('copelProtocolosCard').style.display = podeProtocolos ? 'block' : 'none';
-  document.getElementById('copelOutrosServicosCard').style.display = podeOutrosServicos ? 'block' : 'none';
-  document.getElementById('copelFinanceiroCard').style.display = podeFinanceiro ? 'block' : 'none';
-  document.getElementById('copelSemAcesso').style.display = (!podeProtocolos && !podeOutrosServicos && !podeFinanceiro) ? 'block' : 'none';
+  const podeAcessos = temAcessoCopelCredenciais('visualizar');
+  document.getElementById('copelAcompanhamentoCard').style.display = (podeProtocolos || podeOutrosServicos) ? 'flex' : 'none';
+  document.getElementById('copelProtocolosCard').style.display = podeProtocolos ? 'flex' : 'none';
+  document.getElementById('copelOutrosServicosCard').style.display = podeOutrosServicos ? 'flex' : 'none';
+  document.getElementById('copelFinanceiroCard').style.display = podeFinanceiro ? 'flex' : 'none';
+  document.getElementById('copelAcessosCard').style.display = podeAcessos ? 'flex' : 'none';
+  document.getElementById('copelSemAcesso').style.display = (!podeProtocolos && !podeOutrosServicos && !podeFinanceiro && !podeAcessos) ? 'block' : 'none';
 }
 
 function temAcessoOsEnergy(){
@@ -8188,6 +8681,7 @@ function showNfsSubView(view){
     'copel-protocolos': 'nfsEnergyCopelProtocolosView',
     'copel-outros-servicos': 'nfsEnergyCopelOutrosServicosView',
     'copel-financeiro': 'nfsEnergyCopelFinanceiroView',
+    'copel-acessos': 'nfsEnergyCopelAcessosView',
     'investidores': 'nfsEnergyInvestidoresView'
   };
   Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
@@ -8203,11 +8697,12 @@ function showNfsSubView(view){
     'copel-protocolos': 'Protocolos de Beneficiários',
     'copel-outros-servicos': 'Outros Serviços (Copel)',
     'copel-financeiro': 'Financeiro (Copel)',
+    'copel-acessos': 'Acessos Copel',
     investidores: 'Investidores'
   }[view];
 
   document.getElementById('nfsEnergyFab').style.display =
-    (view === 'investidores' || view === 'copel-protocolos' || view === 'copel-outros-servicos' || view === 'copel-financeiro' || view === 'clientes-energy' || view === 'os-energy') ? 'flex' : 'none';
+    (view === 'investidores' || view === 'copel-protocolos' || view === 'copel-outros-servicos' || view === 'copel-financeiro' || view === 'copel-acessos' || view === 'clientes-energy' || view === 'os-energy') ? 'flex' : 'none';
   document.getElementById('importClientesEnergyBtn').style.display = (view === 'clientes-energy') ? 'flex' : 'none';
 
   if(view === 'os-energy'){
@@ -8223,6 +8718,14 @@ function showNfsSubView(view){
   }
   if(view === 'copel'){
     atualizarCopelMenuVisibility();
+  }
+  if(view === 'copel-acessos'){
+    if(!temAcessoCopelCredenciais('visualizar')){
+      showToast('Você não tem acesso liberado aos Acessos Copel.');
+      showNfsSubView('copel');
+      return;
+    }
+    Promise.all([loadCopelCredenciais(), loadEmpresasFin()]).then(renderCopelCredList);
   }
   if(view === 'copel-acompanhamento'){
     if(!temAcessoCopelProtocolos() && !temAcessoCopelOutrosServicos()){
@@ -8267,7 +8770,7 @@ document.querySelectorAll('[data-copel-nav]').forEach(card=>{
   card.addEventListener('click', ()=> showNfsSubView('copel-' + card.dataset.copelNav));
 });
 document.getElementById('nfsEnergyBackBtn').addEventListener('click', ()=>{
-  if(nfsCurrentSubView === 'copel-acompanhamento' || nfsCurrentSubView === 'copel-protocolos' || nfsCurrentSubView === 'copel-outros-servicos' || nfsCurrentSubView === 'copel-financeiro'){
+  if(nfsCurrentSubView === 'copel-acompanhamento' || nfsCurrentSubView === 'copel-protocolos' || nfsCurrentSubView === 'copel-outros-servicos' || nfsCurrentSubView === 'copel-financeiro' || nfsCurrentSubView === 'copel-acessos'){
     showNfsSubView('copel');
   }else{
     showNfsSubView('menu');
@@ -8278,6 +8781,7 @@ document.getElementById('nfsEnergyFabBtn').addEventListener('click', ()=>{
   else if(nfsCurrentSubView === 'copel-protocolos') openProtocoloAdd();
   else if(nfsCurrentSubView === 'copel-outros-servicos') openOutroServicoAdd();
   else if(nfsCurrentSubView === 'copel-financeiro') openCopelFinAdd();
+  else if(nfsCurrentSubView === 'copel-acessos') openCopelCredAdd();
   else if(nfsCurrentSubView === 'clientes-energy') openClienteEnergiaAdd();
   else if(nfsCurrentSubView === 'os-energy') openOsEnergyAdd();
 });
@@ -8303,6 +8807,19 @@ function temAcessoFin(acao){
   if(!currentUserAccess || currentUserAccess.financeiro !== true) return false;
   const campo = 'fin' + acao.charAt(0).toUpperCase() + acao.slice(1);
   const padraoAtivado = !['excluir','multiempresa'].includes(acao);
+  const valor = currentUserAccess[campo];
+  return valor === undefined ? padraoAtivado : valor === true;
+}
+
+/* ---------- Permissões de Acessos Copel (item 19 do Pacote 3) ----------
+   Mesma lógica do Financeiro: administrador sempre passa; colaborador precisa da
+   permissão específica. "Revelar" e "Excluir" vêm DESATIVADOS por padrão (mais
+   seguro — ver senha em texto é a ação mais sensível de todo o pacote). */
+function temAcessoCopelCredenciais(acao){
+  if(isAdminSession) return true;
+  if(!currentUserAccess || currentUserAccess.nfsEnergy !== true) return false;
+  const campo = 'copelCred' + acao.charAt(0).toUpperCase() + acao.slice(1);
+  const padraoAtivado = !['revelar','excluir','cadastrar','editar'].includes(acao);
   const valor = currentUserAccess[campo];
   return valor === undefined ? padraoAtivado : valor === true;
 }

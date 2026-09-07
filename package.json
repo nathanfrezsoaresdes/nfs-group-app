@@ -1,0 +1,7 @@
+{
+  "name": "nfs-group-app-functions",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
