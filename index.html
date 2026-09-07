@@ -1808,13 +1808,16 @@
 
   <!-- COPEL > FATURAS (processadas a partir de PDFs enviados manualmente — item 11 do pedido original) -->
   <div id="nfsEnergyCopelFaturasView" style="display:none;">
-    <p class="card-sub" style="padding:0 18px 4px; margin-top:12px; line-height:1.6;">Faça o login manual na Copel, abra a tela de Débitos e clique em Atualizar Faturas Copel. A importação manual de PDF continua disponível como alternativa.</p>
+    <div style="padding:0 18px; margin-top:12px;">
+      <span class="badge" id="nfsCopelExtensaoIndicador">🔌 Verificando extensão...</span>
+    </div>
+    <p class="card-sub" style="padding:0 18px 4px; margin-top:8px; line-height:1.6;" id="faturasTextoExplicativo">Faça o login manual na Copel, abra a tela de Débitos e clique em Atualizar Faturas Copel. A importação manual de PDF continua disponível como alternativa.</p>
 
     <div style="padding:0 18px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap;">
       <button class="small-btn" id="faturasAbrirDebitosBtn" type="button" style="flex:1;">📊 Abrir Débitos Copel</button>
       <button class="small-btn primary" id="faturasSincronizarBtn" type="button" style="flex:1;">🔄 Atualizar / Sincronizar Faturas Copel</button>
     </div>
-    <p class="admin-note" style="padding:0 18px; margin-bottom:14px;">⚠️ "Sincronizar" não acessa a Copel automaticamente — o login numa aba não pode ser lido por outra por segurança do navegador. Ele abre um campo pra você colar o texto da página de Débitos depois de ver na Copel manualmente.</p>
+    <p class="admin-note" style="padding:0 18px; margin-bottom:14px;" id="faturasSincronizarAviso">⚠️ "Sincronizar" não acessa a Copel automaticamente — o login numa aba não pode ser lido por outra por segurança do navegador. Ele abre um campo pra você colar o texto da página de Débitos depois de ver na Copel manualmente.</p>
 
     <div class="admin-card" style="margin:0 18px 14px;">
       <h3 style="margin-bottom:6px;">📎 Importar Faturas Manualmente</h3>
@@ -8900,11 +8903,42 @@ document.getElementById('debColarProcessarBtn').addEventListener('click', async 
   }
 });
 
+/* ---------- Detecção da extensão NFS Copel ----------
+   O content script content_nfsgroup.js (rodando só no domínio do próprio
+   NFS Group) marca <html data-nfs-copel-extensao="instalada"> assim que a
+   extensão está presente. Aqui só conferimos essa marca — nunca pedimos nada
+   à extensão além de "você existe?". */
+let nfsCopelExtensaoDetectada = false;
+function verificarExtensaoNfsCopel(){
+  nfsCopelExtensaoDetectada = document.documentElement.hasAttribute('data-nfs-copel-extensao');
+  const indicador = document.getElementById('nfsCopelExtensaoIndicador');
+  if(!indicador) return;
+  if(nfsCopelExtensaoDetectada){
+    indicador.textContent = '🟢 Extensão NFS Copel conectada';
+    indicador.className = 'badge status-concluido';
+    document.getElementById('faturasTextoExplicativo').textContent = 'Faça o login manual na Copel, abra a tela de Débitos e clique em Sincronizar no painel da extensão — os dados chegam aqui automaticamente. A importação manual de PDF continua disponível como alternativa.';
+    document.getElementById('faturasSincronizarBtn').textContent = '🔄 Como sincronizar (extensão instalada)';
+    document.getElementById('faturasSincronizarAviso').textContent = '✅ A extensão está instalada — depois do login manual, use o botão "Sincronizar com NFS Group" que aparece na própria página de Débitos da Copel. Este botão aqui só reabre as instruções.';
+  }else{
+    indicador.textContent = '⚪ Extensão não detectada';
+    indicador.className = 'badge';
+  }
+}
+window.addEventListener('message', (e)=>{
+  if(e.source === window && e.data && e.data.tipo === 'NFS_COPEL_EXTENSAO_PRESENTE'){
+    verificarExtensaoNfsCopel();
+  }
+});
+
 /* ---------- Botões novos em Faturas Copel: Abrir Débitos + Sincronizar ---------- */
 document.getElementById('faturasAbrirDebitosBtn').addEventListener('click', ()=>{
   window.open('https://www.copel.com/avaweb/paginas/consultaDebitos.jsf', '_blank');
 });
 document.getElementById('faturasSincronizarBtn').addEventListener('click', ()=>{
+  if(nfsCopelExtensaoDetectada){
+    alert('A extensão NFS Copel está instalada.\n\nComo sincronizar:\n1. Faça login manual na Copel\n2. Abra a página de Consulta de Débitos\n3. Use o botão "Sincronizar com NFS Group" que aparece no canto da própria página da Copel\n\nOs dados chegam aqui automaticamente depois disso.');
+    return;
+  }
   // Honesto: isto NÃO lê a aba da Copel automaticamente (impossível por segurança do
   // navegador). Abre o mesmo campo de colar texto, só que direcionado pra
   // atualizar os dados de Faturas Copel em vez de Débitos.
@@ -9199,6 +9233,7 @@ function renderFilaArquivos(){
         <span>${statusIcone[f.status]}</span>
         <span style="flex:1; font-size:12.5px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(f.nome)}</span>
         <span style="font-size:11px; color:var(--text-dim);">${escapeHtml(f.mensagem || '')}</span>
+        ${(f.status === 'erro' && isAdminSession && f.diagnostico) ? `<button class="small-btn fila-diagnostico" data-id="${f.id}" type="button">🔍 Diagnóstico</button>` : ''}
         ${f.status === 'pendente' ? `<button class="small-btn danger fila-remover" data-id="${f.id}" type="button">Remover</button>` : ''}
         ${f.status === 'erro' ? `<button class="small-btn fila-reprocessar" data-id="${f.id}" type="button">Reprocessar</button>` : ''}
       </div>
@@ -9211,10 +9246,18 @@ function renderFilaArquivos(){
       renderFilaArquivos();
     });
   });
-  wrap.querySelectorAll('.fila-reprocessar').forEach(btn=>{
+  wrap.querySelectorAll('.fila-diagnostico').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const item = faturasFilaArquivos.find(f => f.id === btn.dataset.id);
-      if(item){ item.status = 'pendente'; item.mensagem = ''; }
+      if(item) mostrarDiagnosticoPdf(item.diagnostico);
+    });
+  });
+  wrap.querySelectorAll('.fila-reprocessar').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      // Reprocessar sempre relê o PDF do zero (item 7) — nunca reaproveita
+      // diagnóstico/mensagem antigos, pra não confundir com o resultado novo.
+      const item = faturasFilaArquivos.find(f => f.id === btn.dataset.id);
+      if(item){ item.status = 'pendente'; item.mensagem = ''; item.diagnostico = null; }
       renderFilaArquivos();
     });
   });
@@ -9270,6 +9313,17 @@ async function processarFilaArquivos(){
     try{
       const texto = await extrairTextoDePdf(item.file);
       const uc = extrairUC(texto);
+      const numeroFaturaExtraido = extrairNumeroFatura(texto);
+      const referenciaExtraida = extrairReferencia(texto);
+      const vencimentoExtraido = extrairVencimento(texto);
+      const valorExtraido = extrairValorTotalFatura(texto);
+      const historicoExtraido = extrairHistoricoConsumo(texto);
+
+      item.diagnostico = diagnosticarExtracaoPdf(item.nome, item.file.size, null, texto, {
+        uc, numeroFatura: numeroFaturaExtraido, referencia: referenciaExtraida,
+        vencimento: vencimentoExtraido, valor: valorExtraido, historico: historicoExtraido
+      });
+
       if(!uc){
         item.status = 'erro';
         item.mensagem = 'UC não identificada no PDF';
@@ -9279,9 +9333,9 @@ async function processarFilaArquivos(){
       const endereco = extrairEndereco(texto);
       const { cidade, estado } = extrairCidadeEstado(texto);
       const cpfCnpj = extrairDocumento(texto);
-      const referencia = extrairReferencia(texto);
-      const vencimentoIso = converterDataBrParaIso(extrairVencimento(texto));
-      const valor = converterValorBrParaNumero(extrairValorTotalFatura(texto));
+      const referencia = referenciaExtraida;
+      const vencimentoIso = converterDataBrParaIso(vencimentoExtraido);
+      const valor = converterValorBrParaNumero(valorExtraido);
 
       let registroUc = copelUcs.find(u => u.uc === uc);
       if(!registroUc){
@@ -9298,7 +9352,9 @@ async function processarFilaArquivos(){
         ucsAtualizadas++;
       }
 
-      const idFatura = uc + '_' + (referencia || 'sem-ref-' + Date.now());
+      // Chave de deduplicação melhorada (item 9 do pacote de correção):
+      // prefere Nº da fatura (mais preciso); usa referência quando a fatura não tiver número.
+      const idFatura = uc + '_' + (numeroFaturaExtraido || referencia || 'sem-ref-' + Date.now());
       const pdfKey = 'copel_fatura_pdf_' + idFatura;
       const pdfBase64 = await new Promise((resolve, reject)=>{
         const reader = new FileReader();
@@ -9308,10 +9364,12 @@ async function processarFilaArquivos(){
       });
       await storageSet(pdfKey, pdfBase64, true);
 
-      let registroFatura = copelFaturas.find(f => f.id === idFatura);
+      let registroFatura = copelFaturas.find(f => f.id === idFatura
+        || (numeroFaturaExtraido && f.numeroFatura === numeroFaturaExtraido && f.uc === uc));
       if(!registroFatura){
         registroFatura = {
           id: idFatura, uc, referencia, referenciaOrdenavel: referenciaParaOrdenavel(referencia),
+          numeroFatura: numeroFaturaExtraido || null,
           vencimento: vencimentoIso, valor, statusManual: null,
           temPdf: true, pdfKey,
           processadoEm: new Date().toISOString(), processadoPor: currentUser
@@ -9321,6 +9379,7 @@ async function processarFilaArquivos(){
       }else{
         registroFatura.vencimento = vencimentoIso || registroFatura.vencimento;
         registroFatura.valor = valor || registroFatura.valor;
+        registroFatura.numeroFatura = numeroFaturaExtraido || registroFatura.numeroFatura;
         registroFatura.temPdf = true;
         registroFatura.pdfKey = pdfKey;
         registroFatura.processadoEm = new Date().toISOString();
@@ -9333,6 +9392,11 @@ async function processarFilaArquivos(){
       console.error('Erro ao processar', item.nome, err);
       item.status = 'erro';
       item.mensagem = 'Não foi possível ler esse PDF';
+      if(!item.diagnostico){
+        item.diagnostico = { nomeArquivo: item.nome, tamanhoBytes: item.file.size, etapaFalha: 'Leitura do arquivo/extração de texto', erro: String(err && err.message || err) };
+      }else{
+        item.diagnostico.etapaFalha = 'Erro após extração de texto (ver campos encontrados acima)';
+      }
     }
 
     progressoBarra.style.width = Math.round(((i+1) / pendentes.length) * 100) + '%';
@@ -9937,6 +10001,7 @@ function showNfsSubView(view){
       return;
     }
     copelUcExpandida = null;
+    verificarExtensaoNfsCopel();
     Promise.all([loadCopelUcs(), loadCopelFaturas()]).then(renderFaturasCopelResumoELista);
   }
   if(view === 'copel-debitos'){
@@ -10718,15 +10783,65 @@ function extrairDocumento(texto){
   return null;
 }
 
+/* Reescrita robusta (item 2 do pacote de correção): aceita variações reais de
+   rótulo, normaliza espaços/quebras de linha antes de procurar, e evita pegar
+   por engano o número da fatura, do medidor ou do CNPJ quando esses rótulos
+   aparecem perto (negative lookaround). */
 function extrairUC(texto){
-  const m = texto.match(/unidade\s*consumidora[^\d]{0,20}(\d{5,15})/i) || texto.match(/\bUC[:\s\-]{1,5}(\d{5,15})\b/i);
-  return m ? m[1] : null;
+  if(!texto) return null;
+  // Normaliza: colapsa múltiplos espaços/quebras de linha em um espaço só,
+  // só para efeito de localizar o rótulo — não altera o texto original usado
+  // pelas outras funções.
+  const normalizado = texto.replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n');
+
+  const padroesRotulo = [
+    /unidade\s*consumidora\s*aneel/i,
+    /unidade\s*consumidora/i,
+    /unid\.?\s*consumidora/i,
+    /n[ºo]\.?\s*(?:da\s*)?uc\b/i,
+    /\buc\s*n[ºo]\.?/i,
+    /\buc\s*[:\-]/i
+  ];
+  for(const padraoRotulo of padroesRotulo){
+    const mRotulo = normalizado.match(padraoRotulo);
+    if(!mRotulo) continue;
+    // A partir do fim do rótulo, procura o primeiro número de 5 a 15 dígitos
+    // numa janela razoável, mas só aceita se não estiver colado a um rótulo
+    // de fatura/medidor/CNPJ (evita confundir os dois).
+    const janela = normalizado.slice(mRotulo.index + mRotulo[0].length, mRotulo.index + mRotulo[0].length + 60);
+    const mNumero = janela.match(/(\d{5,15})/);
+    if(!mNumero) continue;
+    const antesDoNumero = janela.slice(0, mNumero.index).toLowerCase();
+    if(/fatura|medidor|cnpj|nota\s*fiscal|protocolo/.test(antesDoNumero)) continue;
+    return mNumero[1];
+  }
+  return null;
 }
 
 function extrairReferencia(texto){
   const m = texto.match(/refer[eê]ncia[^\n]{0,25}?(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/i)
     || texto.match(/(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*\/\s*(\d{2,4})/i);
   return m ? (m[1].toUpperCase() + '/' + m[2].slice(-2)) : null;
+}
+
+/* Número da fatura (novo — necessário para a chave de deduplicação UC + referência
+   + número da fatura pedida na correção). Evita confundir com CNPJ (14 dígitos
+   formatados) ou UC (já capturada por rótulo próprio). */
+function extrairNumeroFatura(texto){
+  if(!texto) return null;
+  const padroesRotulo = [
+    /n[uú]mero\s*da\s*fatura/i,
+    /n[ºo]\.?\s*(?:da\s*)?fatura/i,
+    /\bfatura\s*n[ºo]\.?/i
+  ];
+  for(const padraoRotulo of padroesRotulo){
+    const mRotulo = texto.match(padraoRotulo);
+    if(!mRotulo) continue;
+    const janela = texto.slice(mRotulo.index + mRotulo[0].length, mRotulo.index + mRotulo[0].length + 40);
+    const mNumero = janela.match(/(\d{6,16})/);
+    if(mNumero) return mNumero[1];
+  }
+  return null;
 }
 
 function extrairVencimento(texto){
@@ -15099,6 +15214,13 @@ function loadScriptOnce(src){
   });
 }
 
+/* CORREÇÃO DE RAIZ (Pacote de correção do PDF): antes, todo o texto de uma página
+   era unido com espaço só, sem quebra de linha real — só havia \n entre páginas
+   inteiras. Isso fazia qualquer regex "até o fim da linha" ler a página inteira
+   de uma vez, e piorava qualquer desalinhamento de ordem de extração do pdf.js.
+   Agora reconstruímos as linhas de verdade, comparando a posição vertical (Y)
+   de cada item de texto — quando o Y muda de forma relevante, é porque começou
+   uma nova linha visual na página. */
 async function extrairTextoDePdf(file){
   await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
   window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -15108,9 +15230,56 @@ async function extrairTextoDePdf(file){
   for(let i = 1; i <= pdf.numPages; i++){
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    texto += content.items.map(it => it.str).join(' ') + '\n';
+    let linhaAtualY = null;
+    let linha = '';
+    content.items.forEach(item=>{
+      const y = item.transform ? item.transform[5] : null;
+      if(linhaAtualY === null){
+        linhaAtualY = y;
+      }else if(y !== null && Math.abs(y - linhaAtualY) > 2){
+        texto += linha.trim() + '\n';
+        linha = '';
+        linhaAtualY = y;
+      }
+      linha += item.str + ' ';
+    });
+    texto += linha.trim() + '\n\n';
   }
   return texto;
+}
+
+/* Diagnóstico de extração — visível só para administrador (item 6 do pedido de
+   correção). Não guarda o texto inteiro do PDF (evita expor dado sensível
+   desnecessário), só um resumo do que foi/não foi encontrado. */
+function diagnosticarExtracaoPdf(nomeArquivo, tamanhoBytes, numPaginas, texto, campos){
+  return {
+    nomeArquivo, tamanhoBytes, numPaginas,
+    totalCaracteres: texto ? texto.length : 0,
+    ucEncontrada: !!campos.uc,
+    referenciaEncontrada: !!campos.referencia,
+    vencimentoEncontrado: !!campos.vencimento,
+    valorEncontrado: !!campos.valor,
+    historicoEncontrado: !!(campos.historico && campos.historico.length),
+    numeroFaturaEncontrado: !!campos.numeroFatura
+  };
+}
+function mostrarDiagnosticoPdf(d){
+  if(!d) return;
+  const linhas = [
+    `Arquivo: ${d.nomeArquivo || '—'}`,
+    `Tamanho: ${d.tamanhoBytes ? (d.tamanhoBytes/1024).toFixed(1)+' KB' : '—'}`,
+    d.numPaginas != null ? `Páginas: ${d.numPaginas}` : null,
+    `Caracteres extraídos: ${d.totalCaracteres != null ? d.totalCaracteres : '—'}`,
+    d.ucEncontrada !== undefined ? `UC encontrada: ${d.ucEncontrada ? 'sim' : 'não'}` : null,
+    d.numeroFaturaEncontrado !== undefined ? `Nº fatura encontrado: ${d.numeroFaturaEncontrado ? 'sim' : 'não'}` : null,
+    d.referenciaEncontrada !== undefined ? `Referência encontrada: ${d.referenciaEncontrada ? 'sim' : 'não'}` : null,
+    d.vencimentoEncontrado !== undefined ? `Vencimento encontrado: ${d.vencimentoEncontrado ? 'sim' : 'não'}` : null,
+    d.valorEncontrado !== undefined ? `Valor encontrado: ${d.valorEncontrado ? 'sim' : 'não'}` : null,
+    d.historicoEncontrado !== undefined ? `Histórico de consumo encontrado: ${d.historicoEncontrado ? 'sim' : 'não'}` : null,
+    d.etapaFalha ? `Etapa da falha: ${d.etapaFalha}` : null,
+    d.erro ? `Erro técnico: ${d.erro}` : null
+  ].filter(Boolean);
+  alert('Diagnóstico de extração (só visível para administrador):\n\n' + linhas.join('\n'));
 }
 
 async function extrairTextoDeImagem(file){
