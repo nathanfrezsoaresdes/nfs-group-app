@@ -55,6 +55,25 @@ function referenciaParaOrdenavel(ref){
 }
 
 exports.handler = async function(event){
+  // CORS/preflight (item raiz do bug reportado): o navegador manda um OPTIONS
+  // antes do POST sempre que a requisição tem um cabeçalho customizado
+  // (aqui, x-copel-sync-key). Sem responder isso corretamente, o navegador
+  // bloqueia o POST de verdade ANTES de ele sair — e o fetch() da extensão
+  // recebe um erro genérico de rede, sem status HTTP nenhum. Foi exatamente
+  // isso que causou "falha de conexão" em 100% dos lotes.
+  if(event.httpMethod === 'OPTIONS'){
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, x-copel-sync-key',
+        'Access-Control-Max-Age': '86400'
+      },
+      body: ''
+    };
+  }
+
   if(event.httpMethod !== 'POST'){
     return resposta(405, { erro: 'Método não permitido.' });
   }
@@ -69,6 +88,12 @@ exports.handler = async function(event){
     payload = JSON.parse(event.body || '{}');
   }catch(e){
     return resposta(400, { erro: 'Requisição inválida.' });
+  }
+
+  // Ação leve pro botão "Testar conexão" da extensão — só confirma que a
+  // chave é válida e que a função está no ar. Não toca no Firebase.
+  if(payload.acao === 'testarConexao'){
+    return resposta(200, { ok: true, mensagem: 'Conexão OK – Backend NFS Group acessível.' });
   }
 
   const debitos = Array.isArray(payload.debitos) ? payload.debitos : null;
@@ -164,7 +189,12 @@ exports.handler = async function(event){
 function resposta(statusCode, corpo){
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-copel-sync-key'
+    },
     body: JSON.stringify(corpo)
   };
 }
