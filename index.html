@@ -1911,7 +1911,7 @@
       <table style="width:100%; min-width:900px; border-collapse:collapse; font-size:12px;">
         <thead style="position:sticky; top:0; background:var(--graphite);">
           <tr style="text-align:left; color:var(--text-dim);">
-            <th style="padding:6px 4px;">UC</th><th style="padding:6px 4px;">Endereço</th>
+            <th style="padding:6px 4px;">UC</th><th style="padding:6px 4px;">Cliente</th><th style="padding:6px 4px;">Endereço</th>
             <th style="padding:6px 4px;">Referência</th><th style="padding:6px 4px;">Nº Fatura</th>
             <th style="padding:6px 4px;">Vencimento</th><th style="padding:6px 4px;">Dias atraso</th>
             <th style="padding:6px 4px;">Valor</th><th style="padding:6px 4px;">Situação</th>
@@ -1956,6 +1956,9 @@
 
   <!-- BASE DE CLIENTES -->
   <div id="nfsEnergyClientesView" style="display:none;">
+    <div style="padding:14px 18px 0;">
+      <button class="small-btn primary full-btn" id="atualizarClientesPlanilhaBtn" type="button">📊 Atualizar Clientes por Planilha</button>
+    </div>
     <div class="summary" style="padding:0 18px; margin-top:14px;">
       <div class="stat">
         <div class="num" id="clienteEnergiaStatTotal">0</div>
@@ -4536,6 +4539,64 @@
   <div class="sheet-actions">
     <button class="btn btn-secondary" id="importClientesEnergyCancelBtn">Cancelar</button>
     <button class="btn btn-primary" id="importClientesEnergyConfirmBtn">Confirmar importação</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="atualizarClientesBackdrop"></div>
+<div class="sheet" id="atualizarClientesSheet" style="max-height:90vh; overflow-y:auto;">
+  <div class="sheet-handle"></div>
+  <h2>📊 Atualizar Clientes por Planilha</h2>
+  <p class="card-sub" style="margin-bottom:10px; line-height:1.6;">Lê a aba <b>Base_UCs</b> da planilha, casa cada linha pela UC (só números, sem correspondência aproximada) com os clientes já cadastrados, e mostra tudo antes de gravar qualquer coisa.</p>
+
+  <div id="atualizarClientesDropZone" style="border:2px dashed var(--line); border-radius:12px; padding:24px 14px; text-align:center; cursor:pointer; margin-bottom:14px;">
+    <div style="font-size:28px; margin-bottom:6px;">📥</div>
+    <div style="font-size:13.5px; font-weight:600;" id="atualizarClientesDropTexto">Arraste a planilha aqui</div>
+    <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">ou clique para selecionar um arquivo .xlsx</div>
+    <input type="file" id="atualizarClientesInput" accept=".xlsx,.xls" style="display:none;">
+  </div>
+
+  <div id="atualizarClientesProgresso" style="display:none; margin-bottom:14px;">
+    <p style="font-size:13px; color:var(--text-dim);" id="atualizarClientesProgressoTexto">Lendo planilha...</p>
+  </div>
+
+  <div id="atualizarClientesResumoWrap" style="display:none;">
+    <div class="admin-card" style="margin-bottom:14px;">
+      <h3 style="margin-bottom:8px;">Resumo</h3>
+      <div id="atualizarClientesResumo" style="font-size:13px; line-height:1.8;"></div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <button class="small-btn" id="atualizarClientesExportarBtn" type="button" style="flex:1;">📄 Exportar conferência (Excel)</button>
+    </div>
+
+    <div class="filter-chips" id="atualizarClientesFilterChips">
+      <button class="filter-chip active" data-uc-filtro="todos">Todos</button>
+      <button class="filter-chip" data-uc-filtro="atualizar">🟡 Nome diferente</button>
+      <button class="filter-chip" data-uc-filtro="correto">⚪ Já correto</button>
+      <button class="filter-chip" data-uc-filtro="nao_encontrada">🔴 Não encontrada</button>
+      <button class="filter-chip" data-uc-filtro="duplicada">⚠️ Duplicada</button>
+    </div>
+
+    <div style="overflow-x:auto; max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; margin-bottom:14px;">
+      <table style="width:100%; min-width:600px; border-collapse:collapse; font-size:12.5px;">
+        <thead style="position:sticky; top:0; background:var(--graphite-2);">
+          <tr style="text-align:left; color:var(--text-dim);">
+            <th style="padding:6px 8px;"></th>
+            <th style="padding:6px 8px;">UC</th>
+            <th style="padding:6px 8px;">Nome atual</th>
+            <th style="padding:6px 8px;">Nome da planilha</th>
+            <th style="padding:6px 8px;">Situação</th>
+          </tr>
+        </thead>
+        <tbody id="atualizarClientesTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="err" id="atualizarClientesErr"></div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="atualizarClientesCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="atualizarClientesConfirmarBtn" style="display:none;">Confirmar atualização</button>
   </div>
 </div>
 
@@ -9145,8 +9206,10 @@ function renderDebitosCopelResumoELista(){
     .map(d=>{
       const dias = diasEmAtrasoDebito(d);
       const viaTexto = d.via === '2' ? '2ª via disponível – já houve download anteriormente' : (d.via === '1' ? '1ª via disponível – ainda não baixada' : '—');
+      const clienteVinculadoDeb = buscarClientePorUcNormalizada(normalizarUcPlanilha(d.uc));
       return `<tr style="border-bottom:1px solid var(--line); ${dias>0?'background:rgba(193,85,63,0.10);':''}">
         <td style="padding:5px 4px;">${escapeHtml(d.uc||'—')}</td>
+        <td style="padding:5px 4px;">${escapeHtml(clienteVinculadoDeb ? clienteVinculadoDeb.nome : '—')}</td>
         <td style="padding:5px 4px;">${escapeHtml(d.endereco||'—')}</td>
         <td style="padding:5px 4px;">${escapeHtml(d.referencia||'—')}</td>
         <td style="padding:5px 4px;">${escapeHtml(d.numeroFatura||'—')}</td>
@@ -9472,13 +9535,19 @@ async function renderFaturasCopelResumoELista(){
     const faturasDaUc = copelFaturas.filter(f => f.uc === u.uc).sort((a,b)=> b.referenciaOrdenavel.localeCompare(a.referenciaOrdenavel));
     const vencidasDaUc = faturasDaUc.filter(f => statusEfetivoFatura(f) === 'vencida').length;
     const expandida = copelUcExpandida === u.uc;
+    // Item 11/12 do pedido: a UC → Cliente da Base de Clientes é a fonte
+    // única do nome — nunca duplicamos o cadastro por fatura. Só cai pro
+    // titular extraído do PDF se a UC ainda não estiver vinculada a
+    // nenhum cliente cadastrado.
+    const clienteVinculado = buscarClientePorUcNormalizada(normalizarUcPlanilha(u.uc));
+    const nomeExibido = clienteVinculado ? clienteVinculado.nome : (u.titular || 'Titular não identificado');
     return `
       <div class="item" data-uc="${escapeHtmlA(u.uc)}" style="flex-direction:column; align-items:stretch;">
         <div style="display:flex; gap:12px; cursor:pointer;" class="copel-uc-toggle" data-uc="${escapeHtmlA(u.uc)}">
           <div class="thumb placeholder">⚡</div>
           <div style="flex:1; min-width:0;">
             <div class="code">UC ${escapeHtml(u.uc)}${u.cpfCnpj ? ' · ' + escapeHtml(u.cpfCnpj) : ''}</div>
-            <div class="name">${escapeHtml(u.titular || 'Titular não identificado')}</div>
+            <div class="name">${escapeHtml(nomeExibido)}${clienteVinculado ? ' <span style="color:var(--text-dim); font-weight:400; font-size:11px;">(base de clientes)</span>' : ''}</div>
             <div class="meta"><span>${escapeHtml(u.endereco||'')}${u.cidade ? ' · '+escapeHtml(u.cidade) : ''}${u.estado ? '/'+escapeHtml(u.estado) : ''}</span></div>
             <div class="badges">
               <span class="badge">${faturasDaUc.length} fatura(s)</span>
@@ -13501,6 +13570,306 @@ document.getElementById('importClientesEnergyConfirmBtn').addEventListener('clic
   closeImportClientesEnergiaSheet();
   renderClientesEnergia();
   showToast(`Importação concluída: ${criados} criado(s), ${atualizados} atualizado(s).`);
+});
+
+/* ======================================================
+   ATUALIZAR CLIENTES POR PLANILHA (casamento por UC)
+   Ferramenta separada da "Importar clientes" acima — essa NUNCA cria clientes
+   novos, só casa e atualiza pela UC normalizada (só dígitos), com prévia
+   completa antes de gravar qualquer coisa. Lê especificamente a aba
+   "Base_UCs" da planilha.
+   ====================================================== */
+let atualizarClientesResultado = [];
+let atualizarClientesArquivoNome = '';
+let atualizarClientesFiltroAtivo = 'todos';
+
+const SITUACAO_UC_LABEL = {
+  atualizar: '🟡 Nome diferente',
+  correto: '⚪ Já está correto',
+  nao_encontrada: '🔴 UC não encontrada',
+  duplicada: '⚠️ UC duplicada/ambígua'
+};
+
+// Normalização obrigatória da UC antes de qualquer comparação (item 1 do
+// pedido): só dígitos, nunca correspondência aproximada.
+function normalizarUcPlanilha(uc){
+  return String(uc || '').replace(/\D/g, '');
+}
+function buscarClientePorUcNormalizada(ucNormalizada){
+  if(!ucNormalizada) return null;
+  return clientesEnergia.find(c =>
+    normalizarUcPlanilha(c.ucAneel) === ucNormalizada || normalizarUcPlanilha(c.ucCopel) === ucNormalizada
+  ) || null;
+}
+
+async function lerPlanilhaBaseUcs(file){
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  const buf = await file.arrayBuffer();
+  const wb = window.XLSX.read(buf, { type: 'array' });
+
+  const nomeAbaBaseUcs = wb.SheetNames.find(n => n.trim().toLowerCase() === 'base_ucs');
+  if(!nomeAbaBaseUcs){
+    throw new Error('A planilha não tem uma aba chamada "Base_UCs". Abas encontradas: ' + wb.SheetNames.join(', '));
+  }
+  const sheet = wb.Sheets[nomeAbaBaseUcs];
+  const rows = window.XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+  return rows.map(row => {
+    const ucBruta = String(getFieldValue(row, ['uc / referência copel','uc/referencia copel','uc','unidade consumidora','referência copel','referencia copel']) || '').trim();
+    return {
+      ucBruta,
+      uc: normalizarUcPlanilha(ucBruta),
+      nome: String(getFieldValue(row, ['cliente / razão social','cliente/razao social','cliente','razão social','razao social','nome']) || '').trim(),
+      cpfCnpj: String(getFieldValue(row, ['cpf/cnpj','cpf-cnpj','cpf','cnpj']) || '').trim(),
+      cidade: String(getFieldValue(row, ['cidade']) || '').trim(),
+      estado: String(getFieldValue(row, ['estado','uf']) || '').trim(),
+      endereco: String(getFieldValue(row, ['endereço','endereco']) || '').trim(),
+      numero: String(getFieldValue(row, ['número','numero','nº','n°']) || '').trim(),
+      complemento: String(getFieldValue(row, ['complemento']) || '').trim(),
+      bairro: String(getFieldValue(row, ['bairro']) || '').trim(),
+      cep: String(getFieldValue(row, ['cep']) || '').trim(),
+      ativoTexto: String(getFieldValue(row, ['ativo?','ativo']) || '').trim(),
+      geradorTexto: String(getFieldValue(row, ['gerador?','gerador']) || '').trim()
+    };
+  }).filter(l => l.uc); // sem UC não dá pra casar com nada — ignora a linha
+}
+
+// Classifica cada linha da planilha (item 2, 8, 9, 10 do pedido) — nunca
+// decide sozinha em casos de dúvida (duplicidade), nunca cria UC nova.
+function classificarLinhasPlanilhaUcs(linhas){
+  const contagemNaPlanilha = {};
+  linhas.forEach(l => { contagemNaPlanilha[l.uc] = (contagemNaPlanilha[l.uc] || 0) + 1; });
+
+  const contagemNaPlataforma = {};
+  clientesEnergia.forEach(c => {
+    [normalizarUcPlanilha(c.ucAneel), normalizarUcPlanilha(c.ucCopel)].forEach(uc => {
+      if(uc) contagemNaPlataforma[uc] = (contagemNaPlataforma[uc] || 0) + 1;
+    });
+  });
+
+  return linhas.map(l => {
+    if(contagemNaPlanilha[l.uc] > 1 || contagemNaPlataforma[l.uc] > 1){
+      return { ...l, situacao: 'duplicada', clienteAtual: null, incluirNaAtualizacao: false };
+    }
+
+    const clienteAtual = buscarClientePorUcNormalizada(l.uc);
+    if(!clienteAtual){
+      return { ...l, situacao: 'nao_encontrada', clienteAtual: null, incluirNaAtualizacao: false };
+    }
+
+    const nomeAtual = (clienteAtual.nome || '').trim().toLowerCase();
+    const nomePlanilha = (l.nome || '').trim().toLowerCase();
+    if(!l.nome || nomeAtual === nomePlanilha){
+      return { ...l, situacao: 'correto', clienteAtual, incluirNaAtualizacao: false };
+    }
+
+    // Nome diferente — marcado por padrão pra atualizar, mas o usuário pode
+    // desmarcar linha a linha antes de confirmar (item 8: nunca sobrescreve
+    // silenciosamente).
+    return { ...l, situacao: 'atualizar', clienteAtual, incluirNaAtualizacao: true };
+  });
+}
+
+function renderAtualizarClientesResumo(){
+  const total = atualizarClientesResultado.length;
+  const encontradas = atualizarClientesResultado.filter(l => l.clienteAtual).length;
+  const naoEncontradas = atualizarClientesResultado.filter(l => l.situacao === 'nao_encontrada').length;
+  const corretas = atualizarClientesResultado.filter(l => l.situacao === 'correto').length;
+  const seraoAtualizadas = atualizarClientesResultado.filter(l => l.situacao === 'atualizar').length;
+  const duplicadas = atualizarClientesResultado.filter(l => l.situacao === 'duplicada').length;
+
+  document.getElementById('atualizarClientesResumo').innerHTML = `
+    Total de linhas da planilha: <b>${total}</b><br>
+    UCs encontradas na plataforma: <b>${encontradas}</b><br>
+    UCs não encontradas: <b style="color:var(--red);">${naoEncontradas}</b><br>
+    Nomes já corretos: <b>${corretas}</b><br>
+    Nomes que serão atualizados: <b style="color:var(--amber);">${seraoAtualizadas}</b><br>
+    UCs duplicadas/ambíguas: <b style="color:var(--red);">${duplicadas}</b>
+  `;
+}
+
+function renderAtualizarClientesTabela(){
+  const tbody = document.getElementById('atualizarClientesTableBody');
+  const linhasFiltradas = atualizarClientesFiltroAtivo === 'todos'
+    ? atualizarClientesResultado
+    : atualizarClientesResultado.filter(l => l.situacao === atualizarClientesFiltroAtivo);
+
+  if(linhasFiltradas.length === 0){
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:var(--text-dim);">Nenhuma linha nessa categoria.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = linhasFiltradas.map(l => {
+    const idxReal = atualizarClientesResultado.indexOf(l);
+    const podeMarcar = l.situacao === 'atualizar';
+    return `
+      <tr style="border-bottom:1px solid var(--line);">
+        <td style="padding:5px 8px;">${podeMarcar ? `<input type="checkbox" class="uc-linha-check" data-idx="${idxReal}" ${l.incluirNaAtualizacao ? 'checked' : ''}>` : ''}</td>
+        <td style="padding:5px 8px;">${escapeHtml(l.ucBruta)}</td>
+        <td style="padding:5px 8px;">${escapeHtml((l.clienteAtual && l.clienteAtual.nome) || (l.situacao === 'nao_encontrada' ? '(sem cadastro)' : 'sem nome'))}</td>
+        <td style="padding:5px 8px;">${escapeHtml(l.nome || '—')}</td>
+        <td style="padding:5px 8px; white-space:nowrap;">${SITUACAO_UC_LABEL[l.situacao]}</td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.uc-linha-check').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      atualizarClientesResultado[parseInt(e.target.dataset.idx, 10)].incluirNaAtualizacao = e.target.checked;
+    });
+  });
+}
+
+document.querySelectorAll('[data-uc-filtro]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    atualizarClientesFiltroAtivo = chip.dataset.ucFiltro;
+    document.querySelectorAll('[data-uc-filtro]').forEach(c => c.classList.toggle('active', c === chip));
+    renderAtualizarClientesTabela();
+  });
+});
+
+async function processarArquivoAtualizarClientes(file){
+  const errEl = document.getElementById('atualizarClientesErr');
+  errEl.textContent = '';
+  atualizarClientesArquivoNome = file.name;
+
+  document.getElementById('atualizarClientesProgresso').style.display = 'block';
+  document.getElementById('atualizarClientesProgressoTexto').textContent = 'Lendo planilha...';
+  document.getElementById('atualizarClientesDropTexto').textContent = file.name;
+
+  try{
+    const linhas = await lerPlanilhaBaseUcs(file);
+    if(linhas.length === 0){
+      errEl.textContent = 'Nenhuma linha com UC válida encontrada na aba Base_UCs.';
+      document.getElementById('atualizarClientesProgresso').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('atualizarClientesProgressoTexto').textContent = 'Comparando com a base atual...';
+    await loadClientesEnergia();
+    atualizarClientesResultado = classificarLinhasPlanilhaUcs(linhas);
+
+    document.getElementById('atualizarClientesProgresso').style.display = 'none';
+    document.getElementById('atualizarClientesResumoWrap').style.display = 'block';
+    document.getElementById('atualizarClientesConfirmarBtn').style.display = 'inline-block';
+    atualizarClientesFiltroAtivo = 'todos';
+    document.querySelectorAll('[data-uc-filtro]').forEach(c => c.classList.toggle('active', c.dataset.ucFiltro === 'todos'));
+    renderAtualizarClientesResumo();
+    renderAtualizarClientesTabela();
+  }catch(err){
+    console.error(err);
+    errEl.textContent = err.message || 'Não foi possível ler essa planilha.';
+    document.getElementById('atualizarClientesProgresso').style.display = 'none';
+  }
+}
+
+/* ---------- Drag-and-drop + seleção de arquivo ---------- */
+const atualizarClientesDropZone = document.getElementById('atualizarClientesDropZone');
+atualizarClientesDropZone.addEventListener('click', () => document.getElementById('atualizarClientesInput').click());
+atualizarClientesDropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  atualizarClientesDropZone.style.borderColor = 'var(--amber)';
+});
+atualizarClientesDropZone.addEventListener('dragleave', () => {
+  atualizarClientesDropZone.style.borderColor = 'var(--line)';
+});
+atualizarClientesDropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  atualizarClientesDropZone.style.borderColor = 'var(--line)';
+  if(e.dataTransfer.files[0]) processarArquivoAtualizarClientes(e.dataTransfer.files[0]);
+});
+document.getElementById('atualizarClientesInput').addEventListener('change', (e) => {
+  if(e.target.files[0]) processarArquivoAtualizarClientes(e.target.files[0]);
+  e.target.value = '';
+});
+
+function abrirAtualizarClientesSheet(){
+  atualizarClientesResultado = [];
+  atualizarClientesArquivoNome = '';
+  document.getElementById('atualizarClientesDropTexto').textContent = 'Arraste a planilha aqui';
+  document.getElementById('atualizarClientesResumoWrap').style.display = 'none';
+  document.getElementById('atualizarClientesConfirmarBtn').style.display = 'none';
+  document.getElementById('atualizarClientesErr').textContent = '';
+  document.getElementById('atualizarClientesBackdrop').classList.add('open');
+  document.getElementById('atualizarClientesSheet').classList.add('open');
+}
+function fecharAtualizarClientesSheet(){
+  document.getElementById('atualizarClientesBackdrop').classList.remove('open');
+  document.getElementById('atualizarClientesSheet').classList.remove('open');
+}
+document.getElementById('atualizarClientesPlanilhaBtn').addEventListener('click', abrirAtualizarClientesSheet);
+document.getElementById('atualizarClientesCancelBtn').addEventListener('click', fecharAtualizarClientesSheet);
+document.getElementById('atualizarClientesBackdrop').addEventListener('click', fecharAtualizarClientesSheet);
+
+/* ---------- Confirmação — só agora grava de verdade (item 7) ---------- */
+const BACKUP_IMPORTACAO_CLIENTES_KEY = 'estoque:backup_importacao_clientes';
+async function salvarBackupUltimaImportacaoClientes(registros){
+  try{
+    await storageSet(BACKUP_IMPORTACAO_CLIENTES_KEY, JSON.stringify({
+      data: new Date().toISOString(), usuario: currentUser, registros
+    }), true);
+  }catch(e){}
+}
+
+document.getElementById('atualizarClientesConfirmarBtn').addEventListener('click', async () => {
+  const paraAtualizar = atualizarClientesResultado.filter(l => l.situacao === 'atualizar' && l.incluirNaAtualizacao);
+  if(paraAtualizar.length === 0){
+    showToast('Nenhuma linha marcada para atualização.');
+    return;
+  }
+  if(!confirm(`Confirma a atualização de ${paraAtualizar.length} nome(s) de cliente?`)) return;
+
+  // Backup lógico ANTES de alterar (item 15 — permite desfazer depois).
+  const backup = paraAtualizar.map(l => ({ id: l.clienteAtual.id, nomeAnterior: l.clienteAtual.nome }));
+  await salvarBackupUltimaImportacaoClientes(backup);
+
+  let atualizados = 0;
+  paraAtualizar.forEach(l => {
+    const c = clientesEnergia.find(x => x.id === l.clienteAtual.id);
+    if(c){
+      c.nome = l.nome;
+      c.editadoPor = currentUser;
+      c.editadoEm = new Date().toISOString();
+      atualizados++;
+    }
+  });
+
+  const ok = await saveClientesEnergia();
+  if(!ok){
+    showToast('Não foi possível salvar agora. Tente novamente.');
+    return;
+  }
+
+  registrarAuditoria(
+    'NFS Energy (Base de Clientes)', 'Atualização por planilha (Base_UCs)',
+    atualizarClientesArquivoNome, '',
+    `${atualizados} nome(s) atualizado(s) de ${atualizarClientesResultado.length} linha(s) — ` +
+    `${atualizarClientesResultado.filter(l=>l.situacao==='nao_encontrada').length} não encontrada(s), ` +
+    `${atualizarClientesResultado.filter(l=>l.situacao==='duplicada').length} duplicada(s)`
+  );
+
+  fecharAtualizarClientesSheet();
+  renderClientesEnergia();
+  showToast(`${atualizados} cliente(s) atualizado(s) com sucesso.`);
+});
+
+/* ---------- Exportar conferência em Excel (item 14) ---------- */
+document.getElementById('atualizarClientesExportarBtn').addEventListener('click', async () => {
+  if(atualizarClientesResultado.length === 0){ showToast('Nada pra exportar ainda.'); return; }
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  const linhasExcel = atualizarClientesResultado.map(l => ({
+    'UC': l.ucBruta,
+    'Nome atual': (l.clienteAtual && l.clienteAtual.nome) || '',
+    'Nome planilha': l.nome,
+    'Resultado': SITUACAO_UC_LABEL[l.situacao].replace(/^\S+\s/, ''),
+    'Observação': l.situacao === 'nao_encontrada' ? 'UC não cadastrada na plataforma — conferir antes de cadastrar' :
+                  l.situacao === 'duplicada' ? 'UC duplicada na planilha ou na plataforma — requer conferência manual' : ''
+  }));
+  const ws = window.XLSX.utils.json_to_sheet(linhasExcel);
+  const wb = window.XLSX.utils.book_new();
+  window.XLSX.utils.book_append_sheet(wb, ws, 'Conferência');
+  window.XLSX.writeFile(wb, 'conferencia-clientes-' + hojeStr() + '.xlsx');
+  registrarAuditoria('NFS Energy (Base de Clientes)', 'Conferência exportada', atualizarClientesArquivoNome, '', '');
 });
 
 /* ======================================================
