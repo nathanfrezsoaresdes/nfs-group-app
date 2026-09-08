@@ -1956,9 +1956,27 @@
 
   <!-- BASE DE CLIENTES -->
   <div id="nfsEnergyClientesView" style="display:none;">
-    <div style="padding:14px 18px 0;">
-      <button class="small-btn primary full-btn" id="atualizarClientesPlanilhaBtn" type="button">📊 Atualizar Clientes por Planilha</button>
+    <div class="mini-menu-grid" style="padding-top:14px;">
+      <div class="mini-menu-card" id="novoClienteTopoBtn">
+        <div class="mini-menu-icon">➕</div>
+        <div class="mini-menu-label">Novo Cliente</div>
+      </div>
+      <div class="mini-menu-card" id="importarNovosClientesTopoBtn">
+        <div class="mini-menu-icon">📥</div>
+        <div class="mini-menu-label">Importar Novos Clientes</div>
+      </div>
+      <div class="mini-menu-card" id="atualizarClientesPlanilhaBtn">
+        <div class="mini-menu-icon">🔄</div>
+        <div class="mini-menu-label">Atualizar por Planilha</div>
+      </div>
+      <div class="mini-menu-card" id="exportarBaseClientesBtn">
+        <div class="mini-menu-icon">📤</div>
+        <div class="mini-menu-label">Exportar Base</div>
+      </div>
     </div>
+    <p class="card-sub" style="padding:0 18px; margin-top:2px; line-height:1.5;">
+      <b>Importar Novos Clientes</b> cria cadastros novos · <b>Atualizar por Planilha</b> casa pela UC e atualiza o nome de clientes já cadastrados.
+    </p>
     <div class="summary" style="padding:0 18px; margin-top:14px;">
       <div class="stat">
         <div class="num" id="clienteEnergiaStatTotal">0</div>
@@ -13800,6 +13818,33 @@ function fecharAtualizarClientesSheet(){
 document.getElementById('atualizarClientesPlanilhaBtn').addEventListener('click', abrirAtualizarClientesSheet);
 document.getElementById('atualizarClientesCancelBtn').addEventListener('click', fecharAtualizarClientesSheet);
 document.getElementById('atualizarClientesBackdrop').addEventListener('click', fecharAtualizarClientesSheet);
+
+// Conecta os dois cartões novos do topo às MESMAS funções que já existiam
+// (FAB "+" e botão de importar no cabeçalho) — nenhuma lógica duplicada.
+document.getElementById('novoClienteTopoBtn').addEventListener('click', ()=> openClienteEnergiaAdd());
+document.getElementById('importarNovosClientesTopoBtn').addEventListener('click', ()=> document.getElementById('importClientesEnergyInput').click());
+
+/* ---------- Exportar Base (item novo — exporta a base inteira em Excel) ---------- */
+document.getElementById('exportarBaseClientesBtn').addEventListener('click', async () => {
+  if(clientesEnergia.length === 0){ showToast('Não há clientes cadastrados pra exportar.'); return; }
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  const linhas = clientesEnergia.map(c => ({
+    'UC Aneel': c.ucAneel || '',
+    'UC Copel': c.ucCopel || '',
+    'Nome': c.nome || '',
+    'CPF/CNPJ': c.cpfCnpj || '',
+    'Endereço': c.endereco || '',
+    'Email': c.email || '',
+    'Telefone': c.telefone || '',
+    'Tipo': TIPO_CLIENTE_LABEL[c.tipo] || '',
+    'Status': c.status === 'ativo' ? 'Ativo' : 'Inativo'
+  }));
+  const ws = window.XLSX.utils.json_to_sheet(linhas);
+  const wb = window.XLSX.utils.book_new();
+  window.XLSX.utils.book_append_sheet(wb, ws, 'Base de Clientes');
+  window.XLSX.writeFile(wb, 'base-clientes-' + hojeStr() + '.xlsx');
+  registrarAuditoria('NFS Energy (Base de Clientes)', 'Base exportada', '', '', clientesEnergia.length + ' registro(s)');
+});
 
 /* ---------- Confirmação — só agora grava de verdade (item 7) ---------- */
 const BACKUP_IMPORTACAO_CLIENTES_KEY = 'estoque:backup_importacao_clientes';
