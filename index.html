@@ -1241,15 +1241,19 @@
       <h3>📊 Visão geral</h3>
       <div class="fin-dash-grid">
         <div class="fin-dash-card"><div class="fin-dash-val" id="dashSaldoDisponivel">R$ 0,00</div><div class="fin-dash-lbl">Saldo disponível</div></div>
-        <div class="fin-dash-card"><div class="fin-dash-val verde" id="dashAReceber">R$ 0,00</div><div class="fin-dash-lbl">Contas a receber</div></div>
-        <div class="fin-dash-card"><div class="fin-dash-val vermelho" id="dashAPagar">R$ 0,00</div><div class="fin-dash-lbl">Contas a pagar</div></div>
-        <div class="fin-dash-card"><div class="fin-dash-val vermelho" id="dashVencidoReceber">R$ 0,00</div><div class="fin-dash-lbl">Vencido a receber</div></div>
-        <div class="fin-dash-card"><div class="fin-dash-val vermelho" id="dashVencidoPagar">R$ 0,00</div><div class="fin-dash-lbl">Vencido a pagar</div></div>
-        <div class="fin-dash-card"><div class="fin-dash-val verde" id="dashEntradasMes">R$ 0,00</div><div class="fin-dash-lbl">Entradas do mês</div></div>
-        <div class="fin-dash-card"><div class="fin-dash-val vermelho" id="dashSaidasMes">R$ 0,00</div><div class="fin-dash-lbl">Saídas do mês</div></div>
+        <div class="fin-dash-card" data-fin-card="receber-todos" style="cursor:pointer;"><div class="fin-dash-val verde" id="dashAReceber">R$ 0,00</div><div class="fin-dash-lbl">Contas a receber</div></div>
+        <div class="fin-dash-card" data-fin-card="pagar-todos" style="cursor:pointer;"><div class="fin-dash-val vermelho" id="dashAPagar">R$ 0,00</div><div class="fin-dash-lbl">Contas a pagar</div></div>
+        <div class="fin-dash-card" data-fin-card="receber-vencidos" style="cursor:pointer;"><div class="fin-dash-val vermelho" id="dashVencidoReceber">R$ 0,00</div><div class="fin-dash-lbl">Vencido a receber</div></div>
+        <div class="fin-dash-card" data-fin-card="pagar-vencidos" style="cursor:pointer;"><div class="fin-dash-val vermelho" id="dashVencidoPagar">R$ 0,00</div><div class="fin-dash-lbl">Vencido a pagar</div></div>
+        <div class="fin-dash-card" data-fin-card="entradas-mes" style="cursor:pointer;"><div class="fin-dash-val verde" id="dashEntradasMes">R$ 0,00</div><div class="fin-dash-lbl">Entradas do mês</div></div>
+        <div class="fin-dash-card" data-fin-card="saidas-mes" style="cursor:pointer;"><div class="fin-dash-val vermelho" id="dashSaidasMes">R$ 0,00</div><div class="fin-dash-lbl">Saídas do mês</div></div>
         <div class="fin-dash-card"><div class="fin-dash-val" id="dashResultadoMes">R$ 0,00</div><div class="fin-dash-lbl">Resultado do mês</div></div>
       </div>
     </div>
+    <p class="admin-note" id="finBreadcrumb" style="display:none; padding:0 4px; margin-top:-6px;">
+      <span id="finBreadcrumbTexto"></span>
+      <button class="small-btn" id="finVoltarDashboardBtn" type="button" style="margin-left:8px;">← Voltar ao Dashboard</button>
+    </p>
 
     <div class="admin-card">
       <h3>📅 Hoje</h3>
@@ -1401,6 +1405,39 @@
       <button class="filter-chip" data-pagarfilter="programado">Programado</button>
       <button class="filter-chip" data-pagarfilter="cancelado">Cancelado</button>
     </div>
+    <button class="small-btn" id="pagarFiltrosToggleBtn" type="button" style="margin:0 18px 8px;">🔍 Mais filtros</button>
+    <div id="pagarFiltrosAvancados" style="display:none; padding:0 18px 10px;">
+      <div class="admin-card">
+        <div class="row2">
+          <div class="field"><label>Categoria</label><select id="pagarFiltroCategoria"><option value="">Todas</option></select></div>
+          <div class="field"><label>Conta bancária</label><select id="pagarFiltroContaBancaria"><option value="">Todas</option></select></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Origem</label>
+            <select id="pagarFiltroOrigem">
+              <option value="">Todas</option>
+              <option value="Manual">Manual</option>
+              <option value="Fatura Copel">Fatura Copel</option>
+              <option value="Cobrança cliente">Cobrança cliente</option>
+              <option value="Recorrência">Recorrência</option>
+              <option value="Importação">Importação</option>
+              <option value="Ajuste">Ajuste</option>
+            </select>
+          </div>
+          <div class="field"><label>Mês</label><input type="month" id="pagarFiltroMes"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Vencimento de</label><input type="date" id="pagarFiltroVencDe"></div>
+          <div class="field"><label>Vencimento até</label><input type="date" id="pagarFiltroVencAte"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Valor mínimo</label><input type="number" step="0.01" id="pagarFiltroValorMin" placeholder="0,00"></div>
+          <div class="field"><label>Valor máximo</label><input type="number" step="0.01" id="pagarFiltroValorMax" placeholder="0,00"></div>
+        </div>
+        <button class="small-btn full-btn" id="pagarLimparFiltrosBtn" type="button">LIMPAR FILTROS</button>
+      </div>
+    </div>
+    <p style="padding:0 18px; font-size:12px; color:var(--text-dim); margin-bottom:6px;" id="pagarContagemFiltro"></p>
     <div style="display:flex; gap:8px; padding:0 18px; margin-bottom:8px;">
       <button class="small-btn" id="pagarExportarPdfBtn" type="button" style="flex:1;">📄 PDF</button>
       <button class="small-btn" id="pagarExportarExcelBtn" type="button" style="flex:1;">📊 Excel</button>
@@ -1437,12 +1474,72 @@
       <button class="filter-chip" data-receberfilter="programado">Programado</button>
       <button class="filter-chip" data-receberfilter="cancelado">Cancelado</button>
     </div>
+    <button class="small-btn" id="receberFiltrosToggleBtn" type="button" style="margin:0 18px 8px;">🔍 Mais filtros</button>
+    <div id="receberFiltrosAvancados" style="display:none; padding:0 18px 10px;">
+      <div class="admin-card">
+        <div class="row2">
+          <div class="field"><label>Categoria</label><select id="receberFiltroCategoria"><option value="">Todas</option></select></div>
+          <div class="field"><label>Conta bancária</label><select id="receberFiltroContaBancaria"><option value="">Todas</option></select></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Origem</label>
+            <select id="receberFiltroOrigem">
+              <option value="">Todas</option>
+              <option value="Manual">Manual</option>
+              <option value="Fatura Copel">Fatura Copel</option>
+              <option value="Cobrança cliente">Cobrança cliente</option>
+              <option value="Recorrência">Recorrência</option>
+              <option value="Importação">Importação</option>
+              <option value="Ajuste">Ajuste</option>
+            </select>
+          </div>
+          <div class="field"><label>Mês</label><input type="month" id="receberFiltroMes"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Vencimento de</label><input type="date" id="receberFiltroVencDe"></div>
+          <div class="field"><label>Vencimento até</label><input type="date" id="receberFiltroVencAte"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Valor mínimo</label><input type="number" step="0.01" id="receberFiltroValorMin" placeholder="0,00"></div>
+          <div class="field"><label>Valor máximo</label><input type="number" step="0.01" id="receberFiltroValorMax" placeholder="0,00"></div>
+        </div>
+        <button class="small-btn full-btn" id="receberLimparFiltrosBtn" type="button">LIMPAR FILTROS</button>
+      </div>
+    </div>
+    <p style="padding:0 18px; font-size:12px; color:var(--text-dim); margin-bottom:6px;" id="receberContagemFiltro"></p>
     <div style="display:flex; gap:8px; padding:0 18px; margin-bottom:8px;">
       <button class="small-btn" id="receberExportarPdfBtn" type="button" style="flex:1;">📄 PDF</button>
       <button class="small-btn" id="receberExportarExcelBtn" type="button" style="flex:1;">📊 Excel</button>
     </div>
     <div class="list" id="receberList">
       <div class="loading">Carregando contas a receber…</div>
+    </div>
+  </div>
+
+  <!-- MOVIMENTAÇÕES (baixas individuais — usado por Entradas/Saídas do Mês) -->
+  <div id="finMovimentacoesView" style="display:none;">
+    <div class="summary" style="padding:0 18px; margin-top:14px;">
+      <div class="stat">
+        <div class="num" id="movStatQtd">0</div>
+        <div class="lbl">registros</div>
+      </div>
+      <div class="stat value">
+        <div class="num" id="movStatTotal">R$ 0,00</div>
+        <div class="lbl">total</div>
+      </div>
+    </div>
+    <div class="filter-chips" id="movFilterChipsContainer">
+      <button class="filter-chip active" data-movfilter="todos">Todos</button>
+      <button class="filter-chip" data-movfilter="entrada">Entradas</button>
+      <button class="filter-chip" data-movfilter="saida">Saídas</button>
+    </div>
+    <div class="row2" style="padding:0 18px; margin-bottom:8px;">
+      <div class="field"><label>Mês</label><input type="month" id="movFiltroMes"></div>
+      <div class="field"><label>Ano</label><input type="number" id="movFiltroAno" placeholder="2026"></div>
+    </div>
+    <p style="padding:0 18px; font-size:12px; color:var(--text-dim); margin-bottom:6px;" id="movContagemFiltro"></p>
+    <div class="list" id="movList">
+      <div class="loading">Carregando movimentações…</div>
     </div>
   </div>
 
@@ -7184,7 +7281,7 @@ function showFinSubView(view){
     menu: 'finMenuView', cobrancas: 'finCobrancasView', pagar: 'finPagarView', receber: 'finReceberView',
     equilibrio: 'finEquilibrioView', nfe: 'finNfeView', 'contas-bancarias': 'finContasBancariasView',
     recorrencias: 'finRecorrenciasView', 'cobranca-central': 'finCobrancaCentralView',
-    relatorios: 'finRelatoriosView', dre: 'finDreView'
+    relatorios: 'finRelatoriosView', dre: 'finDreView', movimentacoes: 'finMovimentacoesView'
   };
   Object.values(viewIds).forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById(viewIds[view]).style.display = view === 'cobranca-central' ? 'flex' : 'block';
@@ -7195,9 +7292,10 @@ function showFinSubView(view){
     menu: 'Financeiro', cobrancas: 'Cobranças de OS', pagar: 'Contas a Pagar', receber: 'Contas a Receber',
     equilibrio: 'Ponto de Equilíbrio', nfe: 'Emissão de NFe', 'contas-bancarias': 'Contas Bancárias e Caixas',
     recorrencias: 'Lançamentos Recorrentes', 'cobranca-central': 'Central de Cobranças',
-    relatorios: 'Relatórios', dre: 'DRE Gerencial'
+    relatorios: 'Relatórios', dre: 'DRE Gerencial', movimentacoes: 'Movimentações'
   }[view];
   document.getElementById('finHeaderTitle').textContent = contextoFinanceiroAtivo === 'nfsEnergy' ? ('NFS Energy / ' + tituloBase) : tituloBase;
+  if(view === 'menu') document.getElementById('finBreadcrumb').style.display = 'none';
 
   document.getElementById('finFab').style.display = (view === 'pagar' || view === 'receber') ? 'flex' : 'none';
 
@@ -7220,10 +7318,19 @@ function showFinSubView(view){
     startFinAutoRefresh();
   }
   if(view === 'pagar'){
-    Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]).then(renderContasPagar);
+    Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]).then(()=>{
+      popularSelectsFiltroFinanceiro('pagar');
+      renderContasPagar();
+    });
   }
   if(view === 'receber'){
-    Promise.all([loadContasReceber(), carregarCatalogosFinanceiros()]).then(renderContasReceber);
+    Promise.all([loadContasReceber(), carregarCatalogosFinanceiros()]).then(()=>{
+      popularSelectsFiltroFinanceiro('receber');
+      renderContasReceber();
+    });
+  }
+  if(view === 'movimentacoes'){
+    Promise.all([loadContasPagar(), loadContasReceber(), carregarCatalogosFinanceiros()]).then(renderMovimentacoes);
   }
   if(view === 'equilibrio'){
     Promise.all([loadOS(), loadContasPagar(), loadContasReceber()]).then(()=>{
@@ -8380,14 +8487,58 @@ async function saveContasReceber(){
   }catch(e){ return false; }
 }
 
+// Filtro avançado compartilhado (item 6/7 do pedido) — usado por Pagar e
+// Receber, evita duplicar a mesma lógica duas vezes.
+function aplicarFiltrosAvancadosConta(lista, prefixo){
+  const categoria = document.getElementById(prefixo+'FiltroCategoria').value;
+  const contaBancaria = document.getElementById(prefixo+'FiltroContaBancaria').value;
+  const origem = document.getElementById(prefixo+'FiltroOrigem').value;
+  const mes = document.getElementById(prefixo+'FiltroMes').value;
+  const vencDe = document.getElementById(prefixo+'FiltroVencDe').value;
+  const vencAte = document.getElementById(prefixo+'FiltroVencAte').value;
+  const valorMinTxt = document.getElementById(prefixo+'FiltroValorMin').value;
+  const valorMaxTxt = document.getElementById(prefixo+'FiltroValorMax').value;
+  const valorMin = valorMinTxt !== '' ? parseFloat(valorMinTxt) : null;
+  const valorMax = valorMaxTxt !== '' ? parseFloat(valorMaxTxt) : null;
+
+  return lista.filter(c => {
+    if(categoria && c.categoriaId !== categoria) return false;
+    if(contaBancaria && c.contaBancariaId !== contaBancaria) return false;
+    if(origem && (c.origem || 'Manual') !== origem) return false;
+    if(mes && (!c.vencimento || !c.vencimento.startsWith(mes))) return false;
+    if(vencDe && (!c.vencimento || c.vencimento < vencDe)) return false;
+    if(vencAte && (!c.vencimento || c.vencimento > vencAte)) return false;
+    if(valorMin != null && !isNaN(valorMin) && (c.valor||0) < valorMin) return false;
+    if(valorMax != null && !isNaN(valorMax) && (c.valor||0) > valorMax) return false;
+    return true;
+  });
+}
+
+function popularSelectsFiltroFinanceiro(prefixo){
+  const selCat = document.getElementById(prefixo+'FiltroCategoria');
+  const valorCatAtual = selCat.value;
+  selCat.innerHTML = '<option value="">Todas</option>' + categoriasFin.map(c=>`<option value="${c.id}">${escapeHtmlA(c.nome)}</option>`).join('');
+  selCat.value = valorCatAtual;
+
+  const selConta = document.getElementById(prefixo+'FiltroContaBancaria');
+  const valorContaAtual = selConta.value;
+  selConta.innerHTML = '<option value="">Todas</option>' + contasBancariasFin.map(c=>`<option value="${c.id}">${escapeHtmlA(c.nome)}</option>`).join('');
+  selConta.value = valorContaAtual;
+}
+
 function renderContasPagar(){
   const list = document.getElementById('pagarList');
   let filtered = filtrarPorEmpresaSelecionada(contasPagar);
-  if(pagarActiveFilter !== 'todos'){
+  if(pagarActiveFilter === 'pendente'){
+    // Mesma definição usada no card do dashboard ("Contas a pagar" = saldo
+    // em aberto) — garante que a lista bate exatamente com o valor do card.
+    filtered = filtered.filter(c => !['pago','cancelado'].includes(statusEfetivoConta(c)));
+  }else if(pagarActiveFilter !== 'todos'){
     filtered = filtered.filter(c => statusEfetivoConta(c) === pagarActiveFilter);
   }
   const q = document.getElementById('pagarSearchInput').value.trim().toLowerCase();
   if(q) filtered = filtered.filter(c => (c.contraparte||'').toLowerCase().includes(q) || (c.descricao||'').toLowerCase().includes(q));
+  filtered = aplicarFiltrosAvancadosConta(filtered, 'pagar');
   filtered = filtered.slice().sort((a,b)=> new Date(a.vencimento || a.criadoEm) - new Date(b.vencimento || b.criadoEm));
   window._pagarFiltradoAtual = filtered;
 
@@ -8395,6 +8546,9 @@ function renderContasPagar(){
   const totalPago = contasPagar.filter(c => statusEfetivoConta(c) === 'pago').reduce((s,c)=> s + c.valor, 0);
   document.getElementById('pagarStatPendente').textContent = fmtMoney(totalPendente);
   document.getElementById('pagarStatPago').textContent = fmtMoney(totalPago);
+
+  const valorTotalFiltrado = filtered.reduce((s,c)=>{ const st = statusEfetivoConta(c); return s + (['pago','recebido'].includes(st) ? (c.valor||0) : saldoConta(c)); }, 0);
+  document.getElementById('pagarContagemFiltro').textContent = `${filtered.length} registro(s) encontrado(s) · Valor total filtrado: ${fmtMoney(valorTotalFiltrado)}`;
 
   if(filtered.length === 0){
     list.innerHTML = '<div class="empty"><div class="big">🔴</div><p>Nenhuma conta a pagar encontrada.<br>Toque em + para cadastrar.</p></div>';
@@ -8407,7 +8561,7 @@ function renderContasPagar(){
     const cat = categoriasFin.find(x=>x.id === c.categoriaId);
     const parcelaTxt = c.totalParcelas > 1 ? ` (${c.numeroParcela}/${c.totalParcelas})` : '';
     return `
-      <div class="item" data-id="${c.id}">
+      <div class="item" data-id="${c.id}" id="conta-linha-${c.id}">
         <div class="thumb placeholder">🔴</div>
         <div style="flex:1; min-width:0;">
           <div class="code">Vencimento: ${vencFmt}${c.contraparte ? ' · ' + escapeHtml(c.contraparte) : ''}</div>
@@ -8416,6 +8570,7 @@ function renderContasPagar(){
           <div class="badges">
             <span class="badge ${STATUS_EFETIVO_CLASS[st]}">${STATUS_EFETIVO_LABEL[st]}</span>
             ${cat ? `<span class="badge">${escapeHtml(cat.nome)}</span>` : ''}
+            <span class="badge">${escapeHtml(c.origem || 'Manual')}</span>
           </div>
           <div class="actions">
             <button class="icon-btn conta-edit-btn" data-tipo="pagar" data-id="${c.id}" title="Editar">
@@ -8435,11 +8590,14 @@ function renderContasPagar(){
 function renderContasReceber(){
   const list = document.getElementById('receberList');
   let filtered = filtrarPorEmpresaSelecionada(contasReceber);
-  if(receberActiveFilter !== 'todos'){
+  if(receberActiveFilter === 'pendente'){
+    filtered = filtered.filter(c => !['recebido','cancelado'].includes(statusEfetivoConta(c)));
+  }else if(receberActiveFilter !== 'todos'){
     filtered = filtered.filter(c => statusEfetivoConta(c) === receberActiveFilter);
   }
   const q = document.getElementById('receberSearchInput').value.trim().toLowerCase();
   if(q) filtered = filtered.filter(c => (c.contraparte||'').toLowerCase().includes(q) || (c.descricao||'').toLowerCase().includes(q));
+  filtered = aplicarFiltrosAvancadosConta(filtered, 'receber');
   filtered = filtered.slice().sort((a,b)=> new Date(a.vencimento || a.criadoEm) - new Date(b.vencimento || b.criadoEm));
   window._receberFiltradoAtual = filtered;
 
@@ -8447,6 +8605,9 @@ function renderContasReceber(){
   const totalRecebido = contasReceber.filter(c => statusEfetivoConta(c) === 'recebido').reduce((s,c)=> s + c.valor, 0);
   document.getElementById('receberStatPendente').textContent = fmtMoney(totalPendente);
   document.getElementById('receberStatPago').textContent = fmtMoney(totalRecebido);
+
+  const valorTotalFiltrado = filtered.reduce((s,c)=>{ const st = statusEfetivoConta(c); return s + (['pago','recebido'].includes(st) ? (c.valor||0) : saldoConta(c)); }, 0);
+  document.getElementById('receberContagemFiltro').textContent = `${filtered.length} registro(s) encontrado(s) · Valor total filtrado: ${fmtMoney(valorTotalFiltrado)}`;
 
   if(filtered.length === 0){
     list.innerHTML = '<div class="empty"><div class="big">🟢</div><p>Nenhuma conta a receber encontrada.<br>Toque em + para cadastrar.</p></div>';
@@ -8459,7 +8620,7 @@ function renderContasReceber(){
     const cat = categoriasFin.find(x=>x.id === c.categoriaId);
     const parcelaTxt = c.totalParcelas > 1 ? ` (${c.numeroParcela}/${c.totalParcelas})` : '';
     return `
-      <div class="item" data-id="${c.id}">
+      <div class="item" data-id="${c.id}" id="conta-linha-${c.id}">
         <div class="thumb placeholder">🟢</div>
         <div style="flex:1; min-width:0;">
           <div class="code">Vencimento: ${vencFmt}${c.contraparte ? ' · ' + escapeHtml(c.contraparte) : ''}</div>
@@ -8468,6 +8629,7 @@ function renderContasReceber(){
           <div class="badges">
             <span class="badge ${STATUS_EFETIVO_CLASS[st]}">${STATUS_EFETIVO_LABEL[st]}</span>
             ${cat ? `<span class="badge">${escapeHtml(cat.nome)}</span>` : ''}
+            <span class="badge">${escapeHtml(c.origem || 'Manual')}</span>
           </div>
           <div class="actions">
             <button class="icon-btn conta-edit-btn" data-tipo="receber" data-id="${c.id}" title="Editar">
@@ -8481,6 +8643,64 @@ function renderContasReceber(){
 
   list.querySelectorAll('.conta-edit-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> openContaEdit(btn.dataset.tipo, btn.dataset.id));
+  });
+}
+
+/* ---------- Movimentações (Entradas/Saídas do Mês — item 5/6 do pedido) ---------- */
+let movActiveFilter = 'todos'; // 'todos' | 'entrada' | 'saida'
+
+function montarListaMovimentacoes(){
+  const movimentos = [];
+  contasReceber.forEach(c => (c.baixas||[]).forEach(b => {
+    movimentos.push({ tipo:'entrada', data:b.data, valor:b.valor, descricao:c.descricao, contraparte:c.contraparte, contaBancariaId:b.contaBancariaId, contaId:c.id, contaTipo:'receber' });
+  }));
+  contasPagar.forEach(c => (c.baixas||[]).forEach(b => {
+    movimentos.push({ tipo:'saida', data:b.data, valor:b.valor, descricao:c.descricao, contraparte:c.contraparte, contaBancariaId:b.contaBancariaId, contaId:c.id, contaTipo:'pagar' });
+  }));
+  return movimentos;
+}
+
+function renderMovimentacoes(){
+  const list = document.getElementById('movList');
+  let movimentos = montarListaMovimentacoes();
+
+  if(movActiveFilter !== 'todos') movimentos = movimentos.filter(m => m.tipo === movActiveFilter);
+
+  const mes = document.getElementById('movFiltroMes').value;
+  const ano = document.getElementById('movFiltroAno').value;
+  if(mes) movimentos = movimentos.filter(m => m.data && m.data.startsWith(mes));
+  if(ano) movimentos = movimentos.filter(m => m.data && m.data.startsWith(ano));
+
+  movimentos.sort((a,b) => (b.data||'').localeCompare(a.data||''));
+
+  const total = movimentos.reduce((s,m)=> s + (m.valor||0), 0);
+  document.getElementById('movStatQtd').textContent = fmtInt(movimentos.length);
+  document.getElementById('movStatTotal').textContent = fmtMoney(total);
+  document.getElementById('movContagemFiltro').textContent = `${movimentos.length} registro(s) encontrado(s) · Valor total filtrado: ${fmtMoney(total)}`;
+
+  if(movimentos.length === 0){
+    list.innerHTML = '<div class="empty"><div class="big">📊</div><p>Nenhuma movimentação encontrada para esse período.</p></div>';
+    return;
+  }
+
+  list.innerHTML = movimentos.map(m => {
+    const dataFmt = m.data ? new Date(m.data + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+    const contaBanc = m.contaBancariaId ? contasBancariasFin.find(cb=>cb.id===m.contaBancariaId) : null;
+    return `
+      <div class="item" data-conta-id="${m.contaId}" data-conta-tipo="${m.contaTipo}">
+        <div class="thumb placeholder">${m.tipo === 'entrada' ? '🟢' : '🔴'}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="code">${dataFmt}${m.contraparte ? ' · ' + escapeHtml(m.contraparte) : ''}${contaBanc ? ' · ' + escapeHtml(contaBanc.nome) : ''}</div>
+          <div class="name">${escapeHtml(m.descricao||'')}</div>
+          <div class="meta"><span style="font-weight:700; color:${m.tipo==='entrada'?'var(--green)':'var(--red)'}; font-size:15px;">${m.tipo==='entrada'?'+':'-'} ${fmtMoney(m.valor)}</span></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.item').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => openContaEdit(el.dataset.contaTipo, el.dataset.contaId));
   });
 }
 
@@ -8500,6 +8720,79 @@ document.querySelectorAll('[data-receberfilter]').forEach(chip=>{
   });
 });
 document.getElementById('receberSearchInput').addEventListener('input', renderContasReceber);
+
+/* ---------- Cards do dashboard clicáveis (item 5/8 do pedido) ---------- */
+function abrirCardFinanceiro(tipo){
+  const mapa = {
+    'pagar-todos': { view:'pagar', filtro:'pendente', breadcrumb:'Contas a Pagar' },
+    'pagar-vencidos': { view:'pagar', filtro:'vencido', breadcrumb:'Vencidos a Pagar' },
+    'receber-todos': { view:'receber', filtro:'pendente', breadcrumb:'Contas a Receber' },
+    'receber-vencidos': { view:'receber', filtro:'vencido', breadcrumb:'Vencidos a Receber' },
+    'entradas-mes': { view:'movimentacoes', tipoMov:'entrada', breadcrumb:'Entradas do Mês' },
+    'saidas-mes': { view:'movimentacoes', tipoMov:'saida', breadcrumb:'Saídas do Mês' }
+  };
+  const cfg = mapa[tipo];
+  if(!cfg) return;
+
+  // Define o filtro ANTES de navegar — showFinSubView já dispara o
+  // carregamento + render internamente, então o filtro pré-definido é
+  // respeitado assim que os dados chegarem (sem precisar de timeout).
+  if(cfg.view === 'pagar'){
+    pagarActiveFilter = cfg.filtro;
+    document.querySelectorAll('[data-pagarfilter]').forEach(c=>c.classList.toggle('active', c.dataset.pagarfilter===cfg.filtro));
+  }
+  if(cfg.view === 'receber'){
+    receberActiveFilter = cfg.filtro;
+    document.querySelectorAll('[data-receberfilter]').forEach(c=>c.classList.toggle('active', c.dataset.receberfilter===cfg.filtro));
+  }
+  if(cfg.view === 'movimentacoes'){
+    movActiveFilter = cfg.tipoMov;
+    document.getElementById('movFiltroMes').value = hojeStr().slice(0,7);
+    document.getElementById('movFiltroAno').value = '';
+    document.querySelectorAll('[data-movfilter]').forEach(c=>c.classList.toggle('active', c.dataset.movfilter===cfg.tipoMov));
+  }
+
+  const prefixoContexto = contextoFinanceiroAtivo === 'nfsEnergy' ? 'Financeiro NFS Energy' : 'Financeiro';
+  document.getElementById('finBreadcrumb').style.display = 'block';
+  document.getElementById('finBreadcrumbTexto').textContent = `${prefixoContexto} > ${cfg.breadcrumb}`;
+
+  showFinSubView(cfg.view);
+}
+document.querySelectorAll('[data-fin-card]').forEach(card=>{
+  card.addEventListener('click', ()=> abrirCardFinanceiro(card.dataset.finCard));
+});
+document.getElementById('finVoltarDashboardBtn').addEventListener('click', ()=> showFinSubView('menu'));
+
+/* ---------- Filtros avançados (item 6/7 do pedido) ---------- */
+function conectarFiltrosAvancados(prefixo, renderFn){
+  ['FiltroCategoria','FiltroContaBancaria','FiltroOrigem','FiltroMes','FiltroVencDe','FiltroVencAte','FiltroValorMin','FiltroValorMax'].forEach(sufixo=>{
+    document.getElementById(prefixo+sufixo).addEventListener('input', renderFn);
+    document.getElementById(prefixo+sufixo).addEventListener('change', renderFn);
+  });
+  document.getElementById(prefixo+'FiltrosToggleBtn').addEventListener('click', ()=>{
+    const el = document.getElementById(prefixo+'FiltrosAvancados');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  });
+  document.getElementById(prefixo+'LimparFiltrosBtn').addEventListener('click', ()=>{
+    ['FiltroCategoria','FiltroContaBancaria','FiltroOrigem','FiltroMes','FiltroVencDe','FiltroVencAte','FiltroValorMin','FiltroValorMax'].forEach(sufixo=>{
+      document.getElementById(prefixo+sufixo).value = '';
+    });
+    renderFn();
+  });
+}
+conectarFiltrosAvancados('pagar', renderContasPagar);
+conectarFiltrosAvancados('receber', renderContasReceber);
+
+/* ---------- Movimentações: chips + filtros de mês/ano ---------- */
+document.querySelectorAll('[data-movfilter]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    movActiveFilter = chip.dataset.movfilter;
+    document.querySelectorAll('[data-movfilter]').forEach(c=>c.classList.toggle('active', c===chip));
+    renderMovimentacoes();
+  });
+});
+document.getElementById('movFiltroMes').addEventListener('change', renderMovimentacoes);
+document.getElementById('movFiltroAno').addEventListener('input', renderMovimentacoes);
 
 /* ======================================================
    EXPORTAÇÃO — PDF e Excel, respeitando os filtros ativos (item 18)
@@ -8758,6 +9051,10 @@ async function saveConta(){
     observacoes: document.getElementById('contaObservacoes').value.trim(),
     anexo: contaAnexoAtual,
     status: contaStatus
+    // "origem" propositalmente NÃO entra aqui — ao editar, isso preservaria
+    // uma origem já existente (ex.: "Fatura Copel") sem precisar de lógica
+    // extra. Pra contas novas, é definida explicitamente como 'Manual' nos
+    // dois pontos de criação abaixo.
   };
 
   const lista = tipoConta === 'pagar' ? contasPagar : contasReceber;
@@ -8786,7 +9083,7 @@ async function saveConta(){
           valor: valorEstaParcela,
           vencimento: dataVenc.toISOString().slice(0,10),
           numeroParcela: i+1, totalParcelas: numParcelas, grupoParcelamentoId: grupoId,
-          baixas: [],
+          baixas: [], origem: 'Manual',
           criadoPor: currentUser, criadoEm: new Date().toISOString()
         });
       }
@@ -8796,7 +9093,7 @@ async function saveConta(){
         id: gerarIdConta(tipoConta),
         ...dadosComuns, valor, vencimento: vencimentoBase,
         numeroParcela: 1, totalParcelas: 1, grupoParcelamentoId: null,
-        baixas: [],
+        baixas: [], origem: 'Manual',
         criadoPor: currentUser, criadoEm: new Date().toISOString()
       });
       registrarAuditoria(tipoConta === 'pagar' ? 'Financeiro (Contas a Pagar)' : 'Financeiro (Contas a Receber)', 'Cadastro', descricao, '', fmtMoney(valor));
@@ -9933,11 +10230,17 @@ function fecharPreviaContaPagar(){
 }
 document.getElementById('previaContaPagarCancelBtn').addEventListener('click', fecharPreviaContaPagar);
 document.getElementById('previaContaPagarBackdrop').addEventListener('click', fecharPreviaContaPagar);
-document.getElementById('previaContaPagarConfirmarBtn').addEventListener('click', async () => {
+document.getElementById('previaContaPagarConfirmarBtn').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  if(btn.disabled) return; // trava contra clique duplo — evita condição de corrida no contexto financeiro
+  btn.disabled = true;
   const f = copelFaturas.find(x=>x.id === previaContaPagarFaturaId);
   fecharPreviaContaPagar();
-  if(!f) return;
-  await gerarContaPagarDeFaturaReal(f);
+  try{
+    if(f) await gerarContaPagarDeFaturaReal(f);
+  }finally{
+    btn.disabled = false;
+  }
 });
 
 // Criação real da conta — só chamada depois da confirmação explícita.
@@ -9968,13 +10271,40 @@ async function gerarContaPagarDeFaturaReal(f){
       anexo: null, status: 'aberto',
       numeroParcela: 1, totalParcelas: 1, grupoParcelamentoId: null,
       baixas: [], criadoPor: currentUser, criadoEm: new Date().toISOString(),
-      origemTipo: 'fatura_copel', origemCopelFaturaId: f.id,
+      origem: 'Fatura Copel', origemTipo: 'fatura_copel', origemCopelFaturaId: f.id,
       copelUc: f.uc, copelReferencia: f.referencia, copelNumeroFatura: f.numeroFatura,
       copelClienteTitular: nomeCliente
     };
     contasPagar.push(novaConta);
     const ok = await saveContasPagar();
-    if(!ok){ showToast('Não foi possível gerar a conta agora.'); return false; }
+    if(!ok){
+      contasPagar.pop(); // desfaz a alteração em memória — a gravação real falhou
+      showToast('Erro ao criar Conta a Pagar no Financeiro NFS Energy');
+      return false;
+    }
+
+    // CONFIRMAÇÃO REAL DE PERSISTÊNCIA (item explícito do pedido): nunca
+    // confia só no retorno "ok" do save — relê a MESMA fonte que a tela
+    // Contas a Pagar usa de verdade, e só marca como gerada se o ID
+    // realmente estiver lá. Isso pega qualquer falha silenciosa de gravação.
+    let contaRealmenteExiste = false;
+    try{
+      const resVerificacao = await storageGet(CONTAS_PAGAR_KEY, true);
+      const listaReal = resVerificacao && resVerificacao.value ? JSON.parse(resVerificacao.value) : [];
+      contaRealmenteExiste = listaReal.some(c => c.id === novaConta.id);
+    }catch(errVerificacao){
+      console.error('[Conta a Pagar Copel] Falha ao verificar persistência:', errVerificacao);
+      contaRealmenteExiste = false;
+    }
+
+    if(!contaRealmenteExiste){
+      // Reverte tudo — nunca marca como gerada se não confirmou de verdade.
+      const idx = contasPagar.findIndex(c => c.id === novaConta.id);
+      if(idx >= 0) contasPagar.splice(idx, 1);
+      showToast('Erro ao criar Conta a Pagar no Financeiro NFS Energy');
+      return false;
+    }
+
     f.contaPagarGeradaId = novaConta.id;
     await saveCopelFaturas();
     registrarAuditoria('NFS Energy (Faturas Copel)', 'Conta a pagar gerada no Financeiro do NFS Energy', f.uc + ' — ' + f.referencia, '', fmtMoney(f.valor||0));
@@ -9990,8 +10320,34 @@ async function gerarContaPagarDeFaturaReal(f){
 async function abrirContaNoFinanceiro(contaId){
   showNfsEnergyFinanceiroScreen();
   await Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]);
+
+  // Limpa filtros pra garantir que o lançamento apareça na lista, mesmo que
+  // algum filtro anterior estivesse escondendo ele.
+  pagarActiveFilter = 'todos';
+  document.querySelectorAll('[data-pagarfilter]').forEach(c=>c.classList.toggle('active', c.dataset.pagarfilter==='todos'));
+  document.getElementById('pagarSearchInput').value = '';
+  ['FiltroCategoria','FiltroContaBancaria','FiltroOrigem','FiltroMes','FiltroVencDe','FiltroVencAte','FiltroValorMin','FiltroValorMax'].forEach(sufixo=>{
+    document.getElementById('pagar'+sufixo).value = '';
+  });
+  popularSelectsFiltroFinanceiro('pagar');
+  renderContasPagar();
   showFinSubView('pagar');
-  openContaEdit('pagar', contaId);
+
+  document.getElementById('finBreadcrumb').style.display = 'block';
+  document.getElementById('finBreadcrumbTexto').textContent = (contextoFinanceiroAtivo === 'nfsEnergy' ? 'Financeiro NFS Energy' : 'Financeiro') + ' > Contas a Pagar';
+
+  // Deep link com destaque (item 9 do pedido): rola até o lançamento e
+  // realça por alguns segundos, em vez de já abrir a edição por cima.
+  setTimeout(() => {
+    const linha = document.getElementById('conta-linha-' + contaId);
+    if(linha){
+      linha.scrollIntoView({ behavior:'smooth', block:'center' });
+      linha.style.transition = 'background 0.3s';
+      linha.style.background = 'rgba(232,163,61,0.35)';
+      linha.style.borderRadius = '10px';
+      setTimeout(() => { linha.style.background = ''; }, 3000);
+    }
+  }, 200);
 }
 
 /* ---------- Geração em lote ---------- */
