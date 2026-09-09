@@ -4604,6 +4604,39 @@
       </div>
     </div>
 
+    <div id="primeiraCargaPrompt" style="display:none; margin-bottom:14px; padding:12px; background:rgba(76,143,192,0.12); border:1px solid var(--blue); border-radius:8px; font-size:13px; line-height:1.6;">
+      Esta Base de Clientes está vazia. Deseja realizar a primeira carga utilizando os clientes desta planilha?
+      <button class="small-btn primary full-btn" id="primeiraCargaAnalisarBtn" type="button" style="margin-top:10px;">📥 CADASTRAR CLIENTES DA PLANILHA</button>
+    </div>
+
+    <div id="primeiraCargaPreviaWrap" style="display:none;">
+      <div class="admin-card" style="margin-bottom:14px;">
+        <h3 style="margin-bottom:8px;">Prévia da primeira carga</h3>
+        <div id="primeiraCargaResumo" style="font-size:13px; line-height:1.8;"></div>
+      </div>
+      <div style="overflow-x:auto; max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; margin-bottom:14px;">
+        <table style="width:100%; min-width:600px; border-collapse:collapse; font-size:12.5px;">
+          <thead style="position:sticky; top:0; background:var(--graphite-2);">
+            <tr style="text-align:left; color:var(--text-dim);">
+              <th style="padding:6px 8px;">Cliente</th>
+              <th style="padding:6px 8px;">CPF/CNPJ</th>
+              <th style="padding:6px 8px;">Qtd. UCs</th>
+              <th style="padding:6px 8px;">UCs</th>
+              <th style="padding:6px 8px;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="primeiraCargaTableBody"></tbody>
+        </table>
+      </div>
+      <button class="small-btn primary full-btn" id="primeiraCargaConfirmarBtn" type="button" style="display:none;">✅ CONFIRMAR PRIMEIRA CARGA</button>
+    </div>
+
+    <div id="primeiraCargaProgresso" style="display:none; margin-bottom:14px;">
+      <p style="font-size:13px; color:var(--text-dim);" id="primeiraCargaProgressoTexto">Cadastrando...</p>
+    </div>
+
+    <div id="primeiraCargaResultado" style="display:none; margin-bottom:14px; font-size:13px; line-height:1.7;"></div>
+
     <div id="atualizarClientesPreviaWrap" style="display:none;">
       <div class="admin-card" style="margin-bottom:14px;">
         <h3 style="margin-bottom:8px;">Resumo</h3>
@@ -13312,7 +13345,8 @@ function renderClientesEnergia(){
   const list = document.getElementById('clienteEnergiaList');
   const q = document.getElementById('clienteEnergiaSearchInput').value.trim().toLowerCase();
   let filtered = clientesEnergia.filter(c =>
-    !q || (c.ucAneel||'').toLowerCase().includes(q) || (c.ucCopel||'').toLowerCase().includes(q) || (c.nome||'').toLowerCase().includes(q) || (c.cpfCnpj||'').toLowerCase().includes(q)
+    !q || (c.ucAneel||'').toLowerCase().includes(q) || (c.ucCopel||'').toLowerCase().includes(q) || (c.nome||'').toLowerCase().includes(q) || (c.cpfCnpj||'').toLowerCase().includes(q) ||
+    (Array.isArray(c.ucs) && c.ucs.some(u => (u.uc||'').includes(q)))
   );
   if(clienteEnergiaActiveFilter === 'ativo' || clienteEnergiaActiveFilter === 'inativo'){
     filtered = filtered.filter(c => (c.status || 'ativo') === clienteEnergiaActiveFilter);
@@ -13334,11 +13368,15 @@ function renderClientesEnergia(){
   list.innerHTML = filtered.map(c => {
     const status = c.status || 'ativo';
     const tipo = c.tipo || 'gerador';
+    const temMultiplasUcs = Array.isArray(c.ucs) && c.ucs.length > 0;
+    const linhaUcs = temMultiplasUcs
+      ? `${c.ucs.length} UC(s): ${c.ucs.map(u => escapeHtml(u.uc)).join(', ')}`
+      : `UC Aneel ${escapeHtml(c.ucAneel || '—')} · UC Copel ${escapeHtml(c.ucCopel || '—')}`;
     return `
       <div class="item" data-id="${c.id}">
         <div class="thumb placeholder">👤</div>
         <div style="flex:1; min-width:0;">
-          <div class="code">UC Aneel ${escapeHtml(c.ucAneel || '—')} · UC Copel ${escapeHtml(c.ucCopel || '—')}</div>
+          <div class="code">${linhaUcs}</div>
           <div class="name">${escapeHtml(c.nome)}</div>
           <div class="meta">${c.telefone ? `<span>${escapeHtml(c.telefone)}</span>` : ''}</div>
           <div class="badges">
@@ -13647,7 +13685,11 @@ function normalizarUcPlanilha(uc){
 function buscarClientePorUcNormalizada(ucNormalizada){
   if(!ucNormalizada) return null;
   return clientesEnergia.find(c =>
-    normalizarUcPlanilha(c.ucAneel) === ucNormalizada || normalizarUcPlanilha(c.ucCopel) === ucNormalizada
+    normalizarUcPlanilha(c.ucAneel) === ucNormalizada ||
+    normalizarUcPlanilha(c.ucCopel) === ucNormalizada ||
+    // Suporte a clientes com múltiplas UCs (item novo — Primeira Carga):
+    // array adicional, nunca substitui os campos singulares acima.
+    (Array.isArray(c.ucs) && c.ucs.some(u => normalizarUcPlanilha(u.uc) === ucNormalizada))
   ) || null;
 }
 
@@ -13742,7 +13784,13 @@ async function lerPlanilhaBaseUcs(file, diag){
       bairro: String(getFieldValue(row, ['bairro']) || '').trim(),
       cep: String(getFieldValue(row, ['cep']) || '').trim(),
       ativoTexto: String(getFieldValue(row, ['ativo?','ativo']) || '').trim(),
-      geradorTexto: String(getFieldValue(row, ['gerador?','gerador']) || '').trim()
+      geradorTexto: String(getFieldValue(row, ['gerador?','gerador']) || '').trim(),
+      // Campos adicionados só pra "Primeira Carga" (item novo) — extração
+      // puramente aditiva, nenhum campo existente acima foi alterado.
+      idCliente: String(getFieldValue(row, ['id cliente','id do cliente','cliente id','codigo cliente','código cliente']) || '').trim(),
+      email: String(getFieldValue(row, ['email','e-mail']) || '').trim(),
+      telefone: String(getFieldValue(row, ['telefone','fone','celular','contato']) || '').trim(),
+      dataRegistro: String(getFieldValue(row, ['data registro','data de registro','data cadastro','data de cadastro']) || '').trim()
     };
   }).filter(l => l.uc); // sem UC não dá pra casar com nada — ignora a linha
 
@@ -13847,6 +13895,12 @@ document.querySelectorAll('[data-uc-filtro]').forEach(chip => {
 // Corrida entre a Promise real e um limite de tempo — nunca deixa o fluxo
 // travado pra sempre (item explícito do pedido: sem catch vazio, sempre
 // mostrar erro específico se algo não terminar).
+// Libera a thread principal entre lotes de processamento pesado — evita
+// travar a interface durante a gravação em lotes da Primeira Carga.
+function liberarThread(){
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
 function comTimeout(promise, ms, mensagemTimeout){
   return Promise.race([
     promise,
@@ -14002,6 +14056,7 @@ async function tentarCasarComBaseAtual(linhas, diag){
   const avisoBaseVazia = document.getElementById('atualizarClientesAvisoBaseVazia');
   const previaWrap = document.getElementById('atualizarClientesPreviaWrap');
   const btnConfirmar = document.getElementById('atualizarClientesConfirmarBtn');
+  const primeiraCargaPrompt = document.getElementById('primeiraCargaPrompt');
 
   if(!resultadoBase.sucesso || totalUcsExistentes === 0){
     // Nunca habilita atualização sem UCs existentes de verdade (item
@@ -14011,10 +14066,16 @@ async function tentarCasarComBaseAtual(linhas, diag){
     btnConfirmar.style.display = 'none';
     if(!resultadoBase.sucesso){
       errEl.textContent = 'Não foi possível carregar a Base de Clientes. A atualização foi cancelada para evitar alterações incorretas.';
+      primeiraCargaPrompt.style.display = 'none'; // falha de carregamento não é "primeira carga" — é erro real
+    }else{
+      // Planilha lida com sucesso (>0) + Base de Clientes = 0 registros:
+      // cenário exato da Primeira Carga (item novo do pedido).
+      primeiraCargaPrompt.style.display = 'block';
     }
     return;
   }
 
+  primeiraCargaPrompt.style.display = 'none';
   avisoBaseVazia.style.display = 'none';
   previaWrap.style.display = 'block';
   btnConfirmar.style.display = 'inline-block';
@@ -14027,6 +14088,214 @@ async function tentarCasarComBaseAtual(linhas, diag){
   renderAtualizarClientesResumo();
   renderAtualizarClientesTabela();
 }
+
+/* ======================================================
+   PRIMEIRA CARGA — cadastro inicial de clientes+UCs a partir da planilha
+   quando a Base de Clientes está genuinamente vazia. Usa exclusivamente as
+   linhas já lidas e validadas por lerPlanilhaBaseUcs (não relê a planilha).
+   Agrupa por cliente (ID Cliente > CPF/CNPJ > UC como último recurso) antes
+   de gravar, pra nunca criar um cliente duplicado por UC.
+   ====================================================== */
+let primeiraCargaPlanoAtual = null;
+
+// Agrupa as linhas por cliente. Chave de agrupamento: ID Cliente primeiro;
+// se não houver, CPF/CNPJ; se nenhum dos dois existir, cada linha vira seu
+// próprio grupo (fallback seguro — nunca junta clientes diferentes por engano).
+function agruparLinhasPorClientePrimeiraCarga(linhas){
+  const grupos = new Map();
+  linhas.forEach(l => {
+    let chave;
+    if(l.idCliente && l.idCliente.trim()) chave = 'id:' + l.idCliente.trim().toLowerCase();
+    else if(l.cpfCnpj && l.cpfCnpj.replace(/\D/g, '')) chave = 'cpf:' + l.cpfCnpj.replace(/\D/g, '');
+    else chave = 'uc:' + l.uc;
+
+    if(!grupos.has(chave)) grupos.set(chave, []);
+    grupos.get(chave).push(l);
+  });
+  return grupos;
+}
+
+// Monta o plano de cadastro: 1 entrada por cliente único, com a lista de UCs
+// já sem duplicatas (nem dentro do próprio grupo, nem contra UCs já usadas
+// por outro cliente nesta mesma planilha, nem contra UCs já existentes na
+// plataforma — regra explícita: UC nunca vinculada a dois clientes diferentes).
+function montarPlanoPrimeiraCarga(linhas){
+  const grupos = agruparLinhasPorClientePrimeiraCarga(linhas);
+  const ucsJaUsadasNestaCarga = new Set();
+  const ucsJaExistentesNaPlataforma = new Set(
+    clientesEnergia.flatMap(c => {
+      const lista = [normalizarUcPlanilha(c.ucAneel), normalizarUcPlanilha(c.ucCopel)];
+      if(Array.isArray(c.ucs)) lista.push(...c.ucs.map(u => normalizarUcPlanilha(u.uc)));
+      return lista.filter(Boolean);
+    })
+  );
+
+  const plano = [];
+  let ucsDuplicadas = 0;
+  let linhasComErro = 0;
+
+  for(const [chave, linhasDoGrupo] of grupos){
+    const primeira = linhasDoGrupo.find(l => l.nome) || linhasDoGrupo[0];
+    const ucsDoCliente = [];
+    const ucsVistosNesteGrupo = new Set();
+
+    linhasDoGrupo.forEach(l => {
+      if(!l.uc){ linhasComErro++; return; }
+      if(ucsVistosNesteGrupo.has(l.uc)) return; // repetida dentro do mesmo cliente — ignora sem contar erro
+      if(ucsJaUsadasNestaCarga.has(l.uc) || ucsJaExistentesNaPlataforma.has(l.uc)){
+        ucsDuplicadas++;
+        return; // já usada por outro cliente — nunca vincula a dois
+      }
+      ucsVistosNesteGrupo.add(l.uc);
+      ucsJaUsadasNestaCarga.add(l.uc);
+      ucsDoCliente.push(l);
+    });
+
+    if(ucsDoCliente.length === 0) continue; // nada válido sobrou pra esse grupo
+
+    plano.push({
+      chave,
+      nome: primeira.nome || '(sem nome)',
+      cpfCnpj: primeira.cpfCnpj || '',
+      email: primeira.email || '',
+      telefone: primeira.telefone || '',
+      idCliente: primeira.idCliente || '',
+      dataRegistro: primeira.dataRegistro || '',
+      ativo: !/inativ/i.test(primeira.ativoTexto || ''),
+      ucs: ucsDoCliente.map(l => ({
+        uc: l.uc, ucBruta: l.ucBruta,
+        gerador: /sim|true|1|x/i.test(l.geradorTexto || ''),
+        cidade: l.cidade, estado: l.estado, endereco: l.endereco,
+        numero: l.numero, complemento: l.complemento, bairro: l.bairro, cep: l.cep
+      }))
+    });
+  }
+
+  return { plano, ucsDuplicadas, linhasComErro };
+}
+
+function renderPrimeiraCargaPrevia(resultado){
+  const { plano, ucsDuplicadas, linhasComErro } = resultado;
+  const totalUcs = plano.reduce((s, c) => s + c.ucs.length, 0);
+  const comMultiplasUcs = plano.filter(c => c.ucs.length > 1).length;
+
+  document.getElementById('primeiraCargaResumo').innerHTML = `
+    Clientes únicos a cadastrar: <b>${plano.length}</b><br>
+    UCs a cadastrar: <b>${totalUcs}</b><br>
+    Clientes com múltiplas UCs: <b>${comMultiplasUcs}</b><br>
+    UCs duplicadas: <b style="color:${ucsDuplicadas > 0 ? 'var(--amber)' : 'inherit'};">${ucsDuplicadas}</b><br>
+    Linhas com erro: <b style="color:${linhasComErro > 0 ? 'var(--red)' : 'inherit'};">${linhasComErro}</b>
+  `;
+
+  document.getElementById('primeiraCargaTableBody').innerHTML = plano.map(c => `
+    <tr style="border-bottom:1px solid var(--line);">
+      <td style="padding:5px 8px;">${escapeHtml(c.nome)}</td>
+      <td style="padding:5px 8px;">${escapeHtml(c.cpfCnpj || '—')}</td>
+      <td style="padding:5px 8px;">${c.ucs.length}</td>
+      <td style="padding:5px 8px; font-size:11px;">${c.ucs.map(u => escapeHtml(u.uc)).join(', ')}</td>
+      <td style="padding:5px 8px;">✅ pronto pra cadastrar</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('primeiraCargaPreviaWrap').style.display = 'block';
+  document.getElementById('primeiraCargaConfirmarBtn').style.display = plano.length > 0 ? 'block' : 'none';
+}
+
+document.getElementById('primeiraCargaAnalisarBtn').addEventListener('click', () => {
+  if(atualizarClientesUltimasLinhasLidas.length === 0) return;
+  primeiraCargaPlanoAtual = montarPlanoPrimeiraCarga(atualizarClientesUltimasLinhasLidas);
+  document.getElementById('primeiraCargaPrompt').style.display = 'none';
+  renderPrimeiraCargaPrevia(primeiraCargaPlanoAtual);
+});
+
+// Gravação em lotes (item explícito do pedido) — nunca trava a interface,
+// e se um lote falhar, os já gravados antes continuam válidos; o erro fica
+// registrado pra conferência em vez de derrubar a carga inteira.
+document.getElementById('primeiraCargaConfirmarBtn').addEventListener('click', async () => {
+  if(!primeiraCargaPlanoAtual || primeiraCargaPlanoAtual.plano.length === 0) return;
+  if(!confirm(`Confirma o cadastro de ${primeiraCargaPlanoAtual.plano.length} cliente(s) e ${primeiraCargaPlanoAtual.plano.reduce((s,c)=>s+c.ucs.length,0)} UC(s)?`)) return;
+
+  const TAMANHO_LOTE = 25;
+  const plano = primeiraCargaPlanoAtual.plano;
+  const lotes = [];
+  for(let i = 0; i < plano.length; i += TAMANHO_LOTE) lotes.push(plano.slice(i, i + TAMANHO_LOTE));
+
+  document.getElementById('primeiraCargaPreviaWrap').style.display = 'none';
+  document.getElementById('primeiraCargaProgresso').style.display = 'block';
+  const progressoTexto = document.getElementById('primeiraCargaProgressoTexto');
+
+  let cadastrados = 0;
+  const errosPorLote = [];
+
+  for(let i = 0; i < lotes.length; i++){
+    progressoTexto.textContent = `Cadastrando clientes ${Math.min((i + 1) * TAMANHO_LOTE, plano.length)} de ${plano.length}...`;
+    const lote = lotes[i];
+    const novosRegistros = lote.map(c => ({
+      id: 'ce_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      nome: c.nome,
+      cpfCnpj: c.cpfCnpj,
+      email: c.email,
+      telefone: c.telefone,
+      status: c.ativo ? 'ativo' : 'inativo',
+      dataRegistro: c.dataRegistro,
+      // Compatibilidade: primeira UC também preenche o campo singular antigo,
+      // pra qualquer tela que ainda leia só ucAneel continuar funcionando.
+      ucAneel: c.ucs[0] ? c.ucs[0].uc : '',
+      ucCopel: '',
+      tipo: c.ucs.some(u => u.gerador) ? 'gerador' : 'consumidor',
+      endereco: c.ucs[0] ? c.ucs[0].endereco : '',
+      ucs: c.ucs.map(u => ({
+        uc: u.uc, gerador: u.gerador, cidade: u.cidade, estado: u.estado,
+        endereco: u.endereco, numero: u.numero, complemento: u.complemento,
+        bairro: u.bairro, cep: u.cep
+      })),
+      origemImportacao: 'primeira_carga_planilha',
+      criadoPor: currentUser,
+      criadoEm: new Date().toISOString()
+    }));
+
+    clientesEnergia.push(...novosRegistros);
+    try{
+      const ok = await saveClientesEnergia();
+      if(!ok) throw new Error('Falha ao salvar');
+      cadastrados += novosRegistros.length;
+    }catch(err){
+      console.error('[Primeira Carga] Falha no lote', i + 1, err);
+      // Não perde os demais — remove só este lote do array em memória e
+      // registra o erro pra conferência, e continua pros próximos lotes.
+      clientesEnergia.splice(clientesEnergia.length - novosRegistros.length, novosRegistros.length);
+      errosPorLote.push(`Lote ${i + 1} (${novosRegistros.length} cliente(s)): ${err.message || 'erro desconhecido'}`);
+    }
+    await liberarThread();
+  }
+
+  progressoTexto.textContent = 'Vinculando UCs...';
+  await liberarThread();
+  progressoTexto.textContent = 'Processamento concluído';
+
+  registrarAuditoria(
+    'NFS Energy (Base de Clientes)', 'Primeira carga por planilha (Base_UCs)',
+    atualizarClientesArquivoNome, '',
+    `${cadastrados} cliente(s) cadastrado(s), ${plano.reduce((s,c)=>s+c.ucs.length,0)} UC(s) vinculada(s)` +
+    (errosPorLote.length ? `, ${errosPorLote.length} lote(s) com erro` : '')
+  );
+
+  // Recarrega a Base de Clientes de verdade (item explícito do pedido) —
+  // não confia só no que já está em memória, relê da plataforma.
+  await loadClientesEnergia();
+  renderClientesEnergia();
+
+  document.getElementById('primeiraCargaProgresso').style.display = 'none';
+  const resultadoEl = document.getElementById('primeiraCargaResultado');
+  resultadoEl.style.display = 'block';
+  resultadoEl.innerHTML = `
+    ✅ <b>Processamento concluído</b><br>
+    Clientes cadastrados: ${cadastrados}<br>
+    UCs vinculadas: ${plano.slice(0, cadastrados).reduce((s,c)=>s+c.ucs.length,0)}
+    ${errosPorLote.length ? `<br><br>⚠️ ${errosPorLote.length} lote(s) com erro (nada foi perdido dos demais):<br>${errosPorLote.join('<br>')}` : ''}
+    <br><br>A Base de Clientes já foi recarregada — feche esta janela pra ver a lista atualizada.
+  `;
+});
 
 
 /* ---------- Drag-and-drop + seleção de arquivo ---------- */
@@ -14082,6 +14351,7 @@ function abrirAtualizarClientesSheet(){
   atualizarClientesArquivoSelecionado = null;
   atualizarClientesUltimasLinhasLidas = [];
   atualizarClientesDiagAtual = null;
+  primeiraCargaPlanoAtual = null;
   document.getElementById('atualizarClientesDropTexto').textContent = 'Arraste a planilha aqui';
   document.getElementById('atualizarClientesResumoWrap').style.display = 'none';
   document.getElementById('atualizarClientesAvisoBaseVazia').style.display = 'none';
@@ -14091,6 +14361,10 @@ function abrirAtualizarClientesSheet(){
   document.getElementById('atualizarClientesProgresso').style.display = 'none';
   document.getElementById('atualizarClientesDiagnostico').style.display = 'none';
   document.getElementById('atualizarClientesErr').textContent = '';
+  document.getElementById('primeiraCargaPrompt').style.display = 'none';
+  document.getElementById('primeiraCargaPreviaWrap').style.display = 'none';
+  document.getElementById('primeiraCargaProgresso').style.display = 'none';
+  document.getElementById('primeiraCargaResultado').style.display = 'none';
   document.getElementById('atualizarClientesBackdrop').classList.add('open');
   document.getElementById('atualizarClientesSheet').classList.add('open');
 }
