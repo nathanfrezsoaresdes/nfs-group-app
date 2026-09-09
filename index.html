@@ -4583,35 +4583,59 @@
 
   <div id="atualizarClientesResumoWrap" style="display:none;">
     <div class="admin-card" style="margin-bottom:14px;">
-      <h3 style="margin-bottom:8px;">Resumo</h3>
-      <div id="atualizarClientesResumo" style="font-size:13px; line-height:1.8;"></div>
+      <h3 style="margin-bottom:10px;">Resultado da análise</h3>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:150px; padding:10px; background:var(--graphite-2); border-radius:8px;">
+          <div style="font-size:11px; color:var(--text-dim); font-weight:700; letter-spacing:0.5px; margin-bottom:6px;">📄 PLANILHA</div>
+          <div id="atualizarClientesStatsPlanilha" style="font-size:12.5px; line-height:1.9;"></div>
+        </div>
+        <div style="flex:1; min-width:150px; padding:10px; background:var(--graphite-2); border-radius:8px;">
+          <div style="font-size:11px; color:var(--text-dim); font-weight:700; letter-spacing:0.5px; margin-bottom:6px;">🗄️ PLATAFORMA</div>
+          <div id="atualizarClientesStatsPlataforma" style="font-size:12.5px; line-height:1.9;"></div>
+        </div>
+      </div>
     </div>
 
-    <div style="display:flex; gap:8px; margin-bottom:10px;">
-      <button class="small-btn" id="atualizarClientesExportarBtn" type="button" style="flex:1;">📄 Exportar conferência (Excel)</button>
+    <div id="atualizarClientesAvisoBaseVazia" style="display:none; margin-bottom:14px; padding:12px; background:rgba(232,163,61,0.12); border:1px solid var(--amber); border-radius:8px; font-size:13px; line-height:1.6;">
+      ⚠️ A planilha foi lida corretamente, mas a Base de Clientes da plataforma possui 0 registros carregados. Não há clientes existentes para atualizar por UC.
+      <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+        <button class="small-btn" id="atualizarClientesRecarregarBtn" type="button" style="flex:1; min-width:180px;">🔄 RECARREGAR BASE DE CLIENTES</button>
+        <button class="small-btn" id="atualizarClientesIrImportarBtn" type="button" style="flex:1; min-width:180px;">📥 IR PARA IMPORTAR NOVOS CLIENTES</button>
+      </div>
     </div>
 
-    <div class="filter-chips" id="atualizarClientesFilterChips">
-      <button class="filter-chip active" data-uc-filtro="todos">Todos</button>
-      <button class="filter-chip" data-uc-filtro="atualizar">🟡 Nome diferente</button>
-      <button class="filter-chip" data-uc-filtro="correto">⚪ Já correto</button>
-      <button class="filter-chip" data-uc-filtro="nao_encontrada">🔴 Não encontrada</button>
-      <button class="filter-chip" data-uc-filtro="duplicada">⚠️ Duplicada</button>
-    </div>
+    <div id="atualizarClientesPreviaWrap" style="display:none;">
+      <div class="admin-card" style="margin-bottom:14px;">
+        <h3 style="margin-bottom:8px;">Resumo</h3>
+        <div id="atualizarClientesResumo" style="font-size:13px; line-height:1.8;"></div>
+      </div>
 
-    <div style="overflow-x:auto; max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; margin-bottom:14px;">
-      <table style="width:100%; min-width:600px; border-collapse:collapse; font-size:12.5px;">
-        <thead style="position:sticky; top:0; background:var(--graphite-2);">
-          <tr style="text-align:left; color:var(--text-dim);">
-            <th style="padding:6px 8px;"></th>
-            <th style="padding:6px 8px;">UC</th>
-            <th style="padding:6px 8px;">Nome atual</th>
-            <th style="padding:6px 8px;">Nome da planilha</th>
-            <th style="padding:6px 8px;">Situação</th>
-          </tr>
-        </thead>
-        <tbody id="atualizarClientesTableBody"></tbody>
-      </table>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <button class="small-btn" id="atualizarClientesExportarBtn" type="button" style="flex:1;">📄 Exportar conferência (Excel)</button>
+      </div>
+
+      <div class="filter-chips" id="atualizarClientesFilterChips">
+        <button class="filter-chip active" data-uc-filtro="todos">Todos</button>
+        <button class="filter-chip" data-uc-filtro="atualizar">🟡 Nome diferente</button>
+        <button class="filter-chip" data-uc-filtro="correto">⚪ Já correto</button>
+        <button class="filter-chip" data-uc-filtro="nao_encontrada">🔴 Não encontrada</button>
+        <button class="filter-chip" data-uc-filtro="duplicada">⚠️ Duplicada</button>
+      </div>
+
+      <div style="overflow-x:auto; max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:8px; margin-bottom:14px;">
+        <table style="width:100%; min-width:600px; border-collapse:collapse; font-size:12.5px;">
+          <thead style="position:sticky; top:0; background:var(--graphite-2);">
+            <tr style="text-align:left; color:var(--text-dim);">
+              <th style="padding:6px 8px;"></th>
+              <th style="padding:6px 8px;">UC</th>
+              <th style="padding:6px 8px;">Nome atual</th>
+              <th style="padding:6px 8px;">Nome da planilha</th>
+              <th style="padding:6px 8px;">Situação</th>
+            </tr>
+          </thead>
+          <tbody id="atualizarClientesTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -13605,6 +13629,8 @@ document.getElementById('importClientesEnergyConfirmBtn').addEventListener('clic
 let atualizarClientesResultado = [];
 let atualizarClientesArquivoNome = '';
 let atualizarClientesFiltroAtivo = 'todos';
+let atualizarClientesUltimasLinhasLidas = []; // linhas já lidas da planilha, reaproveitadas pelo botão "Recarregar"
+let atualizarClientesDiagAtual = null;
 
 const SITUACAO_UC_LABEL = {
   atualizar: '🟡 Nome diferente',
@@ -13900,6 +13926,7 @@ async function processarArquivoAtualizarClientes(file){
     linhasLidas: null, ucsValidas: null, baseCarregada: null, ucsExistentes: null
   };
   renderDiagnosticoAtualizarClientes(diag);
+  atualizarClientesDiagAtual = diag;
 
   document.getElementById('atualizarClientesProgresso').style.display = 'block';
   document.getElementById('atualizarClientesResumoWrap').style.display = 'none';
@@ -13918,54 +13945,87 @@ async function processarArquivoAtualizarClientes(file){
       return;
     }
 
-    atualizarEstadoAtualizarClientes('Carregando Base de Clientes...');
-    // Verificação própria (não usa loadClientesEnergia() direto): aquela
-    // função absorve qualquer erro de rede e define clientesEnergia=[] em
-    // silêncio, o que tornaria impossível diferenciar "base genuinamente
-    // vazia" de "falha ao carregar". Aqui isso fica explícito.
-    const resultadoBase = await comTimeout(
-      carregarBaseClientesComVerificacao(),
-      20000,
-      'Não foi possível carregar a base de clientes atual (demorou demais). Confira sua internet e tente de novo.'
-    );
+    // Guarda as linhas já lidas — o botão "Recarregar Base de Clientes" usa
+    // isso pra tentar de novo SÓ o carregamento da plataforma, sem reler a
+    // planilha (o leitor XLSX não é tocado de novo).
+    atualizarClientesUltimasLinhasLidas = linhas;
 
-    diag.baseCarregada = resultadoBase.sucesso ? resultadoBase.total : 'falhou';
-    const totalUcsExistentes = resultadoBase.sucesso
-      ? clientesEnergia.filter(c => c.ucAneel || c.ucCopel).length : 0;
-    diag.ucsExistentes = resultadoBase.sucesso ? totalUcsExistentes : 'falhou';
-    renderDiagnosticoAtualizarClientes(diag);
-
-    if(!resultadoBase.sucesso){
-      errEl.textContent = 'Não foi possível carregar a Base de Clientes. A atualização foi cancelada para evitar alterações incorretas.';
-      document.getElementById('atualizarClientesProgresso').style.display = 'none';
-      return;
-    }
-
-    // Item explícito do pedido: nunca prosseguir com 0 clientes carregados,
-    // mesmo que o carregamento em si tenha "funcionado" — sem UC nenhuma
-    // cadastrada não há nada pra casar com segurança.
-    if(resultadoBase.total === 0){
-      errEl.textContent = 'A Base de Clientes está vazia (0 clientes carregados) — não há nenhuma UC cadastrada pra casar com a planilha. Cadastre clientes antes de usar esta ferramenta.';
-      document.getElementById('atualizarClientesProgresso').style.display = 'none';
-      return;
-    }
-
-    atualizarEstadoAtualizarClientes('Comparando UCs...');
-    atualizarClientesResultado = classificarLinhasPlanilhaUcs(linhas);
-
-    atualizarEstadoAtualizarClientes('Análise concluída');
-    document.getElementById('atualizarClientesProgresso').style.display = 'none';
-    document.getElementById('atualizarClientesResumoWrap').style.display = 'block';
-    document.getElementById('atualizarClientesConfirmarBtn').style.display = 'inline-block';
-    atualizarClientesFiltroAtivo = 'todos';
-    document.querySelectorAll('[data-uc-filtro]').forEach(c => c.classList.toggle('active', c.dataset.ucFiltro === 'todos'));
-    renderAtualizarClientesResumo();
-    renderAtualizarClientesTabela();
+    await tentarCasarComBaseAtual(linhas, diag);
   }catch(err){
     console.error('[Atualizar Clientes por Planilha]', err);
     errEl.textContent = err && err.message ? err.message : 'Não foi possível ler essa planilha (erro desconhecido — veja o console para detalhes técnicos).';
     document.getElementById('atualizarClientesProgresso').style.display = 'none';
   }
+}
+
+// Extraída pra função própria: carrega a base de clientes da plataforma e
+// decide entre mostrar a prévia (habilitando a atualização) ou o aviso de
+// base vazia com as rotas de recuperação. Usada tanto pelo fluxo principal
+// quanto pelo botão "🔄 RECARREGAR BASE DE CLIENTES", sem duplicar lógica.
+async function tentarCasarComBaseAtual(linhas, diag){
+  const errEl = document.getElementById('atualizarClientesErr');
+  errEl.textContent = '';
+  document.getElementById('atualizarClientesProgresso').style.display = 'block';
+  atualizarEstadoAtualizarClientes('Carregando Base de Clientes...');
+
+  // Verificação própria (não usa loadClientesEnergia() direto): aquela
+  // função absorve qualquer erro de rede e define clientesEnergia=[] em
+  // silêncio, o que tornaria impossível diferenciar "base genuinamente
+  // vazia" de "falha ao carregar". Aqui isso fica explícito.
+  const resultadoBase = await comTimeout(
+    carregarBaseClientesComVerificacao(),
+    20000,
+    'Não foi possível carregar a base de clientes atual (demorou demais). Confira sua internet e tente de novo.'
+  );
+
+  diag.baseCarregada = resultadoBase.sucesso ? resultadoBase.total : 'falhou';
+  const totalUcsExistentes = resultadoBase.sucesso
+    ? clientesEnergia.filter(c => c.ucAneel || c.ucCopel).length : 0;
+  diag.ucsExistentes = resultadoBase.sucesso ? totalUcsExistentes : 'falhou';
+  renderDiagnosticoAtualizarClientes(diag);
+
+  // A PARTIR DAQUI: sempre mostra "Resultado da análise" (item explícito
+  // do pedido) — a planilha já foi lida com sucesso nesse ponto, então o
+  // painel PLANILHA sempre aparece preenchido. O painel PLATAFORMA reflete
+  // o que realmente foi carregado, com sucesso ou não.
+  atualizarEstadoAtualizarClientes(resultadoBase.sucesso && resultadoBase.total > 0 ? 'Análise concluída' : 'Análise concluída — verifique a Base de Clientes');
+  document.getElementById('atualizarClientesProgresso').style.display = 'none';
+  document.getElementById('atualizarClientesResumoWrap').style.display = 'block';
+
+  document.getElementById('atualizarClientesStatsPlanilha').innerHTML =
+    `${linhas.length} linha(s)<br>${linhas.length} UC(s) válida(s)<br>leitura OK ✅`;
+
+  document.getElementById('atualizarClientesStatsPlataforma').innerHTML = !resultadoBase.sucesso
+    ? `<span style="color:var(--red);">falha ao carregar ❌</span>`
+    : `clientes carregados: ${resultadoBase.total}<br>UCs existentes: ${totalUcsExistentes}<br>casamento possível: ${totalUcsExistentes > 0 ? 'sim' : '0'}`;
+
+  const avisoBaseVazia = document.getElementById('atualizarClientesAvisoBaseVazia');
+  const previaWrap = document.getElementById('atualizarClientesPreviaWrap');
+  const btnConfirmar = document.getElementById('atualizarClientesConfirmarBtn');
+
+  if(!resultadoBase.sucesso || totalUcsExistentes === 0){
+    // Nunca habilita atualização sem UCs existentes de verdade (item
+    // explícito do pedido) — mostra o aviso + as duas rotas de recuperação.
+    avisoBaseVazia.style.display = 'block';
+    previaWrap.style.display = 'none';
+    btnConfirmar.style.display = 'none';
+    if(!resultadoBase.sucesso){
+      errEl.textContent = 'Não foi possível carregar a Base de Clientes. A atualização foi cancelada para evitar alterações incorretas.';
+    }
+    return;
+  }
+
+  avisoBaseVazia.style.display = 'none';
+  previaWrap.style.display = 'block';
+  btnConfirmar.style.display = 'inline-block';
+
+  atualizarEstadoAtualizarClientes('Comparando UCs...');
+  atualizarClientesResultado = classificarLinhasPlanilhaUcs(linhas);
+
+  atualizarClientesFiltroAtivo = 'todos';
+  document.querySelectorAll('[data-uc-filtro]').forEach(c => c.classList.toggle('active', c.dataset.ucFiltro === 'todos'));
+  renderAtualizarClientesResumo();
+  renderAtualizarClientesTabela();
 }
 
 
@@ -14000,12 +14060,32 @@ document.getElementById('atualizarClientesAnalisarBtn').addEventListener('click'
   if(atualizarClientesArquivoSelecionado) processarArquivoAtualizarClientes(atualizarClientesArquivoSelecionado);
 });
 
+// 🔄 RECARREGAR BASE DE CLIENTES — tenta carregar a base real de novo, sem
+// reler a planilha (chama a MESMA função tentarCasarComBaseAtual usada pelo
+// fluxo principal, com as linhas já lidas guardadas).
+document.getElementById('atualizarClientesRecarregarBtn').addEventListener('click', () => {
+  if(atualizarClientesUltimasLinhasLidas.length > 0 && atualizarClientesDiagAtual){
+    tentarCasarComBaseAtual(atualizarClientesUltimasLinhasLidas, atualizarClientesDiagAtual);
+  }
+});
+
+// 📥 IR PARA IMPORTAR NOVOS CLIENTES — só abre a ferramenta já existente,
+// nunca importa nada automaticamente.
+document.getElementById('atualizarClientesIrImportarBtn').addEventListener('click', () => {
+  fecharAtualizarClientesSheet();
+  document.getElementById('importClientesEnergyInput').click();
+});
+
 function abrirAtualizarClientesSheet(){
   atualizarClientesResultado = [];
   atualizarClientesArquivoNome = '';
   atualizarClientesArquivoSelecionado = null;
+  atualizarClientesUltimasLinhasLidas = [];
+  atualizarClientesDiagAtual = null;
   document.getElementById('atualizarClientesDropTexto').textContent = 'Arraste a planilha aqui';
   document.getElementById('atualizarClientesResumoWrap').style.display = 'none';
+  document.getElementById('atualizarClientesAvisoBaseVazia').style.display = 'none';
+  document.getElementById('atualizarClientesPreviaWrap').style.display = 'none';
   document.getElementById('atualizarClientesConfirmarBtn').style.display = 'none';
   document.getElementById('atualizarClientesAnalisarBtn').style.display = 'none';
   document.getElementById('atualizarClientesProgresso').style.display = 'none';
