@@ -4649,7 +4649,7 @@
 
       <div class="filter-chips" id="atualizarClientesFilterChips">
         <button class="filter-chip active" data-uc-filtro="todos">Todos</button>
-        <button class="filter-chip" data-uc-filtro="atualizar">🟡 Nome diferente</button>
+        <button class="filter-chip" data-uc-filtro="atualizar">✅ Atualizar</button>
         <button class="filter-chip" data-uc-filtro="correto">⚪ Já correto</button>
         <button class="filter-chip" data-uc-filtro="nao_encontrada">🔴 Não encontrada</button>
         <button class="filter-chip" data-uc-filtro="duplicada">⚠️ Duplicada</button>
@@ -4675,7 +4675,7 @@
   <div class="err" id="atualizarClientesErr"></div>
   <div class="sheet-actions">
     <button class="btn btn-secondary" id="atualizarClientesCancelBtn">Cancelar</button>
-    <button class="btn btn-primary" id="atualizarClientesConfirmarBtn" style="display:none;">Confirmar atualização</button>
+    <button class="btn btn-primary" id="atualizarClientesConfirmarBtn" style="display:none;">CONFIRMAR ATUALIZAÇÃO DOS NOMES</button>
   </div>
 </div>
 
@@ -13671,10 +13671,10 @@ let atualizarClientesUltimasLinhasLidas = []; // linhas já lidas da planilha, r
 let atualizarClientesDiagAtual = null;
 
 const SITUACAO_UC_LABEL = {
-  atualizar: '🟡 Nome diferente',
-  correto: '⚪ Já está correto',
+  atualizar: '✅ Atualizar',
+  correto: '⚪ Já correto',
   nao_encontrada: '🔴 UC não encontrada',
-  duplicada: '⚠️ UC duplicada/ambígua'
+  duplicada: '⚠️ UC duplicada'
 };
 
 // Normalização obrigatória da UC antes de qualquer comparação (item 1 do
@@ -13843,12 +13843,12 @@ function renderAtualizarClientesResumo(){
   const duplicadas = atualizarClientesResultado.filter(l => l.situacao === 'duplicada').length;
 
   document.getElementById('atualizarClientesResumo').innerHTML = `
-    Total de linhas da planilha: <b>${total}</b><br>
+    UCs da planilha: <b>${total}</b><br>
     UCs encontradas na plataforma: <b>${encontradas}</b><br>
-    UCs não encontradas: <b style="color:var(--red);">${naoEncontradas}</b><br>
+    Nomes para atualizar: <b style="color:var(--amber);">${seraoAtualizadas}</b><br>
     Nomes já corretos: <b>${corretas}</b><br>
-    Nomes que serão atualizados: <b style="color:var(--amber);">${seraoAtualizadas}</b><br>
-    UCs duplicadas/ambíguas: <b style="color:var(--red);">${duplicadas}</b>
+    UCs não encontradas: <b style="color:var(--red);">${naoEncontradas}</b><br>
+    Duplicidades: <b style="color:var(--red);">${duplicadas}</b>
   `;
 }
 
