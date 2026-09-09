@@ -4573,6 +4573,10 @@
     <input type="file" id="atualizarClientesInput" accept=".xlsx,.xls" style="display:none;">
   </div>
 
+  <button class="small-btn primary full-btn" id="atualizarClientesAnalisarBtn" type="button" style="display:none; margin-bottom:14px;">🔍 ANALISAR PLANILHA</button>
+
+  <div id="atualizarClientesDiagnostico" style="display:none; font-size:11px; color:var(--text-dim); line-height:1.7; margin-bottom:14px; padding:10px; background:var(--graphite-2); border-radius:8px;"></div>
+
   <div id="atualizarClientesProgresso" style="display:none; margin-bottom:14px;">
     <p style="font-size:13px; color:var(--text-dim);" id="atualizarClientesProgressoTexto">Lendo planilha...</p>
   </div>
@@ -13620,24 +13624,55 @@ function buscarClientePorUcNormalizada(ucNormalizada){
   ) || null;
 }
 
-async function lerPlanilhaBaseUcs(file){
-  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+async function lerPlanilhaBaseUcs(file, diag){
+  diag.xlsxDisponivel = 'carregando...';
+  await comTimeout(
+    loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'),
+    15000,
+    'A biblioteca de leitura de planilhas (XLSX) demorou demais pra carregar. Confira sua internet e tente de novo.'
+  );
+  diag.xlsxDisponivel = typeof window.XLSX !== 'undefined' ? 'sim' : 'não';
+  if(typeof window.XLSX === 'undefined'){
+    throw new Error('A biblioteca XLSX não ficou disponível depois de carregada. Recarregue a página e tente de novo.');
+  }
+
   const buf = await file.arrayBuffer();
   const wb = window.XLSX.read(buf, { type: 'array' });
+  diag.abasEncontradas = wb.SheetNames.join(', ') || '(nenhuma)';
 
   const nomeAbaBaseUcs = wb.SheetNames.find(n => n.trim().toLowerCase() === 'base_ucs');
+  diag.baseUcsEncontrada = nomeAbaBaseUcs ? 'sim' : 'não';
   if(!nomeAbaBaseUcs){
-    throw new Error('A planilha não tem uma aba chamada "Base_UCs". Abas encontradas: ' + wb.SheetNames.join(', '));
+    throw new Error(`A planilha não tem uma aba chamada exatamente "Base_UCs". Abas encontradas: ${wb.SheetNames.join(', ') || '(nenhuma)'}.`);
   }
+
   const sheet = wb.Sheets[nomeAbaBaseUcs];
   const rows = window.XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  diag.linhasLidas = rows.length;
 
-  return rows.map(row => {
-    const ucBruta = String(getFieldValue(row, ['uc / referência copel','uc/referencia copel','uc','unidade consumidora','referência copel','referencia copel']) || '').trim();
+  if(rows.length === 0){
+    throw new Error('A aba "Base_UCs" foi encontrada, mas está vazia (nenhuma linha de dados).');
+  }
+
+  // Confere se AO MENOS a primeira linha tem as colunas mínimas — se não
+  // tiver, avisa exatamente qual coluna está faltando, em vez de só filtrar
+  // tudo em silêncio (item explícito do pedido: nunca catch vazio).
+  const primeiraLinha = rows[0];
+  const temColunaUc = !!getFieldValue(primeiraLinha, ['uc / referencia copel','uc/referencia copel','uc','unidade consumidora','referencia copel']);
+  const temColunaNome = !!getFieldValue(primeiraLinha, ['cliente / razao social','cliente/razao social','cliente','razao social','nome']);
+  if(!temColunaUc && !temColunaNome){
+    throw new Error('Não encontrei as colunas "UC / Referência Copel" nem "Cliente / Razão Social" na aba Base_UCs. Colunas encontradas: ' + Object.keys(primeiraLinha).join(', '));
+  }
+  if(!temColunaUc){
+    throw new Error('Não encontrei a coluna "UC / Referência Copel" na aba Base_UCs. Colunas encontradas: ' + Object.keys(primeiraLinha).join(', '));
+  }
+
+  const linhas = rows.map(row => {
+    const ucBruta = String(getFieldValue(row, ['uc / referencia copel','uc/referencia copel','uc','unidade consumidora','referencia copel']) || '').trim();
     return {
       ucBruta,
       uc: normalizarUcPlanilha(ucBruta),
-      nome: String(getFieldValue(row, ['cliente / razão social','cliente/razao social','cliente','razão social','razao social','nome']) || '').trim(),
+      nome: String(getFieldValue(row, ['cliente / razao social','cliente/razao social','cliente','razao social','nome']) || '').trim(),
       cpfCnpj: String(getFieldValue(row, ['cpf/cnpj','cpf-cnpj','cpf','cnpj']) || '').trim(),
       cidade: String(getFieldValue(row, ['cidade']) || '').trim(),
       estado: String(getFieldValue(row, ['estado','uf']) || '').trim(),
@@ -13650,6 +13685,9 @@ async function lerPlanilhaBaseUcs(file){
       geradorTexto: String(getFieldValue(row, ['gerador?','gerador']) || '').trim()
     };
   }).filter(l => l.uc); // sem UC não dá pra casar com nada — ignora a linha
+
+  diag.ucsValidas = linhas.length;
+  return linhas;
 }
 
 // Classifica cada linha da planilha (item 2, 8, 9, 10 do pedido) — nunca
@@ -13746,27 +13784,93 @@ document.querySelectorAll('[data-uc-filtro]').forEach(chip => {
   });
 });
 
+// Corrida entre a Promise real e um limite de tempo — nunca deixa o fluxo
+// travado pra sempre (item explícito do pedido: sem catch vazio, sempre
+// mostrar erro específico se algo não terminar).
+function comTimeout(promise, ms, mensagemTimeout){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(mensagemTimeout)), ms))
+  ]);
+}
+
+function atualizarEstadoAtualizarClientes(texto){
+  const el = document.getElementById('atualizarClientesProgressoTexto');
+  if(el) el.textContent = texto;
+}
+
+function renderDiagnosticoAtualizarClientes(diag){
+  const el = document.getElementById('atualizarClientesDiagnostico');
+  if(!el) return;
+  el.style.display = 'block';
+  el.innerHTML = [
+    `Arquivo recebido: <b>${diag.arquivoRecebido}</b>`,
+    `Nome: <b>${escapeHtml(diag.nome || '—')}</b>`,
+    `Tamanho: <b>${diag.tamanho || '—'}</b>`,
+    `XLSX disponível: <b>${diag.xlsxDisponivel ?? '—'}</b>`,
+    `Abas encontradas: <b>${escapeHtml(diag.abasEncontradas || '—')}</b>`,
+    `Base_UCs encontrada: <b>${diag.baseUcsEncontrada ?? '—'}</b>`,
+    `Linhas lidas: <b>${diag.linhasLidas ?? '—'}</b>`,
+    `UCs válidas: <b>${diag.ucsValidas ?? '—'}</b>`
+  ].join('<br>');
+}
+
+// Guarda o último arquivo selecionado, pra o botão "ANALISAR PLANILHA" poder
+// chamar exatamente esta mesma função sem duplicar nenhuma lógica.
+let atualizarClientesArquivoSelecionado = null;
+
+function selecionarArquivoAtualizarClientes(file){
+  atualizarClientesArquivoSelecionado = file;
+  document.getElementById('atualizarClientesDropTexto').textContent = file.name;
+  document.getElementById('atualizarClientesErr').textContent = '';
+  document.getElementById('atualizarClientesAnalisarBtn').style.display = 'inline-block';
+  atualizarEstadoAtualizarClientes('Arquivo selecionado');
+  document.getElementById('atualizarClientesProgresso').style.display = 'block';
+}
+
 async function processarArquivoAtualizarClientes(file){
   const errEl = document.getElementById('atualizarClientesErr');
   errEl.textContent = '';
   atualizarClientesArquivoNome = file.name;
 
+  const diag = {
+    arquivoRecebido: file ? 'sim' : 'não',
+    nome: file ? file.name : null,
+    tamanho: file ? (Math.round(file.size / 1024) + ' KB') : null,
+    xlsxDisponivel: null, abasEncontradas: null, baseUcsEncontrada: null,
+    linhasLidas: null, ucsValidas: null
+  };
+  renderDiagnosticoAtualizarClientes(diag);
+
   document.getElementById('atualizarClientesProgresso').style.display = 'block';
-  document.getElementById('atualizarClientesProgressoTexto').textContent = 'Lendo planilha...';
-  document.getElementById('atualizarClientesDropTexto').textContent = file.name;
+  document.getElementById('atualizarClientesResumoWrap').style.display = 'none';
+  document.getElementById('atualizarClientesConfirmarBtn').style.display = 'none';
+  atualizarEstadoAtualizarClientes('Lendo planilha...');
 
   try{
-    const linhas = await lerPlanilhaBaseUcs(file);
+    const linhas = await lerPlanilhaBaseUcs(file, diag);
+    renderDiagnosticoAtualizarClientes(diag);
+
+    atualizarEstadoAtualizarClientes('Aba Base_UCs encontrada');
+
     if(linhas.length === 0){
-      errEl.textContent = 'Nenhuma linha com UC válida encontrada na aba Base_UCs.';
+      errEl.textContent = 'A aba Base_UCs foi lida, mas nenhuma linha tem uma UC válida na coluna "UC / Referência Copel".';
       document.getElementById('atualizarClientesProgresso').style.display = 'none';
       return;
     }
 
-    document.getElementById('atualizarClientesProgressoTexto').textContent = 'Comparando com a base atual...';
-    await loadClientesEnergia();
+    atualizarEstadoAtualizarClientes('Comparando UCs...');
+    // Timeout de segurança: se a leitura da base de clientes (rede/Firestore)
+    // travar por qualquer motivo, isso nunca mais fica preso pra sempre sem
+    // aviso nenhum — aparece um erro específico depois de 20s.
+    await comTimeout(
+      loadClientesEnergia(),
+      20000,
+      'Não foi possível carregar a base de clientes atual (demorou demais). Confira sua internet e tente de novo.'
+    );
     atualizarClientesResultado = classificarLinhasPlanilhaUcs(linhas);
 
+    atualizarEstadoAtualizarClientes('Análise concluída');
     document.getElementById('atualizarClientesProgresso').style.display = 'none';
     document.getElementById('atualizarClientesResumoWrap').style.display = 'block';
     document.getElementById('atualizarClientesConfirmarBtn').style.display = 'inline-block';
@@ -13775,11 +13879,12 @@ async function processarArquivoAtualizarClientes(file){
     renderAtualizarClientesResumo();
     renderAtualizarClientesTabela();
   }catch(err){
-    console.error(err);
-    errEl.textContent = err.message || 'Não foi possível ler essa planilha.';
+    console.error('[Atualizar Clientes por Planilha]', err);
+    errEl.textContent = err && err.message ? err.message : 'Não foi possível ler essa planilha (erro desconhecido — veja o console para detalhes técnicos).';
     document.getElementById('atualizarClientesProgresso').style.display = 'none';
   }
 }
+
 
 /* ---------- Drag-and-drop + seleção de arquivo ---------- */
 const atualizarClientesDropZone = document.getElementById('atualizarClientesDropZone');
@@ -13794,19 +13899,34 @@ atualizarClientesDropZone.addEventListener('dragleave', () => {
 atualizarClientesDropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   atualizarClientesDropZone.style.borderColor = 'var(--line)';
-  if(e.dataTransfer.files[0]) processarArquivoAtualizarClientes(e.dataTransfer.files[0]);
+  const file = e.dataTransfer.files[0];
+  if(!file) return;
+  selecionarArquivoAtualizarClientes(file);
+  processarArquivoAtualizarClientes(file);
 });
 document.getElementById('atualizarClientesInput').addEventListener('change', (e) => {
-  if(e.target.files[0]) processarArquivoAtualizarClientes(e.target.files[0]);
+  const file = e.target.files[0];
   e.target.value = '';
+  if(!file) return;
+  selecionarArquivoAtualizarClientes(file);
+  processarArquivoAtualizarClientes(file);
+});
+// Botão manual — chama exatamente a mesma função usada pelo drag-and-drop e
+// pelo change do input, sem nenhuma lógica duplicada (item explícito do pedido).
+document.getElementById('atualizarClientesAnalisarBtn').addEventListener('click', () => {
+  if(atualizarClientesArquivoSelecionado) processarArquivoAtualizarClientes(atualizarClientesArquivoSelecionado);
 });
 
 function abrirAtualizarClientesSheet(){
   atualizarClientesResultado = [];
   atualizarClientesArquivoNome = '';
+  atualizarClientesArquivoSelecionado = null;
   document.getElementById('atualizarClientesDropTexto').textContent = 'Arraste a planilha aqui';
   document.getElementById('atualizarClientesResumoWrap').style.display = 'none';
   document.getElementById('atualizarClientesConfirmarBtn').style.display = 'none';
+  document.getElementById('atualizarClientesAnalisarBtn').style.display = 'none';
+  document.getElementById('atualizarClientesProgresso').style.display = 'none';
+  document.getElementById('atualizarClientesDiagnostico').style.display = 'none';
   document.getElementById('atualizarClientesErr').textContent = '';
   document.getElementById('atualizarClientesBackdrop').classList.add('open');
   document.getElementById('atualizarClientesSheet').classList.add('open');
