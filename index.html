@@ -1851,6 +1851,26 @@
       <p style="font-size:13px; margin:0;">UCs com débito: <b id="faturasCopelUcsComDebito">0</b> · Última sincronização: <b id="faturasCopelUltimaSinc">nunca</b></p>
     </div>
 
+    <div class="admin-card" style="margin:10px 18px; font-size:12px; line-height:1.8;" id="faturasCopelDiagnosticoUcCliente">
+      <p style="margin:0 0 6px; font-weight:700;">Diagnóstico — resolução UC → Cliente</p>
+      Clientes carregados: <b id="diagUcClienteCarregados">0</b><br>
+      UCs da Base de Clientes: <b id="diagUcClienteBaseUcs">0</b><br>
+      UCs das Faturas Copel: <b id="diagUcClienteFaturasUcs">0</b><br>
+      UCs com titular encontrado: <b id="diagUcClienteEncontradas" style="color:var(--green);">0</b><br>
+      UCs sem correspondência: <b id="diagUcClienteNaoEncontradas" style="color:var(--red);">0</b>
+      <div style="margin-top:8px;">
+        <button class="small-btn" id="verSemCorrespondenciaBtn" type="button" style="display:none;">Ver UCs sem correspondência</button>
+      </div>
+      <div id="listaSemCorrespondencia" style="display:none; margin-top:8px; max-height:220px; overflow-y:auto; border:1px solid var(--line); border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+          <thead style="position:sticky; top:0; background:var(--graphite-2);">
+            <tr style="text-align:left; color:var(--text-dim);"><th style="padding:5px 6px;">UC</th><th style="padding:5px 6px;">Motivo</th></tr>
+          </thead>
+          <tbody id="listaSemCorrespondenciaBody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div id="faturasCopelProgresso" style="display:none; padding:0 18px; margin-bottom:14px;">
       <div class="admin-card">
         <p style="font-size:13px; margin:0 0 8px;" id="faturasCopelProgressoTexto">Lendo arquivo 1 de 3...</p>
@@ -9601,6 +9621,35 @@ async function renderFaturasCopelResumoELista(){
   const ultimaSinc = await carregarUltimaSincCopel();
   document.getElementById('faturasCopelUltimaSinc').textContent = ultimaSinc ? new Date(ultimaSinc).toLocaleString('pt-BR') : 'nunca';
 
+  // Diagnóstico temporário da resolução UC->Cliente (item explícito do pedido).
+  const totalUcsBaseClientes = clientesEnergia.reduce((s, c) => {
+    let n = 0;
+    if(c.ucAneel) n++;
+    if(c.ucCopel) n++;
+    if(Array.isArray(c.ucs)) n += c.ucs.length;
+    return s + n;
+  }, 0);
+  const semCorrespondencia = [];
+  let comTitular = 0;
+  copelUcs.forEach(u => {
+    const ucNorm = normalizarUcPlanilha(u.uc);
+    const cli = buscarClientePorUcNormalizada(ucNorm);
+    if(cli) comTitular++;
+    else semCorrespondencia.push({ uc: u.uc, motivo: !ucNorm ? 'UC vazia/inválida na fatura' : 'UC não cadastrada na Base de Clientes' });
+  });
+
+  document.getElementById('diagUcClienteCarregados').textContent = fmtInt(clientesEnergia.length);
+  document.getElementById('diagUcClienteBaseUcs').textContent = fmtInt(totalUcsBaseClientes);
+  document.getElementById('diagUcClienteFaturasUcs').textContent = fmtInt(copelUcs.length);
+  document.getElementById('diagUcClienteEncontradas').textContent = fmtInt(comTitular);
+  document.getElementById('diagUcClienteNaoEncontradas').textContent = fmtInt(semCorrespondencia.length);
+
+  const btnVerSemCorrespondencia = document.getElementById('verSemCorrespondenciaBtn');
+  btnVerSemCorrespondencia.style.display = semCorrespondencia.length > 0 ? 'inline-block' : 'none';
+  document.getElementById('listaSemCorrespondenciaBody').innerHTML = semCorrespondencia.map(s => `
+    <tr style="border-bottom:1px solid var(--line);"><td style="padding:4px 6px;">${escapeHtml(s.uc)}</td><td style="padding:4px 6px;">${escapeHtml(s.motivo)}</td></tr>
+  `).join('');
+
   const q = document.getElementById('faturasCopelSearchInput').value.trim().toLowerCase();
   const ucsFiltradas = copelUcs.filter(u => !q || u.uc.includes(q) || (u.titular||'').toLowerCase().includes(q));
 
@@ -9714,6 +9763,10 @@ async function renderFaturasCopelResumoELista(){
   });
 }
 document.getElementById('faturasCopelSearchInput').addEventListener('input', renderFaturasCopelResumoELista);
+document.getElementById('verSemCorrespondenciaBtn').addEventListener('click', () => {
+  const el = document.getElementById('listaSemCorrespondencia');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+});
 
 /* ---------- Fatura Copel → Conta a pagar (item 7 do pedido: integração só dentro
    do Financeiro do NFS Energy, nunca automática pro Financeiro Geral) ---------- */
@@ -10150,7 +10203,11 @@ function showNfsSubView(view){
     }
     copelUcExpandida = null;
     verificarExtensaoNfsCopel();
-    Promise.all([loadCopelUcs(), loadCopelFaturas()]).then(renderFaturasCopelResumoELista);
+    // Item explícito do pedido: carregar a Base de Clientes SEMPRE que essa
+    // tela abre, pra resolver UC->Nome mesmo sem precisar visitar Base de
+    // Clientes antes nem sincronizar de novo. Antes disso, se a pessoa
+    // entrasse direto aqui, clientesEnergia ficava vazio e nada era encontrado.
+    Promise.all([loadCopelUcs(), loadCopelFaturas(), loadClientesEnergia()]).then(renderFaturasCopelResumoELista);
   }
   if(view === 'copel-debitos'){
     if(!temAcessoCopelCredenciais('visualizar')){
@@ -10158,7 +10215,7 @@ function showNfsSubView(view){
       showNfsSubView('copel');
       return;
     }
-    loadCopelDebitos().then(renderDebitosCopelResumoELista);
+    Promise.all([loadCopelDebitos(), loadClientesEnergia()]).then(renderDebitosCopelResumoELista);
   }
   if(view === 'copel-acompanhamento'){
     if(!temAcessoCopelProtocolos() && !temAcessoCopelOutrosServicos()){
@@ -13515,6 +13572,7 @@ async function saveClienteEnergia(){
 
   closeClienteEnergiaSheet();
   renderClientesEnergia();
+  atualizarExibicoesQueUsamBaseDeClientes();
   showToast(editingClienteEnergiaId ? 'Cliente atualizado.' : 'Cliente cadastrado.');
   if(clienteEnergiaAposSalvarCallback){
     const cb = clienteEnergiaAposSalvarCallback;
@@ -13654,6 +13712,7 @@ document.getElementById('importClientesEnergyConfirmBtn').addEventListener('clic
 
   closeImportClientesEnergiaSheet();
   renderClientesEnergia();
+  atualizarExibicoesQueUsamBaseDeClientes();
   showToast(`Importação concluída: ${criados} criado(s), ${atualizados} atualizado(s).`);
 });
 
@@ -13691,6 +13750,20 @@ function buscarClientePorUcNormalizada(ucNormalizada){
     // array adicional, nunca substitui os campos singulares acima.
     (Array.isArray(c.ucs) && c.ucs.some(u => normalizarUcPlanilha(u.uc) === ucNormalizada))
   ) || null;
+}
+
+// Atualização automática do mapa UC->Cliente (item explícito do pedido):
+// chamada sempre que a Base de Clientes muda (editar cliente, importar,
+// atualizar nomes por planilha) — re-renderiza Faturas Copel e Débitos Copel
+// se essas telas já tiverem sido carregadas nesta sessão, pra refletir o
+// nome novo imediatamente, sem precisar sincronizar a Copel de novo.
+function atualizarExibicoesQueUsamBaseDeClientes(){
+  if(typeof copelUcs !== 'undefined' && copelUcs.length > 0){
+    renderFaturasCopelResumoELista();
+  }
+  if(typeof copelDebitos !== 'undefined' && copelDebitos.length > 0){
+    renderDebitosCopelResumoELista();
+  }
 }
 
 // Normalização flexível de cabeçalho (item explícito do pedido): minúsculas,
@@ -14284,6 +14357,7 @@ document.getElementById('primeiraCargaConfirmarBtn').addEventListener('click', a
   // não confia só no que já está em memória, relê da plataforma.
   await loadClientesEnergia();
   renderClientesEnergia();
+  atualizarExibicoesQueUsamBaseDeClientes();
 
   document.getElementById('primeiraCargaProgresso').style.display = 'none';
   const resultadoEl = document.getElementById('primeiraCargaResultado');
@@ -14452,6 +14526,7 @@ document.getElementById('atualizarClientesConfirmarBtn').addEventListener('click
 
   fecharAtualizarClientesSheet();
   renderClientesEnergia();
+  atualizarExibicoesQueUsamBaseDeClientes();
   showToast(`${atualizados} cliente(s) atualizado(s) com sucesso.`);
 });
 
