@@ -13625,6 +13625,37 @@ function buscarClientePorUcNormalizada(ucNormalizada){
   ) || null;
 }
 
+// Normalização flexível de cabeçalho (item explícito do pedido): minúsculas,
+// sem acento, espaços duplicados colapsados, trim, e espaço ao redor da
+// barra "/" sempre normalizado — assim "UC/ReferenciaCopel", "UC / Referência
+// Copel" e "uc  /  REFERENCIA   copel" batem todos como o mesmo campo.
+function normalizarCabecalhoFlexivel(h){
+  return String(h || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s*\/\s*/g, ' / ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Devolve o cabeçalho REAL (como está na planilha) que corresponde a algum
+// dos aliases aceitos, comparando pela forma normalizada — nunca por nome
+// exato. Retorna null se nenhum bater.
+function identificarColunaFlexivel(headers, aliases){
+  const aliasesNormalizados = aliases.map(normalizarCabecalhoFlexivel);
+  return headers.find(h => aliasesNormalizados.includes(normalizarCabecalhoFlexivel(h))) || null;
+}
+
+const ALIASES_COLUNA_UC = [
+  'UC / Referência Copel', 'UC', 'Referência Copel', 'Referencia Copel',
+  'Unidade Consumidora', 'Unidade Consumidora ANEEL', 'UC ANEEL', 'UC Copel',
+  'Nº UC', 'Numero UC'
+];
+const ALIASES_COLUNA_NOME = [
+  'Cliente / Razão Social', 'Cliente / Razao Social', 'Cliente', 'Nome',
+  'Nome do Cliente', 'Razão Social', 'Razao Social', 'Titular'
+];
+
 async function lerPlanilhaBaseUcs(file, diag){
   diag.xlsxDisponivel = 'carregando...';
   await comTimeout(
@@ -13655,25 +13686,27 @@ async function lerPlanilhaBaseUcs(file, diag){
     throw new Error('A aba "Base_UCs" foi encontrada, mas está vazia (nenhuma linha de dados).');
   }
 
-  // Confere se AO MENOS a primeira linha tem as colunas mínimas — se não
-  // tiver, avisa exatamente qual coluna está faltando, em vez de só filtrar
-  // tudo em silêncio (item explícito do pedido: nunca catch vazio).
-  const primeiraLinha = rows[0];
-  const temColunaUc = !!getFieldValue(primeiraLinha, ['uc / referencia copel','uc/referencia copel','uc','unidade consumidora','referencia copel']);
-  const temColunaNome = !!getFieldValue(primeiraLinha, ['cliente / razao social','cliente/razao social','cliente','razao social','nome']);
-  if(!temColunaUc && !temColunaNome){
-    throw new Error('Não encontrei as colunas "UC / Referência Copel" nem "Cliente / Razão Social" na aba Base_UCs. Colunas encontradas: ' + Object.keys(primeiraLinha).join(', '));
+  const cabecalhosEncontrados = Object.keys(rows[0]);
+  diag.cabecalhosEncontrados = cabecalhosEncontrados.join(', ');
+
+  const colunaUc = identificarColunaFlexivel(cabecalhosEncontrados, ALIASES_COLUNA_UC);
+  const colunaNome = identificarColunaFlexivel(cabecalhosEncontrados, ALIASES_COLUNA_NOME);
+  diag.colunaUc = colunaUc;
+  diag.colunaNome = colunaNome;
+
+  if(!colunaUc){
+    throw new Error('Não consegui identificar a coluna de UC. Cabeçalhos encontrados: ' + cabecalhosEncontrados.join(', '));
   }
-  if(!temColunaUc){
-    throw new Error('Não encontrei a coluna "UC / Referência Copel" na aba Base_UCs. Colunas encontradas: ' + Object.keys(primeiraLinha).join(', '));
+  if(!colunaNome){
+    throw new Error('Não consegui identificar a coluna de Nome. Cabeçalhos encontrados: ' + cabecalhosEncontrados.join(', '));
   }
 
   const linhas = rows.map(row => {
-    const ucBruta = String(getFieldValue(row, ['uc / referencia copel','uc/referencia copel','uc','unidade consumidora','referencia copel']) || '').trim();
+    const ucBruta = String(row[colunaUc] || '').trim();
     return {
       ucBruta,
-      uc: normalizarUcPlanilha(ucBruta),
-      nome: String(getFieldValue(row, ['cliente / razao social','cliente/razao social','cliente','razao social','nome']) || '').trim(),
+      uc: normalizarUcPlanilha(ucBruta), // regra de correspondência da UC inalterada: só dígitos, sem aproximação
+      nome: String(row[colunaNome] || '').trim(),
       cpfCnpj: String(getFieldValue(row, ['cpf/cnpj','cpf-cnpj','cpf','cnpj']) || '').trim(),
       cidade: String(getFieldValue(row, ['cidade']) || '').trim(),
       estado: String(getFieldValue(row, ['estado','uf']) || '').trim(),
@@ -13828,7 +13861,10 @@ function renderDiagnosticoAtualizarClientes(diag){
     `Tamanho: <b>${diag.tamanho || '—'}</b>`,
     `XLSX disponível: <b>${diag.xlsxDisponivel ?? '—'}</b>`,
     `Abas encontradas: <b>${escapeHtml(diag.abasEncontradas || '—')}</b>`,
-    `Base_UCs encontrada: <b>${diag.baseUcsEncontrada ?? '—'}</b>`,
+    `Aba utilizada: <b>${diag.baseUcsEncontrada === 'sim' ? 'Base_UCs' : '—'}</b>`,
+    `Cabeçalhos encontrados: <b>${escapeHtml(diag.cabecalhosEncontrados || '—')}</b>`,
+    `Coluna identificada como UC: <b>${escapeHtml(diag.colunaUc || '(não identificada)')}</b>`,
+    `Coluna identificada como Nome: <b>${escapeHtml(diag.colunaNome || '(não identificada)')}</b>`,
     `Linhas lidas: <b>${diag.linhasLidas ?? '—'}</b>`,
     `UCs válidas: <b>${diag.ucsValidas ?? '—'}</b>`,
     `Base carregada: <b>${diag.baseCarregada != null ? diag.baseCarregada + (diag.baseCarregada !== 'falhou' ? ' clientes' : '') : '—'}</b>`,
@@ -13860,6 +13896,7 @@ async function processarArquivoAtualizarClientes(file){
     nome: file ? file.name : null,
     tamanho: file ? (Math.round(file.size / 1024) + ' KB') : null,
     xlsxDisponivel: null, abasEncontradas: null, baseUcsEncontrada: null,
+    cabecalhosEncontrados: null, colunaUc: null, colunaNome: null,
     linhasLidas: null, ucsValidas: null, baseCarregada: null, ucsExistentes: null
   };
   renderDiagnosticoAtualizarClientes(diag);
