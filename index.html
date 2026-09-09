@@ -13485,6 +13485,7 @@ let importParsedClientesEnergia = [];
 
 document.getElementById('importClientesEnergyBtn').addEventListener('click', ()=> document.getElementById('importClientesEnergyInput').click());
 document.getElementById('importClientesEnergyInput').addEventListener('change', async (e)=>{
+  console.log('[NFS] Fluxo: IMPORTAR NOVOS CLIENTES');
   const file = e.target.files[0];
   e.target.value = '';
   if(!file) return;
@@ -13794,6 +13795,24 @@ function comTimeout(promise, ms, mensagemTimeout){
   ]);
 }
 
+// Verificação própria pra esta ferramenta — NÃO reusa loadClientesEnergia()
+// direto porque aquela função (usada em todo o resto do app, não alterada
+// aqui) absorve qualquer erro de rede/Firestore e silenciosamente define
+// clientesEnergia=[] no catch. Isso torna impossível, de fora, diferenciar
+// "a base carregou e realmente está vazia" de "a leitura falhou". Aqui essa
+// diferença fica explícita, pra nunca interpretar falha como base vazia.
+async function carregarBaseClientesComVerificacao(){
+  try{
+    const res = await storageGet(CLIENTES_ENERGIA_KEY, true);
+    const lista = res && res.value ? JSON.parse(res.value) : [];
+    clientesEnergia = lista; // mesma variável global que o resto do app usa
+    return { sucesso: true, total: lista.length };
+  }catch(e){
+    console.error('[Atualizar Clientes por Planilha] Falha ao carregar a Base de Clientes:', e);
+    return { sucesso: false, total: 0 };
+  }
+}
+
 function atualizarEstadoAtualizarClientes(texto){
   const el = document.getElementById('atualizarClientesProgressoTexto');
   if(el) el.textContent = texto;
@@ -13811,7 +13830,9 @@ function renderDiagnosticoAtualizarClientes(diag){
     `Abas encontradas: <b>${escapeHtml(diag.abasEncontradas || '—')}</b>`,
     `Base_UCs encontrada: <b>${diag.baseUcsEncontrada ?? '—'}</b>`,
     `Linhas lidas: <b>${diag.linhasLidas ?? '—'}</b>`,
-    `UCs válidas: <b>${diag.ucsValidas ?? '—'}</b>`
+    `UCs válidas: <b>${diag.ucsValidas ?? '—'}</b>`,
+    `Base carregada: <b>${diag.baseCarregada != null ? diag.baseCarregada + (diag.baseCarregada !== 'falhou' ? ' clientes' : '') : '—'}</b>`,
+    `UCs existentes na plataforma: <b>${diag.ucsExistentes ?? '—'}</b>`
   ].join('<br>');
 }
 
@@ -13829,6 +13850,7 @@ function selecionarArquivoAtualizarClientes(file){
 }
 
 async function processarArquivoAtualizarClientes(file){
+  console.log('[NFS] Fluxo: ATUALIZAR CLIENTES POR PLANILHA');
   const errEl = document.getElementById('atualizarClientesErr');
   errEl.textContent = '';
   atualizarClientesArquivoNome = file.name;
@@ -13838,7 +13860,7 @@ async function processarArquivoAtualizarClientes(file){
     nome: file ? file.name : null,
     tamanho: file ? (Math.round(file.size / 1024) + ' KB') : null,
     xlsxDisponivel: null, abasEncontradas: null, baseUcsEncontrada: null,
-    linhasLidas: null, ucsValidas: null
+    linhasLidas: null, ucsValidas: null, baseCarregada: null, ucsExistentes: null
   };
   renderDiagnosticoAtualizarClientes(diag);
 
@@ -13859,15 +13881,39 @@ async function processarArquivoAtualizarClientes(file){
       return;
     }
 
-    atualizarEstadoAtualizarClientes('Comparando UCs...');
-    // Timeout de segurança: se a leitura da base de clientes (rede/Firestore)
-    // travar por qualquer motivo, isso nunca mais fica preso pra sempre sem
-    // aviso nenhum — aparece um erro específico depois de 20s.
-    await comTimeout(
-      loadClientesEnergia(),
+    atualizarEstadoAtualizarClientes('Carregando Base de Clientes...');
+    // Verificação própria (não usa loadClientesEnergia() direto): aquela
+    // função absorve qualquer erro de rede e define clientesEnergia=[] em
+    // silêncio, o que tornaria impossível diferenciar "base genuinamente
+    // vazia" de "falha ao carregar". Aqui isso fica explícito.
+    const resultadoBase = await comTimeout(
+      carregarBaseClientesComVerificacao(),
       20000,
       'Não foi possível carregar a base de clientes atual (demorou demais). Confira sua internet e tente de novo.'
     );
+
+    diag.baseCarregada = resultadoBase.sucesso ? resultadoBase.total : 'falhou';
+    const totalUcsExistentes = resultadoBase.sucesso
+      ? clientesEnergia.filter(c => c.ucAneel || c.ucCopel).length : 0;
+    diag.ucsExistentes = resultadoBase.sucesso ? totalUcsExistentes : 'falhou';
+    renderDiagnosticoAtualizarClientes(diag);
+
+    if(!resultadoBase.sucesso){
+      errEl.textContent = 'Não foi possível carregar a Base de Clientes. A atualização foi cancelada para evitar alterações incorretas.';
+      document.getElementById('atualizarClientesProgresso').style.display = 'none';
+      return;
+    }
+
+    // Item explícito do pedido: nunca prosseguir com 0 clientes carregados,
+    // mesmo que o carregamento em si tenha "funcionado" — sem UC nenhuma
+    // cadastrada não há nada pra casar com segurança.
+    if(resultadoBase.total === 0){
+      errEl.textContent = 'A Base de Clientes está vazia (0 clientes carregados) — não há nenhuma UC cadastrada pra casar com a planilha. Cadastre clientes antes de usar esta ferramenta.';
+      document.getElementById('atualizarClientesProgresso').style.display = 'none';
+      return;
+    }
+
+    atualizarEstadoAtualizarClientes('Comparando UCs...');
     atualizarClientesResultado = classificarLinhasPlanilhaUcs(linhas);
 
     atualizarEstadoAtualizarClientes('Análise concluída');
