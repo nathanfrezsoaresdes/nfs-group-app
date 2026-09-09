@@ -4699,6 +4699,32 @@
   </div>
 </div>
 
+<div class="sheet-backdrop" id="previaContaPagarBackdrop"></div>
+<div class="sheet" id="previaContaPagarSheet">
+  <div class="sheet-handle"></div>
+  <h2>💰 Gerar Conta a Pagar</h2>
+  <p class="card-sub" style="margin-bottom:10px;">Confira os dados antes de gravar no Financeiro do NFS Energy.</p>
+  <div id="previaContaPagarConteudo" style="font-size:13.5px; line-height:2; padding:12px; background:var(--graphite-2); border-radius:8px; margin-bottom:14px;"></div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="previaContaPagarCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="previaContaPagarConfirmarBtn">CONFIRMAR E GERAR CONTA A PAGAR</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="previaContaPagarLoteBackdrop"></div>
+<div class="sheet" id="previaContaPagarLoteSheet">
+  <div class="sheet-handle"></div>
+  <h2>💰 Gerar Contas a Pagar Selecionadas</h2>
+  <div id="previaContaPagarLoteConteudo" style="font-size:13.5px; line-height:2; padding:12px; background:var(--graphite-2); border-radius:8px; margin-bottom:14px;"></div>
+  <div id="previaContaPagarLoteProgresso" style="display:none; margin-bottom:14px;">
+    <p style="font-size:13px; color:var(--text-dim);" id="previaContaPagarLoteProgressoTexto">Gerando...</p>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn btn-secondary" id="previaContaPagarLoteCancelBtn">Cancelar</button>
+    <button class="btn btn-primary" id="previaContaPagarLoteConfirmarBtn">GERAR CONTAS A PAGAR SELECIONADAS</button>
+  </div>
+</div>
+
 <div class="sheet-backdrop" id="protocoloBackdrop"></div>
 <div class="sheet" id="protocoloSheet">
   <div class="sheet-handle"></div>
@@ -9601,6 +9627,31 @@ async function carregarUltimaSincCopel(){
 }
 
 /* ---------- Resumo + lista por UC (item 3, 6 e 7 do pedido) ---------- */
+// Célula "Financeiro NFS Energy" de cada fatura — mostra o status
+// sincronizado com a conta a pagar vinculada (item explícito do pedido:
+// nunca mistura Status Copel com Status Financeiro, mostra os dois separados).
+function renderCelulaFinanceiroFatura(f){
+  if(!f.contaPagarGeradaId){
+    return `<button class="small-btn copel-gerar-conta" data-id="${f.id}" type="button">💰 Gerar conta a pagar</button>`;
+  }
+  const conta = contasPagar.find(c => c.id === f.contaPagarGeradaId);
+  if(!conta){
+    // referência órfã (conta foi excluída no Financeiro) — permite gerar de novo
+    return `<span class="badge status-cancelado">Conta não encontrada</span> <button class="small-btn copel-gerar-conta" data-id="${f.id}" type="button">Gerar novamente</button>`;
+  }
+  const statusFin = statusEfetivoConta(conta);
+  if(statusFin === 'pago'){
+    const ultimaBaixa = (conta.baixas||[])[conta.baixas.length-1];
+    const dataPg = ultimaBaixa ? new Date(ultimaBaixa.data+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+    const contaBanc = ultimaBaixa && ultimaBaixa.contaBancariaId ? (contasBancariasFin.find(cb=>cb.id===ultimaBaixa.contaBancariaId)||{}).nome : null;
+    return `<span class="badge status-concluido">💰 Pago no Financeiro</span><br>
+      <span style="font-size:10.5px; color:var(--text-dim);">${dataPg} · ${fmtMoney(totalBaixadoConta(conta))}${contaBanc ? ' · '+escapeHtml(contaBanc) : ''}</span><br>
+      <button class="small-btn copel-ver-financeiro" data-conta-id="${conta.id}" type="button" style="margin-top:2px;">Ver no Financeiro</button>`;
+  }
+  return `<span class="badge status-concluido">✅ Conta a Pagar gerada</span><br>
+    <button class="small-btn copel-ver-financeiro" data-conta-id="${conta.id}" type="button" style="margin-top:2px;">Ver no Financeiro</button>`;
+}
+
 async function renderFaturasCopelResumoELista(){
   const vencidas = copelFaturas.filter(f => statusEfetivoFatura(f) === 'vencida');
   const valorVencido = vencidas.reduce((s,f)=> s + (f.valor||0), 0);
@@ -9686,13 +9737,14 @@ async function renderFaturasCopelResumoELista(){
         </div>
         ${expandida ? `
           <div style="margin-top:10px; overflow-x:auto;">
-            <table style="width:100%; min-width:820px; border-collapse:collapse; font-size:12px;">
+            <table style="width:100%; min-width:900px; border-collapse:collapse; font-size:12px;">
               <thead><tr style="text-align:left; color:var(--text-dim);">
+                <th style="padding:5px 4px;"><input type="checkbox" class="copel-select-all-uc" data-uc="${escapeHtmlA(u.uc)}" title="Selecionar todas dessa UC"></th>
                 <th style="padding:5px 4px;">Referência</th><th style="padding:5px 4px;">Nº Fatura</th>
                 <th style="padding:5px 4px;">Vencimento</th><th style="padding:5px 4px;">Dias atraso</th>
                 <th style="padding:5px 4px;">Valor</th><th style="padding:5px 4px;">Situação</th>
                 <th style="padding:5px 4px;">Via</th><th style="padding:5px 4px;">Status</th>
-                <th style="padding:5px 4px;">PDF</th><th style="padding:5px 4px;">Financeiro</th>
+                <th style="padding:5px 4px;">PDF</th><th style="padding:5px 4px;">Financeiro NFS Energy</th>
               </tr></thead>
               <tbody>
                 ${faturasDaUc.map(f => {
@@ -9700,6 +9752,7 @@ async function renderFaturasCopelResumoELista(){
                   const dias = diasEmAtrasoFatura(f);
                   const viaTitulo = f.via === '2' ? '2ª via disponível – já houve download anteriormente' : (f.via === '1' ? '1ª via disponível – ainda não baixada' : '');
                   return `<tr style="border-bottom:1px solid var(--line);">
+                    <td style="padding:5px 4px;">${!f.contaPagarGeradaId ? `<input type="checkbox" class="copel-select-fatura" data-uc="${escapeHtmlA(u.uc)}" data-id="${f.id}">` : ''}</td>
                     <td style="padding:5px 4px;">${escapeHtml(f.referencia||'—')}</td>
                     <td style="padding:5px 4px;">${escapeHtml(f.numeroFatura||'—')}</td>
                     <td style="padding:5px 4px;">${f.vencimento ? new Date(f.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td>
@@ -9712,11 +9765,15 @@ async function renderFaturasCopelResumoELista(){
                       ${st !== 'paga' ? `<button class="small-btn copel-marcar-paga" data-id="${f.id}" type="button" style="margin-left:4px;">Marcar paga</button>` : ''}
                     </td>
                     <td style="padding:5px 4px;">${f.temPdf ? `<button class="small-btn copel-baixar-pdf" data-key="${f.pdfKey}" data-nome="${escapeHtmlA((f.referencia||f.id)+'.pdf')}" type="button">Baixar PDF</button>` : (f.linkDocumento ? `<a href="${escapeHtmlA(f.linkDocumento)}" target="_blank" class="small-btn" style="text-decoration:none; display:inline-block;">Baixar</a>` : '—')}</td>
-                    <td style="padding:5px 4px;">${f.contaPagarGeradaId ? '<span class="badge status-concluido">Gerada</span>' : `<button class="small-btn copel-gerar-conta" data-id="${f.id}" type="button">💰 Gerar conta a pagar</button>`}</td>
+                    <td style="padding:5px 4px; white-space:nowrap;">${renderCelulaFinanceiroFatura(f)}</td>
                   </tr>`;
                 }).join('')}
               </tbody>
             </table>
+        <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+          <span id="copelLoteContagem-${escapeHtmlA(u.uc)}" style="font-size:11.5px; color:var(--text-dim);"></span>
+          <button class="small-btn primary copel-gerar-lote-btn" data-uc="${escapeHtmlA(u.uc)}" type="button" style="display:none;">💰 Gerar Contas a Pagar Selecionadas</button>
+        </div>
           </div>
         ` : ''}
       </div>
@@ -9759,7 +9816,25 @@ async function renderFaturasCopelResumoELista(){
     });
   });
   wrap.querySelectorAll('.copel-gerar-conta').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{ e.stopPropagation(); gerarContaPagarDeFatura(btn.dataset.id); });
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); abrirPreviaGerarContaPagar(btn.dataset.id); });
+  });
+  wrap.querySelectorAll('.copel-ver-financeiro').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); abrirContaNoFinanceiro(btn.dataset.contaId); });
+  });
+  wrap.querySelectorAll('.copel-select-fatura').forEach(cb=>{
+    cb.addEventListener('click', (e)=> e.stopPropagation());
+    cb.addEventListener('change', () => atualizarContagemSelecaoUc(cb.dataset.uc));
+  });
+  wrap.querySelectorAll('.copel-select-all-uc').forEach(cbAll=>{
+    cbAll.addEventListener('click', (e)=> e.stopPropagation());
+    cbAll.addEventListener('change', () => {
+      const uc = cbAll.dataset.uc;
+      document.querySelectorAll(`.copel-select-fatura[data-uc="${CSS.escape(uc)}"]`).forEach(cb => { cb.checked = cbAll.checked; });
+      atualizarContagemSelecaoUc(uc);
+    });
+  });
+  wrap.querySelectorAll('.copel-gerar-lote-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); abrirPreviaLoteContaPagar(btn.dataset.uc); });
   });
 }
 document.getElementById('faturasCopelSearchInput').addEventListener('input', renderFaturasCopelResumoELista);
@@ -9770,47 +9845,223 @@ document.getElementById('verSemCorrespondenciaBtn').addEventListener('click', ()
 
 /* ---------- Fatura Copel → Conta a pagar (item 7 do pedido: integração só dentro
    do Financeiro do NFS Energy, nunca automática pro Financeiro Geral) ---------- */
-async function gerarContaPagarDeFatura(faturaId){
+// Carrega Contas a Pagar + catálogos no contexto NFS Energy sem "vazar" esse
+// contexto pra outras telas — usado tanto na abertura de Faturas Copel
+// quanto sempre que uma conta precisa ser criada/consultada a partir daqui.
+async function carregarFinanceiroNfsEnergyParaExibicao(){
+  const contextoAnterior = contextoFinanceiroAtivo;
+  contextoFinanceiroAtivo = 'nfsEnergy';
+  try{
+    await Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]);
+  }finally{
+    contextoFinanceiroAtivo = contextoAnterior;
+  }
+}
+
+// Categoria fixa pedida ("Energia Elétrica / Copel") — procura antes de
+// criar, nunca duplica a categoria em cadastros repetidos.
+async function obterOuCriarCategoriaEnergiaCopel(){
+  const nomeAlvo = 'energia eletrica / copel';
+  const normaliza = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  let cat = categoriasFin.find(c => normaliza(c.nome) === nomeAlvo);
+  if(!cat){
+    cat = { id: 'cat_' + Date.now() + '_copel', nome: 'Energia Elétrica / Copel' };
+    categoriasFin.push(cat);
+    await saveCategoriasFin();
+  }
+  return cat;
+}
+
+// Chave de duplicidade (item explícito do pedido): COPEL + UC + referência +
+// nº da fatura. Confere primeiro pelo link direto (mais confiável), com a
+// chave composta como reforço caso o link se perca por algum motivo.
+function buscarContaPagarExistenteParaFatura(f){
+  let conta = contasPagar.find(c => c.origemCopelFaturaId === f.id);
+  if(conta) return conta;
+  conta = contasPagar.find(c =>
+    c.origemTipo === 'fatura_copel' && c.copelUc === f.uc &&
+    c.copelReferencia === f.referencia && c.copelNumeroFatura === f.numeroFatura
+  );
+  return conta || null;
+}
+
+function montarDescricaoContaPagarCopel(f, nomeCliente){
+  return `COPEL - ${nomeCliente} - UC ${f.uc} - ${f.referencia}`;
+}
+
+/* ---------- Geração individual: prévia -> confirmação ---------- */
+let previaContaPagarFaturaId = null;
+
+async function abrirPreviaGerarContaPagar(faturaId){
   const f = copelFaturas.find(x=>x.id === faturaId);
   if(!f) return;
-  if(f.contaPagarGeradaId){
-    showToast('Essa fatura já gerou uma conta a pagar.');
-    return;
-  }
   if(!temAcessoNfsEnergyFinanceiro()){
     showToast('Você não tem acesso ao Financeiro do NFS Energy.');
     return;
   }
-  const uc = copelUcs.find(u => u.uc === f.uc);
+
+  await carregarFinanceiroNfsEnergyParaExibicao();
+  const existente = buscarContaPagarExistenteParaFatura(f);
+  if(existente){
+    if(confirm('⚠️ Esta fatura já possui uma Conta a Pagar.\n\nDeseja abrir (Ver Conta a Pagar)?')){
+      abrirContaNoFinanceiro(existente.id);
+    }
+    return;
+  }
+
+  previaContaPagarFaturaId = faturaId;
+  const clienteVinculado = buscarClientePorUcNormalizada(normalizarUcPlanilha(f.uc));
+  const nomeCliente = clienteVinculado ? clienteVinculado.nome : 'Titular não identificado';
+  const descricao = montarDescricaoContaPagarCopel(f, nomeCliente);
+
+  document.getElementById('previaContaPagarConteudo').innerHTML = `
+    Cliente: <b>${escapeHtml(nomeCliente)}</b>${!clienteVinculado ? '<br><span style="color:var(--amber); font-size:12px;">⚠️ Cliente não identificado pela UC</span>' : ''}<br>
+    UC: <b>${escapeHtml(f.uc)}</b><br>
+    Referência: <b>${escapeHtml(f.referencia||'—')}</b><br>
+    Nº Fatura: <b>${escapeHtml(f.numeroFatura||'—')}</b><br>
+    Vencimento: <b>${f.vencimento ? new Date(f.vencimento+'T00:00:00').toLocaleDateString('pt-BR') : '—'}</b><br>
+    Valor: <b>${fmtMoney(f.valor||0)}</b><br>
+    Categoria: <b>Energia Elétrica / Copel</b><br>
+    Descrição: <b>${escapeHtml(descricao)}</b>
+  `;
+  document.getElementById('previaContaPagarBackdrop').classList.add('open');
+  document.getElementById('previaContaPagarSheet').classList.add('open');
+}
+function fecharPreviaContaPagar(){
+  document.getElementById('previaContaPagarBackdrop').classList.remove('open');
+  document.getElementById('previaContaPagarSheet').classList.remove('open');
+}
+document.getElementById('previaContaPagarCancelBtn').addEventListener('click', fecharPreviaContaPagar);
+document.getElementById('previaContaPagarBackdrop').addEventListener('click', fecharPreviaContaPagar);
+document.getElementById('previaContaPagarConfirmarBtn').addEventListener('click', async () => {
+  const f = copelFaturas.find(x=>x.id === previaContaPagarFaturaId);
+  fecharPreviaContaPagar();
+  if(!f) return;
+  await gerarContaPagarDeFaturaReal(f);
+});
+
+// Criação real da conta — só chamada depois da confirmação explícita.
+async function gerarContaPagarDeFaturaReal(f){
   const contextoAnterior = contextoFinanceiroAtivo;
   contextoFinanceiroAtivo = 'nfsEnergy'; // grava só no financeiro isolado do NFS Energy, nunca no geral
   try{
     await Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]);
+
+    // Revalida a duplicidade bem antes de gravar — evita corrida entre abrir
+    // a prévia e confirmar (ex.: duas abas, ou geração em lote acontecendo junto).
+    const jaExiste = buscarContaPagarExistenteParaFatura(f);
+    if(jaExiste){ showToast('Esta fatura já possui uma Conta a Pagar.'); return false; }
+
+    const categoria = await obterOuCriarCategoriaEnergiaCopel();
+    const clienteVinculado = buscarClientePorUcNormalizada(normalizarUcPlanilha(f.uc));
+    const nomeCliente = clienteVinculado ? clienteVinculado.nome : 'Titular não identificado';
+
     const novaConta = {
       id: gerarIdConta('pagar'), tipo: 'pagar',
-      contraparte: 'Copel', cpfCnpj: '', whatsapp: '',
-      descricao: `Fatura Copel UC ${f.uc} — ${f.referencia}${uc && uc.titular ? ' — ' + uc.titular : ''}`,
-      categoriaId: '', centroCustoId: '', empresaId: '',
+      contraparte: 'COPEL DISTRIBUIÇÃO S.A.', cpfCnpj: '', whatsapp: '',
+      descricao: montarDescricaoContaPagarCopel(f, nomeCliente),
+      categoriaId: categoria.id, centroCustoId: '', empresaId: '',
       dataEmissao: hojeStr(), vencimento: f.vencimento,
+      valor: f.valor || 0,
       formaPagamento: '', contaBancariaId: '',
-      observacoes: 'Gerada automaticamente a partir da fatura Copel processada.',
+      observacoes: `Gerada automaticamente a partir da fatura Copel. Nº fatura: ${f.numeroFatura || '—'}.`,
       anexo: null, status: 'aberto',
       numeroParcela: 1, totalParcelas: 1, grupoParcelamentoId: null,
       baixas: [], criadoPor: currentUser, criadoEm: new Date().toISOString(),
-      origemCopelFaturaId: f.id
+      origemTipo: 'fatura_copel', origemCopelFaturaId: f.id,
+      copelUc: f.uc, copelReferencia: f.referencia, copelNumeroFatura: f.numeroFatura,
+      copelClienteTitular: nomeCliente
     };
     contasPagar.push(novaConta);
     const ok = await saveContasPagar();
-    if(!ok){ showToast('Não foi possível gerar a conta agora.'); return; }
+    if(!ok){ showToast('Não foi possível gerar a conta agora.'); return false; }
     f.contaPagarGeradaId = novaConta.id;
     await saveCopelFaturas();
     registrarAuditoria('NFS Energy (Faturas Copel)', 'Conta a pagar gerada no Financeiro do NFS Energy', f.uc + ' — ' + f.referencia, '', fmtMoney(f.valor||0));
-    showToast('Conta a pagar gerada no Financeiro do NFS Energy (não afeta o Financeiro Geral).');
     renderFaturasCopelResumoELista();
+    return true;
   }finally{
     contextoFinanceiroAtivo = contextoAnterior; // nunca deixa o contexto global "vazado" pra outra tela
   }
 }
+
+// "Ver no Financeiro" — navega direto pro lançamento correspondente em
+// Contas a Pagar do NFS Energy.
+async function abrirContaNoFinanceiro(contaId){
+  showNfsEnergyFinanceiroScreen();
+  await Promise.all([loadContasPagar(), carregarCatalogosFinanceiros()]);
+  showFinSubView('pagar');
+  openContaEdit('pagar', contaId);
+}
+
+/* ---------- Geração em lote ---------- */
+let copelFaturasSelecionadas = new Set();
+
+function atualizarContagemSelecaoUc(uc){
+  const checks = document.querySelectorAll(`.copel-select-fatura[data-uc="${CSS.escape(uc)}"]`);
+  const selecionadasDaUc = Array.from(checks).filter(c => c.checked);
+  const btn = document.querySelector(`.copel-gerar-lote-btn[data-uc="${CSS.escape(uc)}"]`);
+  const contagemEl = document.getElementById('copelLoteContagem-' + uc);
+  if(btn) btn.style.display = selecionadasDaUc.length > 0 ? 'inline-block' : 'none';
+  if(contagemEl) contagemEl.textContent = selecionadasDaUc.length > 0 ? `${selecionadasDaUc.length} fatura(s) selecionada(s)` : '';
+}
+
+let previaLoteUcAtual = null;
+async function abrirPreviaLoteContaPagar(uc){
+  const checks = document.querySelectorAll(`.copel-select-fatura[data-uc="${CSS.escape(uc)}"]:checked`);
+  const idsSelecionados = Array.from(checks).map(c => c.dataset.id);
+  if(idsSelecionados.length === 0) return;
+  if(!temAcessoNfsEnergyFinanceiro()){
+    showToast('Você não tem acesso ao Financeiro do NFS Energy.');
+    return;
+  }
+
+  await carregarFinanceiroNfsEnergyParaExibicao();
+  previaLoteUcAtual = uc;
+  const faturas = idsSelecionados.map(id => copelFaturas.find(f => f.id === id)).filter(Boolean);
+  const jaExistentes = faturas.filter(f => buscarContaPagarExistenteParaFatura(f));
+  const novas = faturas.filter(f => !buscarContaPagarExistenteParaFatura(f));
+  const valorTotal = novas.reduce((s,f) => s + (f.valor||0), 0);
+
+  document.getElementById('previaContaPagarLoteConteudo').innerHTML = `
+    ${faturas.length} fatura(s) selecionada(s)<br>
+    Valor total (das novas): <b>${fmtMoney(valorTotal)}</b><br>
+    Já existentes: <b style="color:var(--amber);">${jaExistentes.length}</b><br>
+    Novas contas a criar: <b style="color:var(--green);">${novas.length}</b>
+  `;
+  document.getElementById('previaContaPagarLoteProgresso').style.display = 'none';
+  document.getElementById('previaContaPagarLoteConfirmarBtn').style.display = novas.length > 0 ? 'inline-block' : 'none';
+  document.getElementById('previaContaPagarLoteBackdrop').classList.add('open');
+  document.getElementById('previaContaPagarLoteSheet').classList.add('open');
+}
+function fecharPreviaLoteContaPagar(){
+  document.getElementById('previaContaPagarLoteBackdrop').classList.remove('open');
+  document.getElementById('previaContaPagarLoteSheet').classList.remove('open');
+}
+document.getElementById('previaContaPagarLoteCancelBtn').addEventListener('click', fecharPreviaLoteContaPagar);
+document.getElementById('previaContaPagarLoteBackdrop').addEventListener('click', fecharPreviaLoteContaPagar);
+document.getElementById('previaContaPagarLoteConfirmarBtn').addEventListener('click', async () => {
+  const uc = previaLoteUcAtual;
+  const checks = document.querySelectorAll(`.copel-select-fatura[data-uc="${CSS.escape(uc)}"]:checked`);
+  const faturas = Array.from(checks).map(c => copelFaturas.find(f => f.id === c.dataset.id)).filter(Boolean);
+  const novas = faturas.filter(f => !buscarContaPagarExistenteParaFatura(f));
+
+  document.getElementById('previaContaPagarLoteConfirmarBtn').style.display = 'none';
+  document.getElementById('previaContaPagarLoteProgresso').style.display = 'block';
+  const progressoTexto = document.getElementById('previaContaPagarLoteProgressoTexto');
+
+  let criadas = 0;
+  for(let i = 0; i < novas.length; i++){
+    progressoTexto.textContent = `Gerando ${i+1} de ${novas.length}...`;
+    const ok = await gerarContaPagarDeFaturaReal(novas[i]);
+    if(ok) criadas++;
+    await liberarThread();
+  }
+  progressoTexto.textContent = `Concluído: ${criadas} de ${novas.length} conta(s) gerada(s).`;
+  copelFaturasSelecionadas.clear();
+  setTimeout(fecharPreviaLoteContaPagar, 1200);
+  showToast(`${criadas} conta(s) a pagar gerada(s) no Financeiro do NFS Energy.`);
+});
 
 async function loadCopelCredenciais(){
   try{
@@ -10207,7 +10458,9 @@ function showNfsSubView(view){
     // tela abre, pra resolver UC->Nome mesmo sem precisar visitar Base de
     // Clientes antes nem sincronizar de novo. Antes disso, se a pessoa
     // entrasse direto aqui, clientesEnergia ficava vazio e nada era encontrado.
-    Promise.all([loadCopelUcs(), loadCopelFaturas(), loadClientesEnergia()]).then(renderFaturasCopelResumoELista);
+    // Também carrega as Contas a Pagar do NFS Energy (contexto isolado) pra
+    // mostrar "💰 Pago no Financeiro" sem precisar abrir o Financeiro antes.
+    Promise.all([loadCopelUcs(), loadCopelFaturas(), loadClientesEnergia(), carregarFinanceiroNfsEnergyParaExibicao()]).then(renderFaturasCopelResumoELista);
   }
   if(view === 'copel-debitos'){
     if(!temAcessoCopelCredenciais('visualizar')){
